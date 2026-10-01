@@ -1,0 +1,64 @@
+id: pd-credit-scorecard
+name: Probability-of-default scorecard (logistic)
+family: credit-scoring (PD)
+archetype: predictive                  # no closed form; judged on held-out performance
+status: planned
+summary: >
+  Logistic PD scorecard mapping borrower features to a default probability. The
+  most common MRM case: validated on discrimination, calibration, and stability,
+  with leakage and population checks — no "true" value, only held-out evidence.
+
+inputs:
+  - { name: features, type: matrix, description: Borrower/application features (WoE-binned or raw) }
+  - { name: target,   type: series, description: Observed default flag (held-out for validation) }
+outputs:
+  - { name: pd,    type: series, description: Predicted probability of default }
+  - { name: score, type: series, description: Scaled score (optional) }
+
+assumptions:
+  - Development and validation samples are representative of the application population.
+  - Default definition is stable and consistent with the regulatory definition.
+  - No target leakage in features; through-the-cycle vs point-in-time stated.
+
+references:
+  - { type: isbn, id: "978-0470582473", citation: "Hosmer, Lemeshow & Sturdivant (2013), Applied Logistic Regression, 3rd ed." }
+  - { type: isbn, id: "978-1119279150", citation: "Siddiqi (2017), Intelligent Credit Scoring, 2nd ed." }
+  - { type: official-url, id: "https://www.eba.europa.eu/regulation-and-policy/model-validation", citation: "EBA Guidelines on PD/LGD estimation (EBA/GL/2017/16)." }
+
+tests:
+  - id: discrimination-auc
+    name: Discrimination (AUC / Gini)
+    checks: Rank-ordering of defaulters vs non-defaulters on held-out data.
+    nature: statistical
+    criterion: "AUC >= 0.70 (Gini >= 0.40); not materially below the benchmark model"
+    reference: "Market standard; Gini/AUC"
+  - id: ks-statistic
+    name: Kolmogorov-Smirnov
+    checks: Maximum separation between good/bad score distributions.
+    nature: statistical
+    criterion: "KS >= 0.30 on held-out sample"
+  - id: calibration-hl
+    name: Calibration (Hosmer-Lemeshow)
+    checks: Predicted vs observed default rates across score bands.
+    nature: statistical
+    criterion: "HL test not rejected at 5% (p > 0.05)"
+    reference: "Hosmer-Lemeshow (1980)"
+  - id: pd-binomial
+    name: PD grade calibration (binomial / Jeffreys)
+    checks: Observed default rate within the confidence bound of the assigned PD per grade.
+    nature: statistical
+    criterion: "no grade breaches the one-sided 95% bound"
+  - id: stability-psi
+    name: Population stability (PSI)
+    checks: Score distribution drift between development and recent population.
+    nature: statistical
+    criterion: "PSI < 0.10 stable; 0.10-0.25 monitor; >= 0.25 fail"
+    reference: "Market standard (PSI)"
+  - id: leakage-check
+    name: Leakage & data integrity
+    checks: No post-outcome features; train/validation separation; missing-value handling.
+    nature: analytical
+    criterion: "no leaking feature present; documented handling of all fields"
+
+regulatory_refs: [sr11-7-outcomes-analysis, eu-crr-irb, eu-eba-gl-pd-lgd, ecb-guide-credit]
+notes: Requires the predictive validation core (held-out metrics + leakage/fairness checks).

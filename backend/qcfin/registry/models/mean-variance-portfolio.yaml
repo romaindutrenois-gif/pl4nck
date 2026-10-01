@@ -1,0 +1,50 @@
+id: mean-variance-portfolio
+name: Mean-variance portfolio optimisation
+family: portfolio-allocation
+archetype: optimization                # judged on solution quality vs best classical
+status: planned
+summary: >
+  Markowitz mean-variance allocation: maximise risk-adjusted return under
+  constraints. Validated on optimality gap vs a reference solver and on
+  constraint feasibility — near-optimal and feasible, not a single value.
+
+inputs:
+  - { name: mu,          type: series, description: Expected returns }
+  - { name: sigma,       type: matrix, description: Covariance matrix }
+  - { name: constraints, type: map,    description: "Budget, bounds, sector/turnover limits" }
+outputs:
+  - { name: weights,   type: series, description: Portfolio weights }
+  - { name: objective, type: float,  description: Achieved risk-adjusted objective }
+
+assumptions:
+  - Covariance matrix is positive semi-definite and well-conditioned.
+  - Return/risk estimates are stable over the holding horizon.
+  - Constraints are feasible as specified.
+
+references:
+  - { type: doi, id: "10.1111/j.1540-6261.1952.tb01525.x", citation: "Markowitz (1952), Portfolio Selection, Journal of Finance." }
+
+tests:
+  - id: optimality-gap
+    name: Optimality gap vs reference solver
+    checks: Objective vs the best available classical QP solver on the same problem.
+    nature: statistical
+    criterion: "approximation ratio >= 0.99 (gap <= 1%) vs reference solver"
+  - id: constraint-feasibility
+    name: Constraint feasibility
+    checks: Returned weights satisfy budget, bounds, and all stated constraints.
+    nature: analytical
+    criterion: "all constraints satisfied within 1e-8"
+  - id: kkt-conditions
+    name: KKT optimality conditions
+    checks: First-order optimality conditions hold at the returned solution.
+    nature: analytical
+    criterion: "max KKT residual < 1e-6"
+  - id: oos-sharpe
+    name: Out-of-sample sanity
+    checks: Out-of-sample Sharpe not pathologically worse than an equal-weight benchmark.
+    nature: statistical
+    criterion: "OOS Sharpe within stated tolerance of benchmark"
+
+regulatory_refs: [sr11-7-conceptual-soundness, sr11-7-outcomes-analysis]
+notes: Requires the optimization validation core (approximation ratio + feasibility).
