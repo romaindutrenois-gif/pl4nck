@@ -1,0 +1,116 @@
+# Model Registry — card schema (JSON Schema, draft 2020-12, written in YAML).
+#
+# One YAML file per model under models/. Each card routes a model to its validation
+# (archetype -> core) and lists the explicit, market-standard tests that must pass.
+# Readable by eye for audit; loadable by the intake agent; validatable with `jsonschema`.
+#
+# Design: the archetype is the mechanism (what "correct" means); the tests are the
+# auditable evidence. One archetype, many models; a card adds only its specifics.
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "https://quantum-quant/registry/model-card.schema.json"
+title: Model registry card
+type: object
+additionalProperties: false
+
+required: [id, name, family, archetype, status, summary, inputs, outputs, assumptions, references, tests]
+
+properties:
+  id:
+    type: string
+    pattern: "^[a-z0-9][a-z0-9-]*$"       # slug, unique across the registry
+    description: Stable unique id, e.g. "black-scholes-european".
+  name:
+    type: string
+  family:
+    type: string
+    description: Business/model family, e.g. "option-pricing", "credit-scoring (PD)".
+  archetype:
+    type: string
+    enum: [reference-anchored, optimization, predictive]   # selects the validation core
+    description: What "correct" means — drives which validation core runs.
+  status:
+    type: string
+    enum: [implemented, planned, under-review]
+    description: Honest state. Never promise "implemented" for what is not validatable end to end.
+  summary:
+    type: string
+    maxLength: 240
+
+  inputs:
+    type: array
+    minItems: 1
+    items: { $ref: "#/$defs/field" }
+  outputs:
+    type: array
+    minItems: 1
+    items: { $ref: "#/$defs/field" }
+
+  assumptions:
+    type: array
+    description: The modelling assumptions a validator must check are tenable.
+    items: { type: string }
+
+  references:
+    type: array
+    minItems: 1
+    description: Provenance — each source must carry a verifiable persistent identifier.
+    items: { $ref: "#/$defs/reference" }
+
+  tests:
+    type: array
+    minItems: 1
+    description: Explicit, auditable tests. Each maps to one acceptance criterion.
+    items: { $ref: "#/$defs/test" }
+
+  regulatory_refs:
+    type: array
+    description: Optional ids into the SR 11-7 <-> EU correspondence table (docs/regulatory/).
+    items: { type: string }
+
+  notes:
+    type: string
+
+$defs:
+  field:
+    type: object
+    additionalProperties: false
+    required: [name, type]
+    properties:
+      name: { type: string }
+      type: { type: string, description: "Logical type, e.g. float, series, matrix, label." }
+      description: { type: string }
+
+  reference:
+    type: object
+    additionalProperties: false
+    required: [type, id, citation]
+    properties:
+      type:
+        type: string
+        enum: [doi, arxiv, isbn, official-url]   # verifiable identifiers only — no loose refs
+      id: { type: string }
+      citation: { type: string }
+
+  test:
+    type: object
+    additionalProperties: false
+    required: [id, name, checks, nature, criterion]
+    properties:
+      id:
+        type: string
+        pattern: "^[a-z0-9][a-z0-9-]*$"
+      name: { type: string }
+      checks:
+        type: string
+        description: What property this test verifies.
+      nature:
+        type: string
+        enum: [analytical, statistical]
+        description: Analytical = exact, no CI. Statistical = CI / held-out / threshold.
+      criterion:
+        type: string
+        description: The pass rule — a threshold or condition, pre-registered before results.
+      reference:
+        type: string
+        description: Optional market-standard source for the test (e.g. "Kupiec 1995").
