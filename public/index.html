@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Quantum Readiness Advisor</title>
+<meta name="description" content="An honest view of quantum computing for your models, and what to do while it matures.">
+<style>
+:root{
+  --bg:#f6f5f1;--surface:#fff;--ink:#16181d;--muted:#5d636e;--line:#e2e0d9;
+  --accent:#0f5c56;--accent-ink:#fff;--accent-soft:#e3efed;--warn:#8a4b0f;
+  --radius:12px;--shadow:0 1px 2px rgba(0,0,0,.04),0 6px 24px rgba(0,0,0,.05);
+  --font:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#111315;--surface:#1a1d20;--ink:#ecebe7;--muted:#9aa0a8;--line:#2c3035;
+  --accent:#5cc0b4;--accent-ink:#0b1514;--accent-soft:#1c2e2c;--warn:#e0a464;--shadow:none}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--font);-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+.wrap{max-width:760px;margin:0 auto;padding:24px 16px 120px}
+header.top{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.logo{width:28px;height:28px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:var(--accent-ink);font-weight:700;font-size:14px}
+.brand{font-weight:600;letter-spacing:-.01em}
+.tag{margin-left:auto;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.12;letter-spacing:-.025em;margin:8px 0 14px}
+.lead{font-size:18px;color:var(--muted);margin:0 0 28px;max-width:60ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+.points{display:grid;gap:14px;margin:0 0 24px;padding:0;list-style:none}
+.points li{display:flex;gap:12px}
+.points b{display:block}
+.points span{color:var(--muted);font-size:15px}
+.num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:13px;font-weight:700}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--muted);margin:18px 0}
+.consent input{margin-top:4px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.btn{appearance:none;border:0;border-radius:10px;padding:12px 20px;background:var(--accent);color:var(--accent-ink);font-weight:600;cursor:pointer}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spacer{flex:1}
+.fine{font-size:13px;color:var(--muted)}
+.progress{display:flex;gap:6px;margin-bottom:18px}
+.progress i{flex:1;height:4px;border-radius:4px;background:var(--line)}
+.progress i.on{background:var(--accent)}
+.steptitle{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 4px}
+h2{font-size:24px;letter-spacing:-.02em;margin:0 0 18px}
+.q{margin:0 0 22px}
+.q label.ql{display:block;font-weight:600;margin-bottom:8px}
+.q .hint{font-weight:400;color:var(--muted);font-size:13px;margin-left:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:14px;cursor:pointer;transition:background .12s,border-color .12s}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.text{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px}
+.text:focus,.chip:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.msgs{display:flex;flex-direction:column;gap:18px}
+.msg.user{align-self:flex-end;max-width:85%;background:var(--accent-soft);border-radius:14px 14px 4px 14px;padding:10px 14px;white-space:pre-wrap}
+.msg.bot{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);overflow-x:auto}
+.msg.bot h1,.msg.bot h2,.msg.bot h3{font-size:17px;margin:18px 0 6px;letter-spacing:-.01em}
+.msg.bot h1:first-child,.msg.bot h2:first-child,.msg.bot h3:first-child{margin-top:0}
+.msg.bot p{margin:0 0 10px}
+.msg.bot ul,.msg.bot ol{margin:0 0 10px;padding-left:22px}
+.msg.bot li{margin:3px 0}
+.msg.bot code{font-family:var(--mono);font-size:.9em;background:var(--accent-soft);padding:1px 5px;border-radius:5px}
+.msg.bot table{border-collapse:collapse;margin:8px 0 14px;font-size:14px;width:100%}
+.msg.bot th,.msg.bot td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+.msg.bot th{background:var(--bg)}
+.msg.bot a{color:var(--accent)}
+.profile{font-size:13px;color:var(--muted);border:1px dashed var(--line);border-radius:10px;padding:10px 12px}
+.typing{color:var(--muted);font-size:14px}
+.err{color:var(--warn);font-size:14px}
+.composer{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(transparent,var(--bg) 30%);padding:20px 16px calc(14px + env(safe-area-inset-bottom))}
+.composer .inner{max-width:760px;margin:0 auto;display:flex;gap:8px;align-items:flex-end}
+.composer textarea{flex:1;resize:none;min-height:46px;max-height:160px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 14px}
+.nudge{display:flex;gap:10px;align-items:center;background:var(--accent-soft);border-radius:10px;padding:10px 14px;font-size:14px}
+dialog{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);color:var(--ink);padding:0;width:min(560px,calc(100% - 32px));max-height:calc(100% - 32px)}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+dialog .body{padding:22px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo" aria-hidden="true">Q</div>
+    <div class="brand">Quantum Readiness Advisor</div>
+    <div class="tag">Research prototype</div>
+  </header>
+
+  <!-- Intro -->
+  <section id="intro">
+    <h1>Is quantum computing worth it for your models?</h1>
+    <p class="lead">An honest answer, built by a quant for quants: where QC really stands for your use case, which technology fits, and what to do now that pays off even if quantum never delivers.</p>
+    <div class="card">
+      <ul class="points">
+        <li><div class="num">1</div><div><b>Tell us about your work</b><span>Four quick screens: role, focus, models, needs. About one minute.</span></div></li>
+        <li><div class="num">2</div><div><b>Get an honest assessment</b><span>Quantum status for your objective, the technology that fits, and a no-regret roadmap from where you are.</span></div></li>
+        <li><div class="num">3</div><div><b>Dig deeper</b><span>Ask follow-up questions, then tell us in 30 seconds what was useful.</span></div></li>
+      </ul>
+      <label class="consent"><input type="checkbox" id="consent">
+        <span>I agree that my answers, the conversation and any feedback are stored for 12 months to improve this research prototype, as described in the <a href="/privacy.html" target="_blank" rel="noopener" style="color:var(--accent)">privacy notice</a>. I will not share confidential information, code or data from my employer.</span></label>
+      <div class="row"><button class="btn" id="start" disabled>Start</button><span class="fine">No account needed. No cookies.</span></div>
+    </div>
+  </section>
+
+  <!-- Intake -->
+  <section id="intake" hidden>
+    <div class="progress" id="progress"></div>
+    <p class="steptitle" id="stepcount"></p>
+    <h2 id="steptitle"></h2>
+    <div id="questions"></div>
+    <div class="row">
+      <button class="btn ghost" id="back">Back</button>
+      <div class="spacer"></div>
+      <span class="fine" id="req"></span>
+      <button class="btn" id="next">Next</button>
+    </div>
+  </section>
+
+  <!-- Chat -->
+  <section id="chat" hidden>
+    <div class="msgs" id="msgs"></div>
+  </section>
+</div>
+
+<div class="composer" id="composer" hidden>
+  <div class="inner">
+    <textarea id="input" rows="1" placeholder="Ask a follow-up question…" aria-label="Your message"></textarea>
+    <button class="btn" id="send">Send</button>
+  </div>
+  <div class="inner" style="margin-top:8px"><button class="btn ghost" id="fbopen" style="padding:6px 12px;font-size:13px">Give 30-second feedback</button><span class="fine" id="turns" style="margin-left:auto"></span></div>
+  <div class="inner fine" style="margin-top:6px">Session reference: <span id="sref" style="font-family:var(--mono);margin:0 4px"></span>· <a href="/privacy.html" target="_blank" rel="noopener" style="color:var(--accent)">Privacy</a></div>
+</div>
+
+<dialog id="fb">
+  <form method="dialog" class="body" id="fbform">
+    <h2 style="font-size:20px">Thirty seconds of feedback</h2>
+    <div id="fbq"></div>
+    <div class="q"><label class="ql" for="fbcomment">Anything to add? <span class="hint">optional</span></label>
+      <textarea class="text" id="fbcomment" rows="3" maxlength="1500" placeholder="What was missing, wrong, or surprisingly useful?"></textarea></div>
+    <div class="q"><label class="ql" for="fbemail">Email <span class="hint">optional, for early access or a starter kit</span></label>
+      <input class="text" id="fbemail" type="email" maxlength="120" placeholder="you@example.com">
+      <p class="fine" style="margin:6px 0 0">Only used to contact you about this project. Ask anytime to delete it, see the <a href="/privacy.html" target="_blank" rel="noopener" style="color:var(--accent)">privacy notice</a>.</p></div>
+    <div class="row"><button class="btn ghost" value="cancel" type="submit">Later</button><div class="spacer"></div><button class="btn" id="fbsend" value="send" type="submit">Send feedback</button></div>
+  </form>
+</dialog>
+
+<script>
+(() => {
+'use strict';
+
+// ---------- Questions ----------
+const STEPS = [
+  { title: 'About you', qs: [
+    { id: 'job', label: 'Your role', type: 'single', required: true, options: ['Quant R&D', 'Model validation', 'Front-office quant / structuring', 'Risk management', 'Portfolio management', 'Innovation / exploration', 'Management / planning', 'Other'] },
+    { id: 'seniority', label: 'Experience', type: 'single', options: ['0–3 years', '3–8 years', '8+ years', 'Head of team'] },
+    { id: 'institution', label: 'Institution', type: 'single', options: ['Global bank', 'National / regional bank', 'Asset manager', 'Insurer', 'Consultancy / vendor', 'Academic', 'Other'] },
+  ]},
+  { title: 'Your focus', qs: [
+    { id: 'objectives', label: 'What do you work on?', hint: 'select all that apply', type: 'multi', required: true, options: ['Pricing', 'Risk measures (VaR / ES)', 'XVA / counterparty risk', 'Credit risk / portfolio models', 'Calibration', 'Hedging', 'Portfolio optimisation', 'Scenario generation / synthetic data', 'Stress testing'] },
+    { id: 'assetClasses', label: 'Asset classes', hint: 'select all that apply', type: 'multi', required: true, options: ['Equity', 'Rates', 'Credit', 'FX', 'Commodities', 'Multi-asset', 'Structured products / securitisation'] },
+  ]},
+  { title: 'Your models', qs: [
+    { id: 'models', label: 'Models you use today', hint: 'the family is enough', type: 'multi', required: true, options: ['Black-Scholes', 'Local volatility', 'Heston / stochastic vol', 'Local-stochastic vol', 'SABR', 'Hull-White / short rate', 'LMM', 'Copulas', 'Historical simulation', 'Monte Carlo VaR', 'GARCH', 'Mean-variance', 'Machine learning', 'Not sure / none'] },
+    { id: 'modelsOther', label: 'Other model', hint: 'name only, nothing confidential', type: 'text', max: 80, placeholder: 'e.g. Bergomi, Cheyette, Vasicek' },
+    { id: 'qcKnowledge', label: 'Your quantum computing knowledge', type: 'single', required: true, options: ['None', 'I have read about it', 'I followed a course', 'I experimented hands-on (e.g. Qiskit)', 'I work on it professionally'] },
+  ]},
+  { title: 'Your needs', qs: [
+    { id: 'painPoints', label: 'What hurts most today?', hint: 'select all that apply', type: 'multi', options: ['Computation time', 'Model accuracy / robustness', 'Validation findings / model risk', 'Documentation burden (SR 11-7…)', 'Data quality / availability', 'Skills / upskilling', 'Budget / management buy-in', 'Keeping up with new technology'] },
+    { id: 'goals', label: 'What would make this session worth it?', hint: 'select all that apply', type: 'multi', required: true, options: ['Understand where QC really stands', 'Know which quantum hardware fits my use case', 'A roadmap to improve my models', 'Validation / documentation templates', 'A business case for management', 'Just curious'] },
+  ]},
+];
+const FEEDBACK = [
+  { id: 'mostUseful', label: 'What was most useful?', hint: 'select all that apply', type: 'multi', options: ['Honest quantum status', 'Hardware / technology fit', 'No-regret roadmap', 'Validation / documentation pointers', 'Quantified benefits', 'Nothing yet'] },
+  { id: 'wantsKit', label: 'Would you want a starter kit for your next step? (Python model, benchmarks, tests, validation documentation)', type: 'single', options: ['Yes', 'Maybe', 'No'] },
+  { id: 'wouldReturn', label: 'Would you use this again?', type: 'single', options: ['Yes', 'Maybe', 'No'] },
+];
+const MAX_TURNS = 20;
+
+// ---------- State ----------
+const $ = (id) => document.getElementById(id);
+const S = {
+  sessionId: (crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('')),
+  startedAt: new Date().toISOString(),
+  consent: false, step: 0, answers: {}, fb: {}, messages: [], busy: false, nudged: false,
+};
+
+// ---------- Generic question renderer ----------
+function renderQuestions(container, qs, store, onChange) {
+  container.textContent = '';
+  for (const q of qs) {
+    const wrap = document.createElement('div'); wrap.className = 'q';
+    const lab = document.createElement('label'); lab.className = 'ql'; lab.textContent = q.label + (q.required ? '' : '');
+    if (q.hint || !q.required) { const h = document.createElement('span'); h.className = 'hint'; h.textContent = q.hint || 'optional'; lab.append(h); }
+    wrap.append(lab);
+    if (q.type === 'text') {
+      const inp = document.createElement('input'); inp.className = 'text'; inp.maxLength = q.max || 80;
+      inp.placeholder = q.placeholder || ''; inp.value = store[q.id] || ''; inp.id = 'q_' + q.id; lab.htmlFor = inp.id;
+      inp.addEventListener('input', () => { store[q.id] = inp.value; onChange && onChange(); });
+      wrap.append(inp);
+    } else {
+      const chips = document.createElement('div'); chips.className = 'chips'; chips.setAttribute('role', 'group');
+      for (const opt of q.options) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = opt;
+        const sel = q.type === 'multi' ? (store[q.id] || []).includes(opt) : store[q.id] === opt;
+        b.setAttribute('aria-pressed', String(sel));
+        b.addEventListener('click', () => {
+          if (q.type === 'multi') {
+            const cur = new Set(store[q.id] || []);
+            cur.has(opt) ? cur.delete(opt) : cur.add(opt);
+            store[q.id] = q.options.filter((o) => cur.has(o));
+          } else {
+            store[q.id] = store[q.id] === opt ? '' : opt;
+          }
+          renderQuestions(container, qs, store, onChange);
+          onChange && onChange();
+        });
+        chips.append(b);
+      }
+      wrap.append(chips);
+    }
+    container.append(wrap);
+  }
+}
+
+// ---------- Intro ----------
+$('consent').addEventListener('change', (e) => { S.consent = e.target.checked; $('start').disabled = !S.consent; });
+$('start').addEventListener('click', () => { $('intro').hidden = true; $('intake').hidden = false; showStep(); });
+
+// ---------- Intake ----------
+function stepValid() {
+  return STEPS[S.step].qs.every((q) => !q.required || (Array.isArray(S.answers[q.id]) ? S.answers[q.id].length : S.answers[q.id]));
+}
+function refreshNav() {
+  const ok = stepValid();
+  $('next').disabled = !ok;
+  $('req').textContent = ok ? '' : 'Answer the required questions to continue';
+  $('back').style.visibility = S.step === 0 ? 'hidden' : 'visible';
+  $('next').textContent = S.step === STEPS.length - 1 ? 'Get my assessment' : 'Next';
+}
+function showStep() {
+  const st = STEPS[S.step];
+  $('progress').innerHTML = STEPS.map((_, i) => `<i class="${i <= S.step ? 'on' : ''}"></i>`).join('');
+  $('stepcount').textContent = `Step ${S.step + 1} of ${STEPS.length}`;
+  $('steptitle').textContent = st.title;
+  renderQuestions($('questions'), st.qs, S.answers, refreshNav);
+  refreshNav();
+  window.scrollTo({ top: 0 });
+}
+$('back').addEventListener('click', () => { if (S.step > 0) { S.step--; showStep(); } });
+$('next').addEventListener('click', () => {
+  if (!stepValid()) return;
+  if (S.step < STEPS.length - 1) { S.step++; showStep(); return; }
+  startChat();
+});
+
+function profile() {
+  const a = S.answers;
+  return {
+    job: a.job || '', seniority: a.seniority || '', institution: a.institution || '',
+    objectives: a.objectives || [], assetClasses: a.assetClasses || [],
+    models: a.models || [], modelsOther: (a.modelsOther || '').trim(),
+    qcKnowledge: a.qcKnowledge || '', painPoints: a.painPoints || [], goals: a.goals || [],
+  };
+}
+
+// ---------- Chat ----------
+function startChat() {
+  $('intake').hidden = true; $('chat').hidden = false; $('composer').hidden = false;
+  $('sref').textContent = S.sessionId.slice(0, 8);
+  const p = profile();
+  const box = document.createElement('div'); box.className = 'profile';
+  const parts = [p.job, p.institution, p.objectives.join(', '), p.assetClasses.join(', '),
+    [...p.models, p.modelsOther].filter(Boolean).join(', ')].filter(Boolean);
+  box.textContent = 'Your profile: ' + parts.join(' · ');
+  $('msgs').append(box);
+  send('Based on my profile, please give me your assessment.', true);
+}
+
+function addMsg(role, text) {
+  const el = document.createElement('div'); el.className = 'msg ' + (role === 'user' ? 'user' : 'bot');
+  if (role === 'user') el.textContent = text; else el.innerHTML = md(text);
+  $('msgs').append(el); return el;
+}
+
+async function send(text, hidden) {
+  if (S.busy || !text.trim()) return;
+  const userTurns = S.messages.filter((m) => m.role === 'user').length;
+  if (userTurns >= MAX_TURNS) { addMsg('bot', '_You have reached the limit for this session. Thank you! Please leave a quick feedback._'); openFb(); return; }
+  S.busy = true; $('send').disabled = true;
+  S.messages.push({ role: 'user', content: text });
+  if (!hidden) addMsg('user', text);
+  const el = addMsg('bot', ''); el.innerHTML = '<span class="typing">Thinking…</span>';
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  let out = '';
+  try {
+    const r = await fetch('/api/chat', { method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ profile: profile(), messages: S.messages }) });
+    if (!r.ok || !r.body) {
+      const e = await r.json().catch(() => ({}));
+      throw new Error(e.error === 'rate_limited' ? 'Daily limit reached. Please come back tomorrow.' : 'The advisor is unavailable right now. Please try again in a minute.');
+    }
+    const reader = r.body.getReader(); const dec = new TextDecoder(); let buf = '';
+    for (;;) {
+      const { value, done } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let i;
+      while ((i = buf.indexOf('\n\n')) >= 0) {
+        const chunk = buf.slice(0, i); buf = buf.slice(i + 2);
+        for (const line of chunk.split('\n')) {
+          if (!line.startsWith('data:')) continue;
+          let ev; try { ev = JSON.parse(line.slice(5)); } catch { continue; }
+          if (ev.type === 'content_block_delta' && ev.delta && ev.delta.type === 'text_delta') { out += ev.delta.text; el.innerHTML = md(out); }
+          else if (ev.type === 'error') throw new Error('The answer was interrupted. Please try again.');
+        }
+      }
+    }
+    if (!out) throw new Error('Empty answer. Please try again.');
+    S.messages.push({ role: 'assistant', content: out });
+    log();
+    const replies = S.messages.filter((m) => m.role === 'assistant').length;
+    if (replies === 2 && !S.nudged) nudge();
+  } catch (err) {
+    S.messages.pop(); // drop the unanswered user turn
+    el.innerHTML = `<span class="err">${esc(err.message || 'Something went wrong.')}</span>`;
+    if (hidden) { const b = document.createElement('button'); b.className = 'btn'; b.textContent = 'Retry'; b.style.marginTop = '10px'; b.onclick = () => { el.remove(); send(text, true); }; el.append(b); }
+  } finally {
+    S.busy = false; $('send').disabled = false;
+    $('turns').textContent = `${S.messages.filter((m) => m.role === 'user').length}/${MAX_TURNS} questions`;
+  }
+}
+
+function nudge() {
+  S.nudged = true;
+  const n = document.createElement('div'); n.className = 'nudge';
+  n.innerHTML = '<span>Is this useful? Tell us in 30 seconds.</span><span class="spacer"></span>';
+  const b = document.createElement('button'); b.className = 'btn'; b.style.padding = '6px 12px'; b.textContent = 'Give feedback'; b.onclick = openFb;
+  n.append(b); $('msgs').append(n);
+}
+
+const input = $('input');
+input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 160) + 'px'; });
+input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } });
+$('send').addEventListener('click', submit);
+function submit() { const t = input.value.trim(); if (!t) return; input.value = ''; input.style.height = 'auto'; send(t); }
+
+// ---------- Feedback ----------
+function openFb() { renderQuestions($('fbq'), FEEDBACK, S.fb); $('fbcomment').value = S.fb.comment || ''; $('fbemail').value = S.fb.email || ''; $('fb').showModal(); }
+$('fbopen').addEventListener('click', openFb);
+$('fb').addEventListener('close', () => {
+  if ($('fb').returnValue !== 'send') return;
+  S.fb.comment = $('fbcomment').value; S.fb.email = $('fbemail').value;
+  log();
+  $('fbopen').textContent = 'Feedback sent, thank you';
+});
+
+// ---------- Logging ----------
+function log() {
+  if (!S.consent) return;
+  fetch('/api/log', { method: 'POST', headers: { 'content-type': 'application/json' }, keepalive: true,
+    body: JSON.stringify({ sessionId: S.sessionId, consent: true, consentVersion: '2026-10-14', startedAt: S.startedAt, lang: navigator.language,
+      profile: profile(), messages: S.messages, feedback: S.fb }) }).catch(() => {});
+}
+
+// ---------- Minimal, safe markdown ----------
+function esc(s) { return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function inline(s) {
+  s = esc(s);
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
+  s = s.replace(/(^|\W)_([^_]+)_(?=\W|$)/g, '$1<em>$2</em>');
+  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  return s;
+}
+function md(src) {
+  const lines = src.replace(/\r/g, '').split('\n'); let html = ''; let i = 0;
+  const isRow = (l) => /^\s*\|.*\|\s*$/.test(l);
+  const cells = (l) => l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => inline(c.trim()));
+  while (i < lines.length) {
+    const l = lines[i];
+    if (!l.trim()) { i++; continue; }
+    let m;
+    if ((m = l.match(/^(#{1,4})\s+(.*)$/))) { const n = Math.min(m[1].length + 1, 3); html += `<h${n}>${inline(m[2])}</h${n}>`; i++; continue; }
+    if (/^\s*(-{3,}|\*{3,})\s*$/.test(l)) { i++; continue; }
+    if (isRow(l)) {
+      const rows = []; while (i < lines.length && isRow(lines[i])) rows.push(lines[i++]);
+      const body = rows.filter((r) => !/^\s*\|?\s*:?-{2,}/.test(r));
+      if (!body.length) continue;
+      html += '<table><thead><tr>' + cells(body[0]).map((c) => `<th>${c}</th>`).join('') + '</tr></thead><tbody>' +
+        body.slice(1).map((r) => '<tr>' + cells(r).map((c) => `<td>${c}</td>`).join('') + '</tr>').join('') + '</tbody></table>';
+      continue;
+    }
+    if (/^\s*([-*+]|\d+[.)])\s+/.test(l)) {
+      const ordered = /^\s*\d+[.)]/.test(l); const items = [];
+      while (i < lines.length && /^\s*([-*+]|\d+[.)])\s+/.test(lines[i])) { items.push(lines[i].replace(/^\s*([-*+]|\d+[.)])\s+/, '')); i++;
+        while (i < lines.length && /^\s{2,}\S/.test(lines[i]) && !/^\s*([-*+]|\d+[.)])\s+/.test(lines[i])) { items[items.length - 1] += ' ' + lines[i].trim(); i++; } }
+      const t = ordered ? 'ol' : 'ul'; html += `<${t}>` + items.map((x) => `<li>${inline(x)}</li>`).join('') + `</${t}>`; continue;
+    }
+    const para = []; while (i < lines.length && lines[i].trim() && !/^(#{1,4}\s|\s*\||\s*([-*+]|\d+[.)])\s+)/.test(lines[i])) para.push(lines[i++]);
+    if (para.length) html += `<p>${inline(para.join(' '))}</p>`; else i++;
+  }
+  return html;
+}
+})();
+</script>
+</body>
+</html>
