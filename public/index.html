@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Quantum Readiness Advisor</title>
+<meta name="description" content="An honest verdict on quantum computing for your models, and the no-regret steps that pay off meanwhile.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#e8ecf1;--sheet:#f7f9fb;--ink:#0f1e33;--muted:#56637a;--rule:#c8d1dd;
+  --accent:#2e3fbf;--accent-ink:#fff;--accent-soft:#dde2fa;--amber:#9a6412;--amber-soft:#f4e7d0;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --sans:"Instrument Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r-sm:6px;--r-md:10px;
+}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#0c1524;--sheet:#131e31;--ink:#e4e9f1;--muted:#97a3b8;--rule:#26344c;
+  --accent:#93a0ff;--accent-ink:#0c1524;--accent-soft:#1d2650;--amber:#e3b25d;--amber-soft:#2e2615}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button,input,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 20px 140px}
+.narrow{max-width:680px;margin-left:auto;margin-right:auto}
+
+/* top bar */
+.bar{display:flex;align-items:center;gap:10px;margin-bottom:56px}
+.mark{width:22px;height:22px;border:2px solid var(--ink);border-radius:50%;position:relative;flex:none}
+.mark::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--accent)}
+.name{font-weight:600;letter-spacing:-.01em}
+.proto{margin-left:auto;font-size:13px;color:var(--muted)}
+
+/* landing */
+.hero{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:start}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.6vw,62px);line-height:1.04;letter-spacing:-.02em;margin:0 0 22px}
+.lead{font-size:18px;line-height:1.6;color:var(--muted);max-width:44ch;margin:0 0 30px}
+.start{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.btn{appearance:none;border:0;border-radius:var(--r-sm);padding:13px 22px;background:var(--ink);color:var(--paper);font-weight:600;cursor:pointer}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule)}
+.btn.small{padding:7px 12px;font-size:14px}
+.fine{font-size:14px;color:var(--muted)}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--muted);margin:26px 0 0;max-width:52ch;line-height:1.5}
+.consent input{margin-top:3px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.sample-note{font-size:13px;color:var(--muted);margin:10px 2px 0}
+
+/* verdict card: the one memorable element */
+.verdict{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-md);padding:26px 26px 22px;position:relative}
+.verdict .kind{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:14px}
+.verdict .kind b{color:var(--ink);font-weight:600}
+.verdict .head{font-family:var(--serif);font-size:clamp(22px,2.6vw,27px);line-height:1.22;letter-spacing:-.01em;margin:0 0 20px}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;margin:0 0 24px;font-size:15px}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0;font-weight:500}
+.facts dd.horizon{color:var(--amber)}
+.ladder{list-style:none;margin:0 0 22px;padding:0;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;align-items:start;position:relative}
+.ladder li{position:relative;padding-top:24px;font-size:12.5px;line-height:1.3;color:var(--muted);padding-right:6px}
+.ladder li::before{content:"";position:absolute;left:0;right:0;top:8px;height:2px;background:var(--ink)}
+.ladder li:last-child::before{display:none}
+.ladder li.here::before,.ladder li.future::before{background:var(--rule)}
+.ladder li:nth-last-child(2)::before{background:none;border-top:2px dashed var(--amber);height:0}
+.ladder li::after{content:"";position:absolute;left:0;top:3px;width:12px;height:12px;border-radius:50%;background:var(--ink);box-sizing:border-box}
+.ladder li.future::after{background:var(--sheet);border:2px solid var(--rule)}
+.ladder li.here{color:var(--ink);font-weight:600}
+.ladder li.here::after{width:16px;height:16px;top:1px;left:-2px;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.ladder li.quantum{color:var(--amber);font-weight:600}
+.ladder li.quantum::after{background:var(--sheet);border:2px solid var(--amber);border-radius:2px;transform:rotate(45deg)}
+.ladder .you{display:block;font-size:11.5px;font-weight:600;color:var(--accent);margin-top:3px}
+.next{border-top:1px solid var(--rule);padding-top:16px;display:grid;gap:4px}
+.next .lbl{font-size:13px;color:var(--muted)}
+.next .step{font-weight:600;font-size:16px}
+.next .why{font-size:14.5px;color:var(--muted)}
+.skeleton{color:var(--muted);font-family:var(--serif);font-size:20px}
+.skeleton::after{content:"";display:inline-block;width:.6em;animation:dots 1.2s steps(4) infinite;overflow:hidden;vertical-align:bottom}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+@media (prefers-reduced-motion:reduce){.skeleton::after{animation:none;content:"…"}}
+
+/* intake */
+.steps{display:flex;gap:6px;margin:0 0 30px}
+.steps i{height:3px;flex:1;background:var(--rule);border-radius:2px}
+.steps i.on{background:var(--ink)}
+h2{font-family:var(--serif);font-weight:400;font-size:34px;letter-spacing:-.015em;margin:0 0 6px}
+.sub{color:var(--muted);margin:0 0 30px}
+.q{margin:0 0 30px}
+.q .ql{display:block;font-weight:600;margin-bottom:10px}
+.q .hint{font-weight:400;color:var(--muted);font-size:14px;margin-left:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--rule);background:var(--sheet);border-radius:var(--r-sm);padding:8px 13px;font-size:14.5px;cursor:pointer;text-align:left}
+.chip:hover{border-color:var(--ink)}
+.chip[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.text{width:100%;border:1px solid var(--rule);background:var(--sheet);border-radius:var(--r-sm);padding:10px 12px}
+.nav{display:flex;align-items:center;gap:12px;margin-top:8px;border-top:1px solid var(--rule);padding-top:22px}
+.nav .spacer{flex:1}
+
+/* conversation */
+.convo{display:flex;flex-direction:column;gap:26px}
+.me{align-self:flex-end;max-width:80%;background:var(--ink);color:var(--paper);border-radius:var(--r-md) var(--r-md) 2px var(--r-md);padding:10px 14px;white-space:pre-wrap}
+.ans{font-size:16.5px;line-height:1.65}
+.ans p{margin:0 0 12px;max-width:68ch}
+.ans .verdict{margin-bottom:22px}
+.ans h1,.ans h2,.ans h3{font-family:var(--serif);font-weight:500;font-size:20px;margin:18px 0 6px}
+.ans ul,.ans ol{margin:0 0 12px;padding-left:22px;max-width:66ch}
+.ans li{margin:4px 0}
+.ans code{font-size:.9em;background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+.ans table{border-collapse:collapse;margin:6px 0 14px;font-size:14.5px;width:100%;background:var(--sheet)}
+.ans th,.ans td{border:1px solid var(--rule);padding:7px 10px;text-align:left;vertical-align:top}
+.ans .tablewrap{overflow-x:auto}
+.ask{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.ask .chip{background:transparent;border-style:dashed}
+.ask .chip:hover{border-style:solid}
+.err{color:var(--amber)}
+.profile{font-size:14px;color:var(--muted)}
+.nudge{display:flex;gap:12px;align-items:center;flex-wrap:wrap;border:1px solid var(--rule);background:var(--sheet);border-radius:var(--r-md);padding:12px 16px;font-size:15px}
+.nudge span{flex:1;min-width:200px}
+
+.composer{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(to bottom,transparent,var(--paper) 28%);padding:22px 20px calc(12px + env(safe-area-inset-bottom))}
+.composer .inner{max-width:680px;margin:0 auto}
+.composer .box{display:flex;gap:8px;align-items:flex-end;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-md);padding:6px}
+.composer textarea{flex:1;resize:none;border:0;background:transparent;min-height:40px;max-height:160px;padding:9px 10px;outline:none}
+.composer .meta{display:flex;gap:12px;align-items:center;margin-top:8px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.composer .meta button{background:none;border:0;padding:0;color:var(--accent);cursor:pointer;font-size:13px}
+.ref{font-variant-numeric:tabular-nums;letter-spacing:.03em}
+
+dialog{border:1px solid var(--rule);border-radius:var(--r-md);background:var(--sheet);color:var(--ink);padding:0;width:min(560px,calc(100% - 32px));max-height:calc(100% - 32px)}
+dialog::backdrop{background:rgba(8,14,26,.45)}
+dialog form{padding:26px}
+dialog h2{font-size:26px;margin-bottom:20px}
+
+@media (max-width:820px){
+  .hero{grid-template-columns:1fr;gap:36px}
+  .bar{margin-bottom:36px}
+}
+@media (max-width:560px){
+  .verdict{padding:20px 18px 18px}
+  .ladder{grid-auto-flow:row;grid-auto-columns:auto;gap:0}
+  .ladder li{padding:0 0 14px 26px;font-size:14px}
+  .ladder li::before{left:5px;right:auto;top:12px;bottom:0;width:2px;height:auto}
+  .ladder li:last-child::before{display:none}
+  .ladder li:nth-last-child(2)::before{background:none;border-top:0;border-left:2px dashed var(--amber);width:0;height:auto}
+  .ladder li::after{top:3px}
+  .ladder li.here::after{top:1px;left:-2px}
+  .ladder .you{display:inline;margin-left:8px}
+  .proto{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar">
+    <span class="mark" aria-hidden="true"></span>
+    <span class="name">Quantum Readiness Advisor</span>
+    <span class="proto">Research prototype</span>
+  </div>
+
+  <!-- Landing -->
+  <section id="intro" class="hero">
+    <div>
+      <h1>Will quantum computing matter for your models?</h1>
+      <p class="lead">An honest verdict, built by a quant for quants: where quantum really stands for your use case, which hardware fits, and the next step that pays off even if quantum never does.</p>
+      <div class="start">
+        <button class="btn" id="start" disabled>Get my verdict</button>
+        <span class="fine">Four short questions. No account.</span>
+      </div>
+      <label class="consent"><input type="checkbox" id="consent">
+        <span>I agree that my answers, the conversation and any feedback are stored for 12 months to improve this prototype (<a href="/privacy.html" target="_blank" rel="noopener">privacy notice</a>). I won't share confidential information, code or data from my employer.</span></label>
+    </div>
+    <div>
+      <div id="sample"></div>
+      <p class="sample-note">Example verdict for a validation quant pricing autocalls by Monte Carlo.</p>
+    </div>
+  </section>
+
+  <!-- Intake -->
+  <section id="intake" class="narrow" hidden>
+    <div class="steps" id="progress"></div>
+    <h2 id="steptitle"></h2>
+    <p class="sub" id="stepsub"></p>
+    <div id="questions"></div>
+    <div class="nav">
+      <button class="btn quiet" id="back">Back</button>
+      <span class="spacer"></span>
+      <span class="fine" id="req"></span>
+      <button class="btn" id="next">Next</button>
+    </div>
+  </section>
+
+  <!-- Conversation -->
+  <section id="chat" class="narrow" hidden>
+    <div class="convo" id="msgs"></div>
+  </section>
+</div>
+
+<div class="composer" id="composer" hidden>
+  <div class="inner">
+    <div class="box">
+      <textarea id="input" rows="1" placeholder="Ask a follow-up question" aria-label="Your question"></textarea>
+      <button class="btn small" id="send">Ask</button>
+    </div>
+    <div class="meta">
+      <button id="fbopen" type="button">Give feedback (30 seconds)</button>
+      <span id="turns"></span>
+      <span style="margin-left:auto">Session <span class="ref" id="sref"></span> · <a href="/privacy.html" target="_blank" rel="noopener">Privacy</a></span>
+    </div>
+  </div>
+</div>
+
+<dialog id="fb">
+  <form method="dialog">
+    <h2>Was this useful?</h2>
+    <div id="fbq"></div>
+    <div class="q"><label class="ql" for="fbcomment">Anything to add? <span class="hint">optional</span></label>
+      <textarea class="text" id="fbcomment" rows="3" maxlength="1500" placeholder="What was missing, wrong, or surprisingly useful"></textarea></div>
+    <div class="q"><label class="ql" for="fbemail">Email <span class="hint">optional, for early access or a starter kit</span></label>
+      <input class="text" id="fbemail" type="email" maxlength="120" placeholder="you@example.com">
+      <p class="fine" style="margin:6px 0 0">Only used to contact you about this project. You can ask to delete it at any time.</p></div>
+    <div class="nav"><button class="btn quiet" value="cancel" type="submit">Not now</button><span class="spacer"></span><button class="btn" value="send" type="submit">Send feedback</button></div>
+  </form>
+</dialog>
+
+<script>
+(() => {
+'use strict';
+
+// ---------- Questions ----------
+const STEPS = [
+  { title: 'About you', sub: 'So the answer matches your role.', qs: [
+    { id: 'job', label: 'Your role', type: 'single', required: true, options: ['Quant R&D', 'Model validation', 'Front-office quant / structuring', 'Risk management', 'Portfolio management', 'Innovation / exploration', 'Management / planning', 'Other'] },
+    { id: 'seniority', label: 'Experience', type: 'single', options: ['0–3 years', '3–8 years', '8+ years', 'Head of team'] },
+    { id: 'institution', label: 'Institution', type: 'single', options: ['Global bank', 'National / regional bank', 'Asset manager', 'Insurer', 'Consultancy / vendor', 'Academic', 'Other'] },
+  ]},
+  { title: 'Your focus', sub: 'Quantum methods differ a lot by use case.', qs: [
+    { id: 'objectives', label: 'What do you work on?', hint: 'select all that apply', type: 'multi', required: true, options: ['Pricing', 'Risk measures (VaR / ES)', 'XVA / counterparty risk', 'Credit risk / portfolio models', 'Calibration', 'Hedging', 'Portfolio optimisation', 'Scenario generation / synthetic data', 'Stress testing'] },
+    { id: 'assetClasses', label: 'Asset classes', hint: 'select all that apply', type: 'multi', required: true, options: ['Equity', 'Rates', 'Credit', 'FX', 'Commodities', 'Multi-asset', 'Structured products / securitisation'] },
+  ]},
+  { title: 'Your models', sub: 'The family is enough. Nothing confidential.', qs: [
+    { id: 'models', label: 'Models you use today', hint: 'select all that apply', type: 'multi', required: true, options: ['Black-Scholes', 'Local volatility', 'Heston / stochastic vol', 'Local-stochastic vol', 'SABR', 'Hull-White / short rate', 'LMM', 'Copulas', 'Historical simulation', 'Monte Carlo VaR', 'GARCH', 'Mean-variance', 'Machine learning', 'Not sure / none'] },
+    { id: 'modelsOther', label: 'Other model', hint: 'name only', type: 'text', max: 80, placeholder: 'e.g. Bergomi, Cheyette, Vasicek' },
+    { id: 'qcKnowledge', label: 'Your quantum computing knowledge', type: 'single', required: true, options: ['None', 'I have read about it', 'I followed a course', 'I experimented hands-on (e.g. Qiskit)', 'I work on it professionally'] },
+  ]},
+  { title: 'Your needs', sub: 'What would make the next ten minutes worth it?', qs: [
+    { id: 'painPoints', label: 'What hurts most today?', hint: 'select all that apply', type: 'multi', options: ['Computation time', 'Model accuracy / robustness', 'Validation findings / model risk', 'Documentation burden (SR 11-7…)', 'Data quality / availability', 'Skills / upskilling', 'Budget / management buy-in', 'Keeping up with new technology'] },
+    { id: 'goals', label: 'What do you want from this session?', hint: 'select all that apply', type: 'multi', required: true, options: ['Understand where QC really stands', 'Know which quantum hardware fits my use case', 'A roadmap to improve my models', 'Validation / documentation templates', 'A business case for management', 'Just curious'] },
+  ]},
+];
+const FOLLOWUPS = [
+  'Which hardware fits, and why?',
+  'Show my full roadmap',
+  'What would a validator check at my next step?',
+  'Help me make the business case',
+  'Could quantum ever beat my classical setup?',
+];
+const FEEDBACK = [
+  { id: 'mostUseful', label: 'What was most useful?', hint: 'select all that apply', type: 'multi', options: ['The honest verdict', 'Hardware / technology fit', 'The roadmap', 'Validation / documentation pointers', 'Quantified benefits', 'Nothing yet'] },
+  { id: 'wantsKit', label: 'Would you want a starter kit for your next step? (Python model, benchmarks, tests, validation documentation)', type: 'single', options: ['Yes', 'Maybe', 'No'] },
+  { id: 'wouldReturn', label: 'Would you use this again?', type: 'single', options: ['Yes', 'Maybe', 'No'] },
+];
+const MAX_TURNS = 20;
+const SAMPLE = {
+  headline: 'Quantum won’t price your autocalls this decade. Variance reduction will pay now.',
+  horizon: 'Not before the 2030s',
+  technology: 'Fault-tolerant gate-based',
+  ladder: ['MC under Black-Scholes', 'Variance reduction', 'Local / stochastic vol', 'Robust Greeks', 'Quantum readiness'],
+  current: 0,
+  next: 'Control variates and a documented convergence study',
+  sensitivity: 'A control variate with ρ = 0.99 needs about 50× fewer paths for the same error.',
+};
+
+// ---------- State ----------
+const $ = (id) => document.getElementById(id);
+const S = {
+  sessionId: (crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('')),
+  startedAt: new Date().toISOString(),
+  consent: false, step: 0, answers: {}, fb: {}, messages: [], busy: false, nudged: false, asked: new Set(),
+};
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// ---------- Verdict card ----------
+function verdictCard(v) {
+  const steps = Array.isArray(v.ladder) && v.ladder.length ? v.ladder.slice(0, 8) : [];
+  const cur = Math.max(0, Math.min(Number(v.current) || 0, Math.max(steps.length - 2, 0)));
+  const ladder = steps.map((s, i) => {
+    const cls = i === steps.length - 1 ? 'quantum' : i === cur ? 'here' : i > cur ? 'future' : '';
+    return `<li class="${cls}">${esc(s)}${i === cur ? '<span class="you">You are here</span>' : ''}</li>`;
+  }).join('');
+  return `<article class="verdict" aria-label="Verdict">
+    <div class="kind"><b>Verdict</b></div>
+    <p class="head">${esc(v.headline)}</p>
+    <dl class="facts">
+      <dt>Quantum advantage</dt><dd class="horizon">${esc(v.horizon)}</dd>
+      <dt>Hardware that fits</dt><dd>${esc(v.technology)}</dd>
+    </dl>
+    ${ladder ? `<ol class="ladder" aria-label="Readiness ladder">${ladder}</ol>` : ''}
+    <div class="next"><span class="lbl">Your next no-regret step</span><span class="step">${esc(v.next)}</span>${v.sensitivity ? `<span class="why">${esc(v.sensitivity)}</span>` : ''}</div>
+  </article>`;
+}
+$('sample').innerHTML = verdictCard(SAMPLE);
+
+// Renders a streamed answer: verdict block (wherever it appears) + markdown.
+function renderAnswer(text) {
+  const wait = '<p class="skeleton">Weighing your setup</p>';
+  const start = text.search(/```\s*verdict/i);
+  if (start < 0) {
+    const tail = text.slice(-12);
+    if (/`{1,3}\s*v?e?r?d?i?c?t?$/i.test(tail) && !/\n\S/.test(text.trimEnd().slice(-12))) return md(text.replace(/`{1,3}\s*\w*$/, '')) + wait;
+    return md(text);
+  }
+  const before = md(text.slice(0, start));
+  const open = text.indexOf('\n', start);
+  const close = open >= 0 ? text.indexOf('```', open) : -1;
+  if (close < 0) return before + wait;
+  let card = '';
+  try { card = verdictCard(JSON.parse(text.slice(open + 1, close))); } catch { card = ''; }
+  return before + card + md(text.slice(close + 3));
+}
+
+// ---------- Question renderer ----------
+function renderQuestions(container, qs, store, onChange) {
+  container.textContent = '';
+  for (const q of qs) {
+    const wrap = document.createElement('div'); wrap.className = 'q';
+    const lab = document.createElement('span'); lab.className = 'ql'; lab.textContent = q.label;
+    if (q.hint || !q.required) { const h = document.createElement('span'); h.className = 'hint'; h.textContent = q.hint || 'optional'; lab.append(h); }
+    wrap.append(lab);
+    if (q.type === 'text') {
+      const inp = document.createElement('input'); inp.className = 'text'; inp.maxLength = q.max || 80;
+      inp.placeholder = q.placeholder || ''; inp.value = store[q.id] || ''; inp.setAttribute('aria-label', q.label);
+      inp.addEventListener('input', () => { store[q.id] = inp.value; onChange && onChange(); });
+      wrap.append(inp);
+    } else {
+      const chips = document.createElement('div'); chips.className = 'chips'; chips.setAttribute('role', 'group'); chips.setAttribute('aria-label', q.label);
+      for (const opt of q.options) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = opt;
+        const sel = q.type === 'multi' ? (store[q.id] || []).includes(opt) : store[q.id] === opt;
+        b.setAttribute('aria-pressed', String(sel));
+        b.addEventListener('click', () => {
+          if (q.type === 'multi') {
+            const cur = new Set(store[q.id] || []);
+            cur.has(opt) ? cur.delete(opt) : cur.add(opt);
+            store[q.id] = q.options.filter((o) => cur.has(o));
+          } else store[q.id] = store[q.id] === opt ? '' : opt;
+          b.setAttribute('aria-pressed', String(q.type === 'multi' ? store[q.id].includes(opt) : store[q.id] === opt));
+          if (q.type === 'single') chips.querySelectorAll('.chip').forEach((c) => { if (c !== b) c.setAttribute('aria-pressed', 'false'); });
+          onChange && onChange();
+        });
+        chips.append(b);
+      }
+      wrap.append(chips);
+    }
+    container.append(wrap);
+  }
+}
+
+// ---------- Landing ----------
+$('consent').addEventListener('change', (e) => { S.consent = e.target.checked; $('start').disabled = !S.consent; });
+$('start').addEventListener('click', () => { $('intro').hidden = true; $('intake').hidden = false; showStep(); });
+
+// ---------- Intake ----------
+function stepValid() {
+  return STEPS[S.step].qs.every((q) => !q.required || (Array.isArray(S.answers[q.id]) ? S.answers[q.id].length : S.answers[q.id]));
+}
+function refreshNav() {
+  const ok = stepValid();
+  $('next').disabled = !ok;
+  $('req').textContent = ok ? '' : 'Answer the questions without “optional” to continue';
+  $('back').style.visibility = S.step === 0 ? 'hidden' : 'visible';
+  $('next').textContent = S.step === STEPS.length - 1 ? 'Get my verdict' : 'Next';
+}
+function showStep() {
+  const st = STEPS[S.step];
+  $('progress').innerHTML = STEPS.map((_, i) => `<i class="${i <= S.step ? 'on' : ''}"></i>`).join('');
+  $('progress').setAttribute('aria-label', `Step ${S.step + 1} of ${STEPS.length}`);
+  $('steptitle').textContent = st.title;
+  $('stepsub').textContent = st.sub;
+  renderQuestions($('questions'), st.qs, S.answers, refreshNav);
+  refreshNav();
+  window.scrollTo({ top: 0 });
+}
+$('back').addEventListener('click', () => { if (S.step > 0) { S.step--; showStep(); } });
+$('next').addEventListener('click', () => {
+  if (!stepValid()) return;
+  if (S.step < STEPS.length - 1) { S.step++; showStep(); return; }
+  startChat();
+});
+function profile() {
+  const a = S.answers;
+  return {
+    job: a.job || '', seniority: a.seniority || '', institution: a.institution || '',
+    objectives: a.objectives || [], assetClasses: a.assetClasses || [],
+    models: a.models || [], modelsOther: (a.modelsOther || '').trim(),
+    qcKnowledge: a.qcKnowledge || '', painPoints: a.painPoints || [], goals: a.goals || [],
+  };
+}
+
+// ---------- Conversation ----------
+function startChat() {
+  $('intake').hidden = true; $('chat').hidden = false; $('composer').hidden = false;
+  $('sref').textContent = S.sessionId.slice(0, 8);
+  const p = profile();
+  const box = document.createElement('p'); box.className = 'profile';
+  box.textContent = [p.job, p.objectives.join(', '), p.assetClasses.join(', '), [...p.models, p.modelsOther].filter(Boolean).join(', ')].filter(Boolean).join(' / ');
+  $('msgs').append(box);
+  send('Based on my profile, give me your verdict.', true);
+}
+
+function followups() {
+  document.querySelectorAll('.ask').forEach((n) => n.remove());
+  const left = FOLLOWUPS.filter((f) => !S.asked.has(f));
+  if (!left.length) return;
+  const row = document.createElement('div'); row.className = 'ask'; row.setAttribute('aria-label', 'Suggested questions');
+  for (const f of left) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = f;
+    b.addEventListener('click', () => { S.asked.add(f); send(f); });
+    row.append(b);
+  }
+  $('msgs').append(row);
+}
+
+async function* streamText(r) {
+  const reader = r.body.getReader(); const dec = new TextDecoder(); let buf = '';
+  for (;;) {
+    const { value, done } = await reader.read(); if (done) return;
+    buf += dec.decode(value, { stream: true });
+    let i;
+    while ((i = buf.indexOf('\n\n')) >= 0) {
+      const chunk = buf.slice(0, i); buf = buf.slice(i + 2);
+      for (const line of chunk.split('\n')) {
+        if (!line.startsWith('data:')) continue;
+        let ev; try { ev = JSON.parse(line.slice(5)); } catch { continue; }
+        if (ev.type === 'content_block_delta' && ev.delta && ev.delta.type === 'text_delta') yield ev.delta.text;
+        else if (ev.type === 'error') throw new Error('The answer was cut off. Ask again.');
+      }
+    }
+  }
+}
+
+async function send(text, hidden) {
+  if (S.busy || !text.trim()) return;
+  if (S.messages.filter((m) => m.role === 'user').length >= MAX_TURNS) {
+    const n = document.createElement('p'); n.className = 'fine'; n.textContent = 'This session has reached its 20-question limit.'; $('msgs').append(n); openFb(); return;
+  }
+  S.busy = true; $('send').disabled = true;
+  document.querySelectorAll('.ask').forEach((n) => n.remove());
+  S.messages.push({ role: 'user', content: text });
+  if (!hidden) { const me = document.createElement('div'); me.className = 'me'; me.textContent = text; $('msgs').append(me); }
+  const el = document.createElement('div'); el.className = 'ans'; el.setAttribute('aria-live', 'polite');
+  el.innerHTML = '<p class="skeleton">Weighing your setup</p>';
+  $('msgs').append(el);
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  let out = '';
+  try {
+    const source = window.QR_DEMO ? demoStream(S.messages.length === 1) : await (async () => {
+      const r = await fetch('/api/chat', { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ profile: profile(), messages: S.messages }) });
+      if (!r.ok || !r.body) {
+        const e = await r.json().catch(() => ({}));
+        throw new Error(e.error === 'rate_limited' ? 'Daily limit reached. Come back tomorrow.' : 'The advisor is unavailable. Try again in a minute.');
+      }
+      return streamText(r);
+    })();
+    for await (const piece of source) { out += piece; el.innerHTML = renderAnswer(out); }
+    if (!out) throw new Error('No answer came back. Try again.');
+    S.messages.push({ role: 'assistant', content: out });
+    log();
+    followups();
+    if (S.messages.filter((m) => m.role === 'assistant').length === 2 && !S.nudged) nudge();
+  } catch (err) {
+    S.messages.pop();
+    el.innerHTML = `<p class="err">${esc(err.message || 'Something went wrong. Try again.')}</p>`;
+    const b = document.createElement('button'); b.className = 'btn small quiet'; b.textContent = 'Try again';
+    b.onclick = () => { el.remove(); send(text, hidden); }; el.append(b);
+  } finally {
+    S.busy = false; $('send').disabled = false;
+    $('turns').textContent = `${S.messages.filter((m) => m.role === 'user').length} of ${MAX_TURNS} questions`;
+  }
+}
+
+function nudge() {
+  S.nudged = true;
+  const n = document.createElement('div'); n.className = 'nudge';
+  n.innerHTML = '<span>Is this useful so far? Thirty seconds of feedback shapes what comes next.</span>';
+  const b = document.createElement('button'); b.className = 'btn small'; b.textContent = 'Give feedback'; b.onclick = openFb;
+  n.append(b); $('msgs').insertBefore(n, document.querySelector('.ask'));
+}
+
+const input = $('input');
+input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 160) + 'px'; });
+input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } });
+$('send').addEventListener('click', submit);
+function submit() { const t = input.value.trim(); if (!t) return; input.value = ''; input.style.height = 'auto'; send(t); }
+
+// ---------- Feedback ----------
+function openFb() { renderQuestions($('fbq'), FEEDBACK, S.fb); $('fbcomment').value = S.fb.comment || ''; $('fbemail').value = S.fb.email || ''; $('fb').showModal(); }
+$('fbopen').addEventListener('click', openFb);
+$('fb').addEventListener('close', () => {
+  if ($('fb').returnValue !== 'send') return;
+  S.fb.comment = $('fbcomment').value; S.fb.email = $('fbemail').value;
+  log();
+  $('fbopen').textContent = 'Feedback sent. Thank you';
+});
+
+// ---------- Logging ----------
+function log() {
+  if (!S.consent || window.QR_DEMO) return;
+  fetch('/api/log', { method: 'POST', headers: { 'content-type': 'application/json' }, keepalive: true,
+    body: JSON.stringify({ sessionId: S.sessionId, consent: true, consentVersion: '2026-10-14', startedAt: S.startedAt, lang: navigator.language,
+      profile: profile(), messages: S.messages, feedback: S.fb }) }).catch(() => {});
+}
+
+// ---------- Demo mode (preview only, no API) ----------
+async function* demoStream(first) {
+  const text = first
+    ? '```verdict\n' + JSON.stringify({ ...SAMPLE, current: 1, ladder: ['MC under Black-Scholes', 'Variance reduction', 'Local / stochastic vol', 'Robust Greeks', 'GPU and AAD', 'Quantum readiness'] }) + '\n```\n\n' +
+      'Quantum Monte Carlo promises a quadratic speed-up through amplitude estimation, but the published estimates for autocalls need thousands of error-corrected qubits. That hardware does not exist yet.\n\n' +
+      'Your setup already prices by Monte Carlo under Black-Scholes. The step with the best payoff now is variance reduction with a documented convergence study: it cuts compute and gives validation the convergence argument it asks for, whether or not quantum ever arrives.'
+    : 'For your objective, **amplitude estimation** is the relevant algorithm, so you need **high-fidelity, error-corrected gate-based machines**.\n\n| Family | Fit | Why |\n|---|---|---|\n| Gate-based, fault-tolerant | Yes | Runs amplitude estimation at depth |\n| Today’s noisy gate-based | Demos only | Too shallow for useful precision |\n| Annealers | No | Built for optimisation, not integration |\n\nWatch error-correction roadmaps rather than raw qubit counts.';
+  for (let i = 0; i < text.length; i += 18) { await new Promise((r) => setTimeout(r, 22)); yield text.slice(i, i + 18); }
+}
+
+// ---------- Minimal, safe markdown ----------
+function inline(s) {
+  s = esc(s);
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
+  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  return s;
+}
+function md(src) {
+  const lines = src.replace(/\r/g, '').split('\n'); let html = ''; let i = 0;
+  const isRow = (l) => /^\s*\|.*\|\s*$/.test(l);
+  const cells = (l) => l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => inline(c.trim()));
+  const isList = (l) => /^\s*([-*+]|\d+[.)])\s+/.test(l);
+  while (i < lines.length) {
+    const l = lines[i];
+    if (!l.trim() || /^\s*```/.test(l) || /^\s*(-{3,}|\*{3,})\s*$/.test(l)) { i++; continue; }
+    let m;
+    if ((m = l.match(/^(#{1,4})\s+(.*)$/))) { html += `<h3>${inline(m[2])}</h3>`; i++; continue; }
+    if (isRow(l)) {
+      const rows = []; while (i < lines.length && isRow(lines[i])) rows.push(lines[i++]);
+      const body = rows.filter((r) => !/^\s*\|?\s*:?-{2,}/.test(r));
+      if (!body.length) continue;
+      html += '<div class="tablewrap"><table><thead><tr>' + cells(body[0]).map((c) => `<th>${c}</th>`).join('') + '</tr></thead><tbody>' +
+        body.slice(1).map((r) => '<tr>' + cells(r).map((c) => `<td>${c}</td>`).join('') + '</tr>').join('') + '</tbody></table></div>';
+      continue;
+    }
+    if (isList(l)) {
+      const ordered = /^\s*\d+[.)]/.test(l); const items = [];
+      while (i < lines.length && isList(lines[i])) { items.push(lines[i].replace(/^\s*([-*+]|\d+[.)])\s+/, '')); i++;
+        while (i < lines.length && /^\s{2,}\S/.test(lines[i]) && !isList(lines[i])) { items[items.length - 1] += ' ' + lines[i].trim(); i++; } }
+      const t = ordered ? 'ol' : 'ul'; html += `<${t}>` + items.map((x) => `<li>${inline(x)}</li>`).join('') + `</${t}>`; continue;
+    }
+    const para = []; while (i < lines.length && lines[i].trim() && !/^(#{1,4}\s|\s*\||\s*```)/.test(lines[i]) && !isList(lines[i])) para.push(lines[i++]);
+    if (para.length) html += `<p>${inline(para.join(' '))}</p>`; else i++;
+  }
+  return html;
+}
+})();
+</script>
+</body>
+</html>
