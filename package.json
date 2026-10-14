@@ -1,0 +1,7 @@
+{
+  "name": "quantum-readiness-advisor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Discovery prototype: honest quantum-readiness assessment for quants."
+}
