@@ -4,12 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>About · Pl4nck</title>
-<meta name="description" content="What Pl4nck does and does not do: an honest quantum verdict, a no-regret roadmap and starter kits for quants.">
+<meta name="description" content="What Pl4nck does and does not do: an honest quantum verdict, a no-regret roadmap, validated model kits and a technology mapping for quants.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site.css">
 <style>
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card.link{color:inherit;text-decoration:none;display:block}
+.card.link:hover{border-color:var(--ink)}
+.btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule)}
+.grid2 .card p{font-size:14.5px}
+@media (max-width:820px){.grid3{grid-template-columns:1fr}}
 .dont{list-style:none;padding:0;display:grid;gap:10px;margin:0}
 .dont li{display:grid;grid-template-columns:20px 1fr;gap:10px;margin:0;max-width:none}
 .dont li::before{content:"";width:12px;height:2px;background:var(--amber);margin-top:12px}
@@ -46,20 +52,18 @@
 
   <main class="page">
     <h1>About Pl4nck</h1>
-    <p class="lead">Pl4nck helps quants in banks and asset managers work out what quantum computing really means for their models, and what to do about it today. It was built by a practising quant with a background in model validation, structured products and regulatory frameworks.</p>
+    <p class="lead">Pl4nck helps quants in banks and asset managers prepare their models for what comes next: an honest view of where quantum computing stands, a no-regret roadmap, and validated model kits they can use today. It was built by a practising quant with a background in model validation, structured products and regulatory frameworks.</p>
 
-    <h2>What it does</h2>
-    <div class="grid4">
-      <div class="card"><span class="num">1</span><h3>An honest verdict</h3><p>For one use case at a time: where quantum computing stands, when it could matter, and which technology fits.</p></div>
-      <div class="card"><span class="num">2</span><h3>A no-regret roadmap</h3><p>The steps from your current model to quantum readiness, each with observable criteria and an order of magnitude of the benefit.</p></div>
-      <div class="card"><span class="num">3</span><h3>A starter kit</h3><p>For your next step: Python prototype, benchmarks, unit tests, test plan and a documentation outline aligned with SR 11-7. You pick the parts.</p></div>
-      <div class="card"><span class="num">4</span><h3>Follow-up questions</h3><p>Hardware fit, the business case for management, what a validator would check, and the research to read.</p></div>
+    <h2>Three ways to use it</h2>
+    <div class="grid3">
+      <a class="card link" href="/"><span class="num">Launch Pl4nck</span><h3>Assess a use case</h3><p>Four short questions, then an honest verdict: where quantum computing stands for your use case, when it could matter, which hardware fits, and a no-regret roadmap from your current model. Follow-up questions and a starter kit for your next step.</p></a>
+      <a class="card link" href="/library"><span class="num">Model library</span><h3>Get a validated kit</h3><p>Pick a model and download its validation kit: Python prototype, tests with pre-registered criteria, independent QuantLib reference values, a conventions module, and model documentation in Word and LaTeX.</p></a>
+      <a class="card link" href="/technology"><span class="num">Technology mapping</span><h3>Read the landscape</h3><p>Quantum computing for finance by use case, algorithm family, hardware and player, with honest horizons. Reviewed every month.</p></a>
     </div>
-    <p>Already know which model you need? The <a href="/library">Model library</a> goes straight to a prototype and validation kit, with pre-registered tests, QuantLib reference values and a conventions module (day counts, calendars, schedules).</p>
 
     <h2>The no-regret principle</h2>
     <p>For most finance workloads, a real quantum advantage needs error-corrected machines that are not expected before the 2030s. Waiting is still not neutral. The prerequisites are the same either way: clean data, classical benchmarks, variance reduction, reproducible runs and validated documentation. Any quantum algorithm will be measured against them, and they pay off on their own.</p>
-    <p>So every roadmap Pl4nck builds starts with steps worth doing even if quantum computing never delivers. Quantum comes last, with a dated go/no-go based on resource estimates rather than announcements.</p>
+    <p>So every roadmap Pl4nck builds starts with steps worth doing even if quantum computing never delivers. Quantum comes last, with a dated go/no-go based on resource estimates rather than announcements. The model library delivers those first steps.</p>
     <ol class="ladder" aria-label="Example: Monte Carlo pricing roadmap">
       <li><b>Today</b>Your current model, priced and documented</li>
       <li><b>Benchmarks</b>Closed forms and reference values, errors reported</li>
@@ -69,31 +73,40 @@
     </ol>
     <p class="fine">Example for Monte Carlo pricing. Roadmaps differ by use case.</p>
 
+    <h2>How the validated kits are built</h2>
+    <div class="grid2">
+      <div class="card"><h3>Independent references</h3><p>Reference values are computed once with QuantLib, cross-checked against independent closed forms, and stored as data in the kit. The prototype never imports QuantLib, and a test checks it: comparing them is a real check. You do not need QuantLib to run anything.</p></div>
+      <div class="card"><h3>Pre-registered criteria</h3><p>Every test has its acceptance criterion fixed before the code is written: error bounds, standard errors, convergence rates, no-arbitrage shapes, limits. Criteria are never loosened to make a test pass.</p></div>
+      <div class="card"><h3>Tested as you would run it</h3><p>Each kit is installed and tested in a clean environment before release, and every test shipped to users runs again automatically at each change of the library, on two Python versions.</p></div>
+      <div class="card"><h3>Documentation you can file</h3><p>Model documentation aligned with SR 11-7 and the ECB guide, pre-filled with theory, assumptions, limits and test results, in Word (native equations) and LaTeX. Shaded sections are left for your institution.</p></div>
+    </div>
+    <div class="callout"><p><b>The conventions nobody tests.</b> Day counts, holiday calendars and schedules ship with every kit, checked against QuantLib on thousands of cases, including every holiday from 2000 to 2050. Building them surfaced an error in QuantLib's own French calendar, which fixes Ascension and Whit Monday on set dates although both move with Easter.</p></div>
+
     <h2>What it does not do</h2>
     <ul class="dont">
-      <li><span><b>It does not touch your systems.</b> Pl4nck does not run your models or connect to anything inside your firm.</span></li>
+      <li><span><b>It does not touch your systems.</b> Pl4nck does not run your models or connect to anything inside your firm. Kits run on your machine.</span></li>
       <li><span><b>It does not take your code or data.</b> You describe your model family in generic terms; nothing is uploaded.</span></li>
-      <li><span><b>It does not replace validation.</b> Outputs are a starting point, roughly 80% of the work. Your team reviews, adapts and validates them, and owns any regulatory sign-off.</span></li>
+      <li><span><b>It does not replace your validation.</b> Kits are tested before release, but your team reviews and adapts them to its data, standards and policy, and owns any regulatory sign-off.</span></li>
       <li><span><b>It does not promise quantum advantage.</b> If quantum computing is not the right answer for your use case, the verdict says so.</span></li>
       <li><span><b>It does not sell hardware.</b> Pl4nck is vendor-neutral, with no sponsored placements.</span></li>
       <li><span><b>It does not cover post-quantum cryptography</b> beyond a pointer. That migration is urgent, but it is a security programme, not a modelling one.</span></li>
     </ul>
 
     <h2>Who it is for</h2>
-    <p>Quant R&amp;D, model validation, front-office quants and structurers, risk managers, innovation teams, and managers planning skills and budget. No quantum background is needed: answers adapt to what you already know.</p>
+    <p>Model validators, quant R&amp;D, front-office quants and structurers, risk managers, innovation teams, and managers planning skills and budget. No quantum background is needed.</p>
 
     <h2>How it works</h2>
-    <p>Answers are generated by an AI model (Claude, by Anthropic) guided by a curated reference base: the <a href="/technology">technology mapping</a> and reference roadmaps, reviewed by a practitioner. AI answers can be wrong. Treat them as a well-informed first draft and check what matters.</p>
+    <p>The verdict, roadmap and custom variants are generated by an AI model (Claude, by Anthropic) guided by a curated reference base: the <a href="/technology">technology mapping</a>, reference roadmaps and the model cards. AI answers can be wrong: treat them as a well-informed first draft. Validated kits are different: they are written and tested once, and downloading one involves no AI.</p>
     <div class="callout amber">
-      <p>Pl4nck is a free research prototype. With your consent, your answers and the conversation are stored for 12 months to improve it. Do not share confidential information. See the <a href="/privacy">privacy notice</a>.</p>
+      <p>Pl4nck is a free research prototype. With your consent, your answers and the conversation are stored for 12 months to improve it; downloading a validated kit stores nothing about you. Do not share confidential information. See the <a href="/privacy">privacy notice</a>.</p>
     </div>
 
     <h2 id="contact">Contact</h2>
-    <p>Feedback on the tool, an error or a missing result in the technology mapping, or a use case you would like covered: write to <a href="mailto:romaind@phalanx-capital.eu?subject=Pl4nck">romaind@phalanx-capital.eu</a>. Quants who want to compare notes are welcome too.</p>
+    <p>Feedback on the tool, an error in a kit or in the technology mapping, or a model you would like in the library: write to <a href="mailto:romaind@phalanx-capital.eu?subject=Pl4nck">romaind@phalanx-capital.eu</a>. Quants who want to compare notes are welcome too.</p>
 
     <div class="cta">
       <a class="btn" href="/">Launch Pl4nck</a>
-      <span class="fine">Four short questions. No account.</span>
+      <a class="btn quiet" href="/library">Browse the model library</a>
     </div>
   </main>
 </div>

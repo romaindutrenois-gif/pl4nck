@@ -11,7 +11,7 @@ runs locally; nothing is sent anywhere.
 |---|---|
 | `src/black_scholes/` | Prototype: closed forms (European, Greeks, geometric Asian) and a Monte Carlo pricer (antithetics, geometric-Asian control variate, barriers with the BGK shift) |
 | `src/pl4nck_conventions/` | Day counts, calendars, adjustments and schedules, tested against QuantLib |
-| `tests/test_model.py` | The validation tests of `docs/test_plan.md` |
+| `tests/test_model.py` | The validation tests listed in `docs/test_plan.docx` |
 | `tests/reference/` | QuantLib 1.44 reference values (data only; QuantLib is not needed) |
 | `tests/conventions/` | 611 tests of the conventions module |
 | `docs/test_plan.docx` | Tests, what they check, acceptance criteria, where each is implemented |
