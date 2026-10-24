@@ -98,7 +98,7 @@ Use the same logic (observable criteria, benefit, sensitivity, quantum step last
 No-regret path: historical simulation, then GARCH + copulas, then classical generative models (VAE, GAN, diffusion), then quantum Born machines on reduced problems. Validation: distribution fit (Wasserstein, KS), tails (VaR/ES vs history), stylised facts (volatility clustering, fat tails, autocorrelation of returns and squared returns), cross-asset dependence, and documentation of why generated data is fit for purpose in risk models.
 
 # What this tool is (if asked)
-Pl4nck is a free research prototype. It gives an honest verdict on quantum computing for one use case, a no-regret roadmap, and on request a starter kit for the next step (Python prototype, benchmarks, unit tests, test plan, documentation outline aligned with SR 11-7) that the user adapts and validates in-house. It does not run models, take code or proprietary data, or replace validation or regulatory sign-off. It does not cover post-quantum cryptography beyond a pointer. The site also has a Technology mapping page (same reference data as below) and an About page. Do not promise features or dates.`;
+Pl4nck is a free research prototype. It gives an honest verdict on quantum computing for one use case, a no-regret roadmap, and on request a starter kit for the next step (Python prototype, benchmarks, unit tests, test plan, documentation outline aligned with SR 11-7) that the user adapts and validates in-house. It does not run models, take code or proprietary data, or replace validation or regulatory sign-off. It does not cover post-quantum cryptography beyond a pointer. The site also has a Model library (pick a model, get a prototype and validation kit with pre-registered tests, QuantLib reference values and a conventions module), a Technology mapping page (same reference data as below) and an About page. Do not promise features or dates.`;
 
 // ---------- reference mapping ----------
 // Single source of truth: public/mapping.json, also shown on the Technology mapping page.
@@ -130,6 +130,67 @@ async function mappingText(req) {
     if (!mapCache.text) return '## Technology mapping\n(Reference mapping unavailable right now: rely on well-established facts only and be conservative on horizons.)';
   }
   return mapCache.text;
+}
+
+// ---------- model library ----------
+// Model cards (public/library/models.json) and QuantLib reference values, fetched from the
+// deployment and cached per instance. Used when a kit is requested from the Model library.
+const libCache = {};
+
+async function libJson(req, path) {
+  const hit = libCache[path];
+  if (hit && Date.now() - hit.at < 600000) return hit.data;
+  const r = await fetch(new URL(path, req.url));
+  if (!r.ok) throw new Error(`${path} ${r.status}`);
+  const data = await r.json();
+  libCache[path] = { at: Date.now(), data };
+  return data;
+}
+
+async function libraryBlock(req, id) {
+  if (!id) return '';
+  let card, ref;
+  try {
+    const cat = await libJson(req, '/library/models.json');
+    card = cat.models.find((m) => m.id === id && m.status === 'available');
+    if (!card) return '';
+    ref = await libJson(req, card.reference);
+  } catch (e) {
+    console.error('library', e.message);
+    return '';
+  }
+  const sections = Object.keys(ref).filter((k) => Array.isArray(ref[k]));
+  const tests = card.tests.map((t) => `| ${t.test} | ${t.checks} | ${t.criterion} |`).join('\n');
+  const samples = sections.map((k) => `- "${k}" (${ref[k].length} cases), first case: ${JSON.stringify(ref[k][0])}`).join('\n');
+  return [
+    '# Model library request',
+    `The user came from the Model library for the model "${card.name}" (id ${card.id}). There is NO verdict block in this conversation: answer each request directly.`,
+    '',
+    '## Model card',
+    `Summary: ${card.summary}`,
+    `Dynamics: ${card.dynamics.join('; ')}`,
+    `Parameters: ${card.parameters.map((p) => `${p.name} (${p.meaning})`).join('; ')}`,
+    `Assumptions: ${card.assumptions.join('; ')}`,
+    `Limits: ${card.limits.join('; ')}`,
+    `Prototype to build: ${card.prototype}`,
+    '',
+    'Validation tests and acceptance criteria (pre-registered: use them as they are, you may add tests, never loosen a criterion):',
+    '| Test | Checks | Criterion |', '|---|---|---|', tests,
+    '',
+    '## QuantLib reference values',
+    `The interface ships tests/reference/${card.id}_quantlib.json in the kit: values computed with QuantLib ${ref.quantlib_version}. Do NOT write this file and do NOT import QuantLib: the prototype is an independent implementation, and the tests compare it with these stored values.`,
+    `Conventions of the file: ${ref.conventions}`,
+    `Notes: ${ref.notes}`,
+    'Top-level keys: model, quantlib_version, conventions, notes, and these lists:',
+    samples,
+    'Tests must load the file with json and pathlib (Path(__file__).parent / "reference" / ...) and loop over every case of the relevant list, reporting the worst error.',
+    '',
+    '## Conventions module',
+    'The interface also ships src/pl4nck_conventions/ (pure Python, tested against QuantLib): year_fraction(start, end, convention), get_calendar("TARGET" | "FR" | "UK" | "US" | "TARGET+UK"), adjust(date, calendar, "MF"), advance(date, n, "D"|"W"|"M"|"Y", calendar), make_schedule(effective, termination, tenor_months, calendar, convention, termination_convention, rule, end_of_month). Do NOT write it. Import it wherever dates, accruals or schedules appear, and mention it in the README. The reference values above are expressed in year fractions, so the core tests do not need it.',
+    '',
+    '## Validation kit requests ("Validation kit for the model: ...")',
+    `Same file format and rules as starter kits, with these differences: the top-level folder is ${card.id}_validation_kit for every request; pyproject.toml uses the src layout with automatic discovery ([tool.setuptools.packages.find] where = ["src"]) and depends only on numpy and scipy (pytest as a test extra); the package is src/${card.id}/; the test plan reproduces the table above with an "Implemented in" column; the documentation outline is filled with the model card (purpose, theory, assumptions, limits, implementation, testing against QuantLib references, monitoring). Keep total generated code under ~350 lines. Follow-up questions get compact answers about this model.`,
+  ].join('\n');
 }
 
 // ---------- shared: store ----------
@@ -209,6 +270,7 @@ function cleanProfile(p = {}) {
     qcKnowledge: str(p.qcKnowledge, 60),
     painPoints: list(p.painPoints),
     goals: list(p.goals),
+    library: str(p.library, 40).replace(/[^a-z0-9_]/g, ''),
   };
 }
 
@@ -276,7 +338,7 @@ export default async function handler(req) {
       model: MODEL,
       max_tokens: 9000,
       stream: true,
-      system: `${SYSTEM_PROMPT.replace('{{MAPPING}}', await mappingText(req))}\n\n${profileBlock(profile)}`,
+      system: [SYSTEM_PROMPT.replace('{{MAPPING}}', await mappingText(req)), profile.library ? await libraryBlock(req, profile.library) : '', profileBlock(profile)].filter(Boolean).join('\n\n'),
       messages,
     }),
   });

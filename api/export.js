@@ -78,6 +78,7 @@ function cleanProfile(p = {}) {
     qcKnowledge: str(p.qcKnowledge, 60),
     painPoints: list(p.painPoints),
     goals: list(p.goals),
+    library: str(p.library, 40).replace(/[^a-z0-9_]/g, ''),
   };
 }
 
@@ -130,10 +131,10 @@ export default async function handler(req) {
 
   const cell = (v) => `"${String(v ?? '').replace(/"/g, '""').replace(/\s+/g, ' ')}"`;
   const j = (a) => (a || []).join('; ');
-  const header = ['started', 'country', 'job', 'seniority', 'institution', 'objectives', 'asset_classes', 'models',
+  const header = ['started', 'country', 'library_model', 'job', 'seniority', 'institution', 'objectives', 'asset_classes', 'models',
     'qc_knowledge', 'pain_points', 'goals', 'user_turns', 'most_useful', 'wants_kit', 'would_return', 'email', 'comment'];
   const rows = sessions.map((s) => [
-    s.startedAt, s.country, s.profile.job, s.profile.seniority, s.profile.institution,
+    s.startedAt, s.country, s.profile.library || '', s.profile.job, s.profile.seniority, s.profile.institution,
     j(s.profile.objectives), j(s.profile.assetClasses),
     [...(s.profile.models || []), s.profile.modelsOther].filter(Boolean).join('; '),
     s.profile.qcKnowledge, j(s.profile.painPoints), j(s.profile.goals),

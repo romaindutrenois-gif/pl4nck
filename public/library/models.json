@@ -1,0 +1,124 @@
+{
+  "reviewed": "2026-10-24",
+  "infrastructure": {
+    "id": "conventions",
+    "name": "Conventions & infrastructure",
+    "summary": "Day counts, holiday calendars, business-day adjustment, spot lags and coupon schedules, in pure Python and tested against QuantLib. Every kit from the library includes it.",
+    "download": "/library/pl4nck_conventions.zip",
+    "covers": ["ACT/360, ACT/365F, ACT/ACT ISDA, 30/360, 30E/360, 30E/360 ISDA", "TARGET, France, UK and US settlement calendars, joint calendars", "Following, Modified Following, Preceding, Modified Preceding", "Spot lags (T+2), month and year tenors with the end-of-month rule", "Backward and forward coupon schedules"],
+    "tests": "611 tests against QuantLib reference values: 4,200 year fractions, every holiday 2000-2050, 500 adjustments, 400 date advances, 85 schedules. QuantLib is not needed to run them.",
+    "finding": "QuantLib 1.44's French settlement calendar fixes Ascension on May 10 and Whit Monday on May 21; both move with Easter. The module uses the correct dates and documents the difference."
+  },
+  "assetClasses": ["Equity / FX", "Rates", "Credit", "Market risk"],
+  "models": [
+    {
+      "id": "black_scholes",
+      "status": "available",
+      "name": "Black-Scholes",
+      "assetClass": "Equity / FX",
+      "summary": "Lognormal spot with constant volatility. The reference every equity and FX model is checked against, and the natural first Monte Carlo benchmark.",
+      "uses": ["European options", "Barriers", "Asian options", "Control variates for exotics", "Garman-Kohlhagen for FX (q = foreign rate)"],
+      "dynamics": ["dS = (r - q) S dt + σ S dW under the risk-neutral measure", "C = S e^(-qT) N(d1) - K e^(-rT) N(d2), d1,2 = [ln(S/K) + (r - q ± σ²/2) T] / (σ√T)"],
+      "parameters": [
+        {"name": "σ", "meaning": "Volatility, constant across strikes and maturities"},
+        {"name": "r, q", "meaning": "Continuously compounded rate and dividend (or foreign) yield"}
+      ],
+      "assumptions": ["Constant volatility: no smile, no term structure", "Continuous trading, no transaction costs", "No jumps"],
+      "limits": ["Misprices smile-sensitive products (barriers, digitals, autocalls)", "Use as benchmark and control variate, not as the production model for exotics"],
+      "prototype": "Closed-form pricer with Greeks, plus a Monte Carlo pricer (exact lognormal steps, antithetics, geometric-Asian control variate) that reports a standard error with every price.",
+      "tests": [
+        {"test": "Closed form against QuantLib", "checks": "European prices and Greeks", "criterion": "Absolute error below 1e-8"},
+        {"test": "Put-call parity", "checks": "C - P = S e^(-qT) - K e^(-rT)", "criterion": "Below 1e-10"},
+        {"test": "Monte Carlo against closed form", "checks": "European and geometric Asian prices", "criterion": "Within 3 standard errors"},
+        {"test": "Convergence rate", "checks": "Standard error as paths grow", "criterion": "Log-log slope -0.5 ± 0.05"},
+        {"test": "Control variate efficiency", "checks": "Variance with and without the geometric-Asian control", "criterion": "Variance reduction factor reported, above 10 at the money"},
+        {"test": "Barrier with discrete monitoring", "checks": "Monte Carlo with the Broadie-Glasserman-Kou shift against the continuous closed form", "criterion": "Within 3 standard errors plus 1% of price"},
+        {"test": "No-arbitrage shape", "checks": "Call price decreasing and convex in strike", "criterion": "Holds on a strike grid"},
+        {"test": "Limits", "checks": "σ → 0 gives discounted forward intrinsic; T → 0 gives intrinsic", "criterion": "Below 1e-8"},
+        {"test": "Seed stability", "checks": "Price across 10 seeds", "criterion": "Spread consistent with the standard error"}
+      ],
+      "reference": "/library/models/black_scholes/reference_quantlib.json",
+      "referenceContents": "European prices and Greeks (54 cases, including a negative rate), discrete geometric Asian calls (18), continuously monitored barriers (24).",
+      "quantlib": ["AnalyticEuropeanEngine", "AnalyticDiscreteGeometricAveragePriceAsianEngine", "AnalyticBarrierEngine", "MCEuropeanEngine"],
+      "quantum": {"family": "qae", "note": "The textbook target for quantum amplitude estimation. A quantum pricer would have to beat this Monte Carlo after variance reduction, not plain Monte Carlo."}
+    },
+    {
+      "id": "heston",
+      "status": "available",
+      "name": "Heston",
+      "assetClass": "Equity / FX",
+      "summary": "Stochastic variance with mean reversion and spot-vol correlation. Produces a smile and a skew with five parameters, and has a semi-analytic price for Europeans.",
+      "uses": ["Equity and FX smiles", "Forward-skew-sensitive exotics (cliquets, autocalls)", "Model-risk comparison against local volatility"],
+      "dynamics": ["dS = (r - q) S dt + √v S dW₁", "dv = κ(θ - v) dt + σ √v dW₂, d⟨W₁, W₂⟩ = ρ dt", "European price by Fourier inversion of the characteristic function"],
+      "parameters": [
+        {"name": "v₀", "meaning": "Initial variance"},
+        {"name": "κ", "meaning": "Speed of mean reversion"},
+        {"name": "θ", "meaning": "Long-run variance"},
+        {"name": "σ", "meaning": "Volatility of variance"},
+        {"name": "ρ", "meaning": "Spot-variance correlation, negative for equity skew"}
+      ],
+      "assumptions": ["Variance follows a square-root process", "Constant parameters over time", "No jumps"],
+      "limits": ["Short-maturity skew too flat without jumps", "When the Feller condition 2κθ > σ² fails (common after calibration), naive Euler schemes are biased: use Andersen's QE scheme or full truncation", "Characteristic-function integration needs care for short maturities and far strikes"],
+      "prototype": "Semi-analytic pricer (characteristic function in the stable 'little trap' form, numerical integration) and a Monte Carlo pricer with Andersen's quadratic-exponential scheme.",
+      "tests": [
+        {"test": "Semi-analytic against QuantLib", "checks": "European prices, including Feller-violating parameters", "criterion": "Absolute error below 1e-6"},
+        {"test": "Put-call parity", "checks": "From the semi-analytic prices", "criterion": "Below 1e-8"},
+        {"test": "Monte Carlo against semi-analytic", "checks": "QE scheme, several step sizes", "criterion": "Within 3 standard errors at 50 steps per year"},
+        {"test": "Discretisation bias", "checks": "Price as the time step shrinks", "criterion": "Bias reported and below 1 standard error at the chosen step"},
+        {"test": "Black-Scholes limit", "checks": "σ → 0 with v₀ = θ", "criterion": "Matches Black-Scholes with volatility √θ to 1e-4"},
+        {"test": "Integration stability", "checks": "Short maturities and far strikes", "criterion": "No negative or NaN prices; prices within no-arbitrage bounds"},
+        {"test": "Feller monitoring", "checks": "2κθ - σ² reported for every parameter set", "criterion": "Logged, with the scheme's behaviour documented when negative"},
+        {"test": "Calibration repeatability", "checks": "Recalibrate from perturbed starting points", "criterion": "Parameters and fitted prices stable within tolerance"}
+      ],
+      "reference": "/library/models/heston/reference_quantlib.json",
+      "referenceContents": "European calls and puts for 3 parameter sets (one violating Feller), maturities 3 months to 5 years, strikes 70 to 140 (90 cases).",
+      "quantlib": ["HestonModel", "HestonProcess", "AnalyticHestonEngine", "MCEuropeanHestonEngine", "FdHestonVanillaEngine"],
+      "quantum": {"family": "qae", "note": "Path-dependent Monte Carlo under stochastic volatility is where amplitude estimation is studied, but loading the joint spot-variance distribution is the bottleneck. Fault-tolerant hardware required."}
+    },
+    {
+      "id": "hull_white",
+      "status": "available",
+      "name": "Hull-White one factor",
+      "assetClass": "Rates",
+      "summary": "Gaussian short rate with mean reversion, fitted exactly to today's curve. Closed forms for bond options, caps and (via Jamshidian) swaptions.",
+      "uses": ["Bermudan swaptions", "Callable bonds", "Caps and floors", "XVA exposure simulation"],
+      "dynamics": ["dr = [θ(t) - a r] dt + σ dW, θ(t) fitted to the initial discount curve", "P(t, T) = A(t, T) e^(-B(t, T) r(t)), B(t, T) = (1 - e^(-a(T - t))) / a"],
+      "parameters": [
+        {"name": "a", "meaning": "Mean reversion speed, drives the decorrelation of rates"},
+        {"name": "σ", "meaning": "Short-rate normal volatility"}
+      ],
+      "assumptions": ["One factor: all rates perfectly correlated", "Gaussian rates: negative rates possible", "Constant parameters (piecewise versions exist)"],
+      "limits": ["Cannot fit a full swaption cube; calibrate to the instruments that matter for the product", "Single factor understates decorrelation for spread options and curve trades"],
+      "prototype": "Closed-form zero-coupon bond option and caplet pricer, and a short-rate Monte Carlo (exact Gaussian transition) that reprices the initial curve.",
+      "tests": [
+        {"test": "Bond options against QuantLib", "checks": "Calls and puts on zero-coupon bonds", "criterion": "Absolute error below 1e-10"},
+        {"test": "Caps against QuantLib", "checks": "Caps as sums of caplets", "criterion": "Absolute error below 1e-10"},
+        {"test": "Curve fit", "checks": "Monte Carlo discount factors against the initial curve", "criterion": "Within 3 standard errors for maturities to 30 years"},
+        {"test": "Put-call parity on bond options", "checks": "C - P = P(0, S) - K P(0, T)", "criterion": "Below 1e-12"},
+        {"test": "Ho-Lee limit", "checks": "a → 0", "criterion": "Converges to the Ho-Lee closed form"},
+        {"test": "Monte Carlo bond option", "checks": "Simulated option price against closed form", "criterion": "Within 3 standard errors"},
+        {"test": "Negative rates", "checks": "Pricing with a negative initial curve", "criterion": "No failures; parity still holds"},
+        {"test": "Calibration stability", "checks": "a and σ refitted on perturbed co-terminal swaptions", "criterion": "Parameter moves explained and bounded"}
+      ],
+      "reference": "/library/models/hull_white/reference_quantlib.json",
+      "referenceContents": "Zero-coupon bond options for 3 parameter sets including a negative rate (72 cases), caps of 3 and 5 years (18).",
+      "quantlib": ["HullWhite", "HullWhiteProcess", "JamshidianSwaptionEngine", "TreeSwaptionEngine", "FdHullWhiteSwaptionEngine"],
+      "quantum": {"family": "qae", "note": "Exposure simulation for XVA is a candidate for amplitude estimation, after regression-based exposures and AAD have been exhausted classically."}
+    },
+    {"id": "local_vol", "status": "planned", "name": "Local volatility (Dupire)", "assetClass": "Equity / FX", "summary": "Volatility as a function of spot and time, fitted exactly to the vanilla surface.", "quantlib": ["LocalVolSurface", "NoExceptLocalVolSurface", "AndreasenHugeVolatilityInterpl"]},
+    {"id": "black_bachelier", "status": "planned", "name": "Black and Bachelier (caps, swaptions)", "assetClass": "Rates", "summary": "Market quoting models for caps and swaptions, lognormal and normal (negative rates).", "quantlib": ["BlackSwaptionEngine", "BachelierSwaptionEngine", "BlackCapFloorEngine", "BachelierCapFloorEngine"]},
+    {"id": "sabr", "status": "planned", "name": "SABR", "assetClass": "Rates", "summary": "Stochastic-volatility smile model for rates, with Hagan's expansion and its arbitrage-free variants.", "quantlib": ["sabrVolatility", "SABRInterpolation", "NoArbSabrSmileSection"]},
+    {"id": "cds_hazard", "status": "planned", "name": "Hazard-rate curve and CDS (ISDA standard model)", "assetClass": "Credit", "summary": "Default intensity bootstrapped from CDS quotes, priced with the ISDA standard model.", "quantlib": ["IsdaCdsEngine", "MidPointCdsEngine", "PiecewiseFlatHazardRate", "SpreadCdsHelper"]},
+    {"id": "bates", "status": "later", "name": "Bates (Heston with jumps)", "assetClass": "Equity / FX", "summary": "Adds lognormal jumps to Heston for short-dated skew.", "quantlib": ["BatesModel", "BatesEngine"]},
+    {"id": "heston_slv", "status": "later", "name": "Heston stochastic local volatility", "assetClass": "Equity / FX", "summary": "Leverage function on top of Heston, fitted to the vanilla surface.", "quantlib": ["HestonSLVMCModel", "HestonSLVFDMModel"]},
+    {"id": "merton_jumps", "status": "later", "name": "Merton jump diffusion", "assetClass": "Equity / FX", "summary": "Black-Scholes with lognormal jumps; series closed form.", "quantlib": ["Merton76Process"]},
+    {"id": "cev", "status": "later", "name": "CEV", "assetClass": "Equity / FX", "summary": "Local volatility as a power of spot.", "quantlib": ["AnalyticCEVEngine", "FdCEVVanillaEngine"]},
+    {"id": "g2", "status": "later", "name": "G2++", "assetClass": "Rates", "summary": "Two-factor Gaussian short rate for decorrelation.", "quantlib": ["G2", "G2SwaptionEngine", "FdG2SwaptionEngine"]},
+    {"id": "short_rate_classics", "status": "later", "name": "Vasicek, CIR, Black-Karasinski", "assetClass": "Rates", "summary": "Classic short-rate models, for teaching and specific uses.", "quantlib": ["Vasicek", "CoxIngersollRoss", "BlackKarasinski"]},
+    {"id": "lmm", "status": "later", "name": "LIBOR / forward market model", "assetClass": "Rates", "summary": "Joint lognormal or shifted dynamics of forward rates. QuantLib's Python bindings expose little of it.", "quantlib": ["MarketModel"]},
+    {"id": "gaussian_copula", "status": "later", "name": "One-factor Gaussian copula (Vasicek LHP)", "assetClass": "Credit", "summary": "Portfolio loss model behind tranche pricing and the Basel IRB formula. Not in QuantLib's Python bindings: reference from the closed form.", "quantlib": []},
+    {"id": "var_historical", "status": "later", "name": "Historical VaR and ES", "assetClass": "Market risk", "summary": "Full revaluation on historical scenarios, with backtesting.", "quantlib": []},
+    {"id": "var_mc", "status": "later", "name": "Monte Carlo VaR", "assetClass": "Market risk", "summary": "Simulated risk factors, full or proxy revaluation.", "quantlib": []},
+    {"id": "garch", "status": "later", "name": "GARCH(1,1)", "assetClass": "Market risk", "summary": "Volatility clustering for scenario generation and VaR.", "quantlib": ["GJRGARCHModel (option pricing variant)"]}
+  ]
+}

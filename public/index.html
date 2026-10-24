@@ -88,6 +88,7 @@ h2{font-family:var(--serif);font-weight:400;font-size:34px;letter-spacing:-.015e
 .ask{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
 .ask .chip{background:transparent;border-style:dashed}
 .ask .chip:hover{border-style:solid}
+.ask a.chip{text-decoration:none;color:inherit}
 .ask .chip.again{border-style:solid;background:var(--sheet);font-weight:600}
 .err{color:var(--amber)}
 .steplink{all:unset;cursor:pointer;color:inherit;text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
@@ -169,6 +170,7 @@ dialog h2{font-size:26px;margin-bottom:20px}
     <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><span class="name">Pl4nck</span></a>
     <nav class="tabs" aria-label="Sections">
       <a href="/" aria-current="page">Launch Pl4nck</a>
+      <a href="/library">Model library</a>
       <a href="/technology">Technology mapping</a>
       <a href="/about">About</a>
     </nav>
@@ -191,6 +193,20 @@ dialog h2{font-size:26px;margin-bottom:20px}
       <div id="sample"></div>
       <p class="sample-note">Example verdict for a validation quant pricing autocalls by Monte Carlo.</p>
     </div>
+  </section>
+
+  <!-- Model library: direct kit generation -->
+  <section id="libstart" class="narrow" hidden>
+    <p class="fine"><a href="/library">← Model library</a></p>
+    <h2 id="libname"></h2>
+    <p class="sub" id="libsum"></p>
+    <div id="librole"></div>
+    <div class="q"><span class="ql">Kit contents <span class="hint">pick what you need</span></span>
+      <div class="parts" id="libparts"></div>
+      <p class="fine">Always included: QuantLib reference values for the tests, and the conventions module (day counts, calendars, schedules).</p></div>
+    <label class="consent"><input type="checkbox" id="libconsent">
+      <span>I agree that my choices, the conversation and any feedback are stored for 12 months to improve this prototype (<a href="/privacy" target="_blank" rel="noopener">privacy notice</a>). I won't share confidential information, code or data from my employer.</span></label>
+    <div class="nav"><span class="spacer"></span><button class="btn" id="libgo" disabled>Generate the kit</button></div>
   </section>
 
   <!-- Intake -->
@@ -370,8 +386,17 @@ function parseFiles(text) {
   for (const f of files) { f.code = f.lines.join('\n'); delete f.lines; }
   return { files, stripped: out.join('\n') };
 }
+// Library kits also carry static files (QuantLib references, conventions module), added client-side.
+function kitFiles(text) {
+  const r = parseFiles(text);
+  if (S.library && S.extras && r.files.length) {
+    const root = r.files[0].path.split('/')[0];
+    for (const x of S.extras) if (!r.files.some((f) => f.path === root + '/' + x.path)) r.files.push({ ...x, path: root + '/' + x.path });
+  }
+  return r;
+}
 function body(text, done) {
-  const { files, stripped } = parseFiles(text);
+  const { files, stripped } = kitFiles(text);
   let html = md(stripped);
   if (!files.length) return html;
   const panel = kitPanel(files, done);
@@ -385,12 +410,15 @@ function kitPanel(files, done) {
     parts.slice(0, -1).forEach((p) => { node[p] = node[p] || {}; node = node[p]; });
     node[parts[parts.length - 1]] = f;
   }
-  const lines = files.reduce((n, f) => n + (f.code ? f.code.split('\n').length : 0), 0);
+  const lines = files.reduce((n, f) => n + (f.code && !f.static ? f.code.split('\n').length : 0), 0);
   const draw = (node) => '<ul class="tree">' + Object.keys(node).sort((x, y) => {
     const dx = !('code' in node[x]), dy = !('code' in node[y]);
     return dx === dy ? x.localeCompare(y) : dx ? -1 : 1;
   }).map((k) => {
     const v = node[k];
+    if ('code' in v && v.static) {
+      return `<li><span class="fname">${esc(k)}</span><span class="fmeta">from the library · ${Math.max(1, Math.round(v.code.length / 1024))} KB</span></li>`;
+    }
     if ('code' in v) {
       const n = v.code ? v.code.split('\n').length : 0;
       return `<li><details><summary><span class="fname">${esc(k)}</span><span class="fmeta">${v.complete ? n + (n === 1 ? ' line' : ' lines') : 'writing…'}</span></summary><pre><code>${esc(v.code)}</code></pre></details></li>`;
@@ -399,7 +427,7 @@ function kitPanel(files, done) {
   }).join('') + '</ul>';
   const top = Object.keys(tree).length === 1 && tree[root] && !('code' in tree[root]) ? tree[root] : tree;
   const ready = done && files.every((f) => f.complete);
-  return `<section class="kit"><div class="kithead"><div><b>${esc(root)}</b><span class="fmeta">${files.length} files · ${lines} lines</span></div>
+  return `<section class="kit"><div class="kithead"><div><b>${esc(root)}</b><span class="fmeta">${files.length} files · ${lines} lines generated</span></div>
     <button type="button" class="btn small dlzip"${ready ? '' : ' disabled'}>${ready ? 'Download .zip' : 'Writing files…'}</button></div>
     <div class="kitbody">${draw(top)}</div><p class="kitnote">Select a file to preview it. Everything is in the .zip.</p></section>`;
 }
@@ -428,7 +456,7 @@ function makeZip(files) {
   return new Blob([...parts, ...central, new Uint8Array(e.buffer)], { type: 'application/zip' });
 }
 function downloadKit(ans) {
-  const { files } = parseFiles(ans._raw || '');
+  const { files } = kitFiles(ans._raw || '');
   if (!files.length) return;
   const a = document.createElement('a'); a.href = URL.createObjectURL(makeZip(files));
   a.download = (files[0].path.split('/')[0] || 'starter_kit') + '.zip';
@@ -485,6 +513,52 @@ function keepSession() {
 }
 $('start').addEventListener('click', () => { keepSession(); $('intro').hidden = true; $('intake').hidden = false; showStep(); });
 
+// ---------- Model library entry (/?model=<id>) ----------
+const LIB_DEFAULTS = ['Prototype', 'Unit tests', 'Test plan', 'Documentation outline'];
+const LIB_ROLE = [{ id: 'job', label: 'Your role', hint: 'optional', type: 'single', options: ['Model validation', 'Quant R&D', 'Front-office quant / structuring', 'Risk management', 'Other'] }];
+async function loadExtras(card) {
+  const get = async (u) => { const r = await fetch(u); if (!r.ok) throw new Error(u); return r.text(); };
+  const manifest = JSON.parse(await get('/library/conventions/manifest.json'));
+  const extras = [];
+  for (const f of manifest) {
+    let path = null;
+    if (f.startsWith('pl4nck_conventions/')) path = 'src/' + f;
+    else if (f === 'tests/test_conventions.py') path = 'tests/conventions/test_conventions.py';
+    else if (f === 'tests/reference/conventions_quantlib.json') path = 'tests/conventions/reference/conventions_quantlib.json';
+    if (path) extras.push({ path, code: await get('/library/conventions/' + f), complete: true, static: true });
+  }
+  extras.push({ path: `tests/reference/${card.id}_quantlib.json`, code: await get(card.reference), complete: true, static: true });
+  return extras;
+}
+async function initLibrary() {
+  const id = new URLSearchParams(location.search).get('model');
+  if (!id) return;
+  let card;
+  try { card = (await (await fetch('/library/models.json')).json()).models.find((m) => m.id === id && m.status === 'available'); } catch { return; }
+  if (!card) return;
+  S.library = card;
+  $('intro').hidden = true; $('libstart').hidden = false;
+  $('libname').textContent = `Validation kit: ${card.name}`;
+  $('libsum').textContent = card.summary;
+  renderQuestions($('librole'), LIB_ROLE, S.answers, () => {});
+  $('libparts').innerHTML = KIT_PARTS.map((p) => `<label class="part"><input type="checkbox" value="${esc(p.id)}"${LIB_DEFAULTS.includes(p.id) ? ' checked' : ''}><span><b>${esc(p.id)}</b><span class="pdesc">${esc(p.desc)}</span><span class="pfiles">${esc(p.files)}</span></span></label>`).join('');
+  const sync = () => { $('libgo').disabled = !($('libconsent').checked && $('libparts').querySelector('input:checked')); };
+  $('libparts').addEventListener('change', sync); $('libconsent').addEventListener('change', sync); sync();
+  $('libgo').addEventListener('click', async () => {
+    const picked = [...$('libparts').querySelectorAll('input:checked')].map((i) => i.value);
+    S.consent = true; keepSession();
+    $('libgo').disabled = true; $('libgo').textContent = 'Preparing…';
+    try { S.extras = await loadExtras(card); } catch { S.extras = []; }
+    $('libstart').hidden = true; $('chat').hidden = false; $('composer').hidden = false;
+    $('sref').textContent = S.sessionId.slice(0, 8);
+    const box = document.createElement('p'); box.className = 'profile';
+    box.textContent = ['Model library', card.name, S.answers.job].filter(Boolean).join(' / ');
+    $('msgs').append(box);
+    send(`Validation kit for the model: ${card.name}. Generate only: ${picked.join(', ')}.`);
+  });
+}
+initLibrary();
+
 // ---------- Intake ----------
 function stepValid() {
   const has = (id) => (Array.isArray(S.answers[id]) ? S.answers[id].length : (S.answers[id] || '').trim());
@@ -520,6 +594,7 @@ function profile() {
     objectives: [].concat(a.objectives || []), assetClasses: [].concat(a.assetClasses || []),
     models: [].concat(a.models || []), modelsOther: (a.modelsOther || '').trim(),
     qcKnowledge: a.qcKnowledge || '', painPoints: a.painPoints || [], goals: a.goals || [],
+    library: S.library ? S.library.id : '',
   };
 }
 
@@ -534,8 +609,28 @@ function startChat() {
   send('Based on my profile, give me your verdict.', true);
 }
 
+const LIB_FOLLOWUPS = [
+  'What would a validator challenge first on this model?',
+  'Which classical improvements come next for this model?',
+  'Is there any quantum angle for this model?',
+];
 function followups() {
   document.querySelectorAll('.ask').forEach((n) => n.remove());
+  if (S.library) {
+    const row = document.createElement('div'); row.className = 'ask'; row.setAttribute('aria-label', 'Suggested questions');
+    const more = document.createElement('button'); more.type = 'button'; more.className = 'chip again'; more.textContent = 'Generate other kit parts';
+    more.addEventListener('click', () => showKitMenu(S.library.name));
+    row.append(more);
+    for (const f of LIB_FOLLOWUPS.filter((x) => !S.asked.has(x))) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = f;
+      b.addEventListener('click', () => { S.asked.add(f); send(f); });
+      row.append(b);
+    }
+    const back = document.createElement('a'); back.className = 'chip'; back.href = '/library'; back.target = '_blank'; back.rel = 'noopener'; back.textContent = 'Back to the library';
+    row.append(back);
+    $('msgs').append(row);
+    return;
+  }
   const left = FOLLOWUPS.filter((f) => !S.asked.has(f));
   const row = document.createElement('div'); row.className = 'ask'; row.setAttribute('aria-label', 'Suggested questions');
   const again = document.createElement('button'); again.type = 'button'; again.className = 'chip again'; again.textContent = 'Assess another use case';
@@ -656,7 +751,7 @@ function nextStepLabel() {
 function showKitMenu(step) {
   document.querySelectorAll('.kitmenu').forEach((n) => n.remove());
   const box = document.createElement('section'); box.className = 'kitmenu';
-  box.innerHTML = `<h3>Starter kit: ${esc(step)}</h3><p class="fine">Pick only what you need. Each part is generated on demand and lands in a .zip.</p>
+  box.innerHTML = `<h3>${S.library ? 'Validation kit' : 'Starter kit'}: ${esc(step)}</h3><p class="fine">Pick only what you need. Each part is generated on demand and lands in a .zip.</p>
     <div class="parts">${KIT_PARTS.map((p) => `<label class="part"><input type="checkbox" value="${esc(p.id)}"${p.on ? ' checked' : ''}><span><b>${esc(p.id)}</b><span class="pdesc">${esc(p.desc)}</span><span class="pfiles">${esc(p.files)}</span></span></label>`).join('')}</div>
     <div class="nav"><button type="button" class="btn quiet small kcancel">Cancel</button><span class="spacer"></span><button type="button" class="btn small kgo"></button></div>`;
   const go = box.querySelector('.kgo');
@@ -665,7 +760,7 @@ function showKitMenu(step) {
   box.querySelector('.kcancel').onclick = () => box.remove();
   go.onclick = () => {
     const picked = [...box.querySelectorAll('input:checked')].map((i) => i.value);
-    box.remove(); send(`Starter kit for the step: ${step}. Generate only: ${picked.join(', ')}.`);
+    box.remove(); send(S.library ? `Validation kit for the model: ${step}. Generate only: ${picked.join(', ')}.` : `Starter kit for the step: ${step}. Generate only: ${picked.join(', ')}.`);
   };
   const ask = document.querySelector('.ask');
   $('msgs').insertBefore(box, ask || null);

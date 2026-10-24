@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Model library · Pl4nck</title>
+<meta name="description" content="Pricing and risk models with pre-registered validation tests, QuantLib reference values and a generated prototype and validation kit.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<style>
+.layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:36px;align-items:start}
+.side{position:sticky;top:16px;display:grid;gap:18px}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--rule);background:var(--sheet);border-radius:var(--r-sm);padding:5px 10px;font-size:13.5px;cursor:pointer}
+.chip:hover{border-color:var(--ink)}
+.chip[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.search{width:100%;border:1px solid var(--rule);background:var(--sheet);border-radius:var(--r-sm);padding:9px 11px;font:inherit;color:inherit}
+.list{display:grid;gap:2px}
+.list h3{font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:14px 0 4px;font-weight:600}
+.item{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:0;border-radius:var(--r-sm);padding:7px 9px;font:inherit;font-size:14.5px;color:var(--ink);cursor:pointer}
+.item:hover{background:var(--sheet)}
+.item[aria-current=true]{background:var(--sheet);box-shadow:inset 2px 0 0 var(--accent);font-weight:600}
+.item.dim{color:var(--muted)}
+.badge{font-size:11.5px;font-weight:600;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.b-available{background:var(--green-soft);color:var(--green)}
+.b-planned{background:var(--accent-soft);color:var(--accent)}
+.b-later{background:var(--sheet);color:var(--muted);box-shadow:inset 0 0 0 1px var(--rule)}
+.detail h2{margin-top:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 16px;font-size:14px;color:var(--muted)}
+.eq{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-sm);padding:12px 14px;line-height:1.7;overflow-x:auto}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.box{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-md);padding:14px 16px}
+.box h3{margin:0 0 6px;font-size:15px}
+.box ul{margin:0;padding-left:18px}
+.box li{margin:4px 0;font-size:14.5px}
+.tbl{width:100%;border-collapse:collapse;font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-md);overflow:hidden}
+.tbl th,.tbl td{border-top:1px solid var(--rule);padding:8px 10px;text-align:left;vertical-align:top}
+.tbl th{font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;background:var(--paper);border-top:0}
+.tblwrap{overflow-x:auto}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:12.5px;border:1px solid var(--rule);border-radius:var(--r-sm);padding:2px 8px;background:var(--paper);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:22px 0 6px}
+.btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule)}
+.page .detail h3.sec{font-family:var(--serif);font-weight:400;font-size:22px;margin:30px 0 10px}
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr}
+  .side{position:static}
+  .cols{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar">
+    <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><span class="name">Pl4nck</span></a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="/">Launch Pl4nck</a>
+      <a href="/library" aria-current="page">Model library</a>
+      <a href="/technology">Technology mapping</a>
+      <a href="/about">About</a>
+    </nav>
+    <span class="proto">Research prototype</span>
+  </div>
+
+  <main class="page">
+    <h1>Model library</h1>
+    <p class="lead">Pick a model, get a Python prototype and a validation kit: pre-registered tests, QuantLib reference values and a documentation outline. You run and adapt it in-house; nothing of yours is uploaded.</p>
+
+    <div class="layout">
+      <aside class="side">
+        <input class="search" id="q" type="search" placeholder="Search models" aria-label="Search models">
+        <div class="filters" id="filters" role="group" aria-label="Asset class"></div>
+        <nav class="list" id="list" aria-label="Models"></nav>
+      </aside>
+      <section class="detail" id="detail" aria-live="polite"></section>
+    </div>
+    <p id="err" class="muted" hidden>The library could not be loaded. Reload the page to try again.</p>
+  </main>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const STATUS = { available: 'Kit available', planned: 'Next', later: 'Later' };
+let CAT, filter = '', query = '';
+
+const badge = (st) => `<span class="badge b-${esc(st)}">${esc(STATUS[st] || st)}</span>`;
+
+function renderList() {
+  const items = [{ id: 'conventions', name: CAT.infrastructure.name, assetClass: 'Infrastructure', status: 'available' }, ...CAT.models];
+  const groups = ['Infrastructure', ...CAT.assetClasses];
+  const cur = location.hash.slice(1) || 'conventions';
+  const q = query.toLowerCase();
+  $('list').innerHTML = groups.map((g) => {
+    const rows = items.filter((m) => m.assetClass === g && (!filter || g === filter || g === 'Infrastructure') &&
+      (!q || (m.name + ' ' + (m.summary || '') + ' ' + (m.quantlib || []).join(' ')).toLowerCase().includes(q)));
+    if (!rows.length) return '';
+    return `<h3>${esc(g)}</h3>` + rows.map((m) => `<button type="button" class="item${m.status === 'available' ? '' : ' dim'}" data-id="${esc(m.id)}" aria-current="${m.id === cur}"><span>${esc(m.name)}</span>${m.status === 'available' ? '' : badge(m.status)}</button>`).join('');
+  }).join('');
+}
+
+function infraDetail(x) {
+  return `<h2>${esc(x.name)}</h2>
+    <div class="meta">${badge('available')}<span>Included in every kit · pure Python · no dependency</span></div>
+    <p>${esc(x.summary)}</p>
+    <div class="cols">
+      <div class="box"><h3>Covers</h3><ul>${x.covers.map((c) => `<li>${esc(c)}</li>`).join('')}</ul></div>
+      <div class="box"><h3>Tested against QuantLib</h3><p class="muted" style="margin:0;font-size:14.5px">${esc(x.tests)}</p></div>
+    </div>
+    <div class="callout amber"><p><b>Found while building it.</b> ${esc(x.finding)}</p></div>
+    <div class="actions"><a class="btn" href="${esc(x.download)}" download>Download the module (.zip)</a><span class="fine">Unzip, then <code>pip install pytest &amp;&amp; pytest tests</code></span></div>`;
+}
+
+function modelDetail(m) {
+  if (m.status !== 'available') {
+    return `<h2>${esc(m.name)}</h2>
+      <div class="meta">${badge(m.status)}<span>${esc(m.assetClass)}</span></div>
+      <p>${esc(m.summary)}</p>
+      ${m.quantlib && m.quantlib.length ? `<p class="fine">QuantLib reference available: </p><div class="tags">${m.quantlib.map((c) => `<span class="tag">${esc(c)}</span>`).join('')}</div>` : '<p class="fine">No QuantLib reference in the Python bindings: references will come from closed forms.</p>'}
+      <div class="callout"><p>This kit is not built yet. Want it sooner? Tell us through the <a href="/about#contact">contact address</a>.</p></div>`;
+  }
+  return `<h2>${esc(m.name)}</h2>
+    <div class="meta">${badge('available')}<span>${esc(m.assetClass)}</span></div>
+    <p>${esc(m.summary)}</p>
+    <div class="actions">
+      <a class="btn" href="/?model=${encodeURIComponent(m.id)}">Generate prototype &amp; validation kit</a>
+      <a class="btn quiet" href="${esc(m.reference)}" download>QuantLib reference values (.json)</a>
+    </div>
+    <p class="fine">${esc(m.referenceContents)}</p>
+
+    <h3 class="sec">Dynamics</h3>
+    <div class="eq">${m.dynamics.map(esc).join('<br>')}</div>
+    <div class="cols">
+      <div class="box"><h3>Parameters</h3><ul>${m.parameters.map((p) => `<li><b>${esc(p.name)}</b>: ${esc(p.meaning)}</li>`).join('')}</ul></div>
+      <div class="box"><h3>Typical uses</h3><ul>${m.uses.map((u) => `<li>${esc(u)}</li>`).join('')}</ul></div>
+      <div class="box"><h3>Assumptions</h3><ul>${m.assumptions.map((u) => `<li>${esc(u)}</li>`).join('')}</ul></div>
+      <div class="box"><h3>Known limits</h3><ul>${m.limits.map((u) => `<li>${esc(u)}</li>`).join('')}</ul></div>
+    </div>
+
+    <h3 class="sec">Prototype</h3>
+    <p>${esc(m.prototype)} It is an independent implementation: it does not import QuantLib, so comparing it with QuantLib is a real check.</p>
+
+    <h3 class="sec">Validation tests</h3>
+    <p class="fine">Pre-registered: the criteria are fixed before any code is written, and the kit implements them as they are.</p>
+    <div class="tblwrap"><table class="tbl"><thead><tr><th>Test</th><th>Checks</th><th>Acceptance criterion</th></tr></thead>
+      <tbody>${m.tests.map((t) => `<tr><td><b>${esc(t.test)}</b></td><td>${esc(t.checks)}</td><td>${esc(t.criterion)}</td></tr>`).join('')}</tbody></table></div>
+
+    <div class="cols">
+      <div class="box"><h3>QuantLib counterparts</h3><div class="tags">${m.quantlib.map((c) => `<span class="tag">${esc(c)}</span>`).join('')}</div></div>
+      <div class="box"><h3>Quantum angle</h3><p class="muted" style="margin:0;font-size:14.5px">${esc(m.quantum.note)} <a href="/technology#families">Technology mapping</a></p></div>
+    </div>`;
+}
+
+function show() {
+  const id = location.hash.slice(1) || 'conventions';
+  const m = CAT.models.find((x) => x.id === id);
+  $('detail').innerHTML = m ? modelDetail(m) : infraDetail(CAT.infrastructure);
+  renderList();
+}
+
+function render() {
+  $('filters').innerHTML = ['All', ...CAT.assetClasses].map((g) => `<button type="button" class="chip" data-g="${g === 'All' ? '' : esc(g)}" aria-pressed="${(g === 'All' ? '' : g) === filter}">${esc(g)}</button>`).join('');
+  show();
+}
+
+$('filters').addEventListener('click', (e) => { const b = e.target.closest('.chip'); if (b) { filter = b.dataset.g; render(); } });
+$('q').addEventListener('input', (e) => { query = e.target.value; renderList(); });
+$('list').addEventListener('click', (e) => {
+  const b = e.target.closest('.item');
+  if (!b) return;
+  history.replaceState(null, '', '#' + b.dataset.id); show();
+  if (window.innerWidth < 860) $('detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+window.addEventListener('hashchange', show);
+
+fetch('/library/models.json', { cache: 'no-cache' })
+  .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then((c) => { CAT = c; render(); })
+  .catch(() => { $('err').hidden = false; });
+})();
+</script>
+</body>
+</html>

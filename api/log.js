@@ -78,6 +78,7 @@ function cleanProfile(p = {}) {
     qcKnowledge: str(p.qcKnowledge, 60),
     painPoints: list(p.painPoints),
     goals: list(p.goals),
+    library: str(p.library, 40).replace(/[^a-z0-9_]/g, ''),
   };
 }
 
