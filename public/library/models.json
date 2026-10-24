@@ -122,7 +122,7 @@
         "version": "1.0.0",
         "released": "2026-10-24",
         "download": "/library/kits/black_scholes_validation_kit.zip",
-        "summary": "Prototype, 11 validation tests with pre-registered criteria (635 test cases with the conventions module), QuantLib reference values, test plan and pre-filled SR 11-7 documentation outline. Tested in a clean environment without QuantLib."
+        "summary": "Prototype, 11 validation tests with pre-registered criteria (635 test cases with the conventions module), QuantLib reference values, test plan and pre-filled SR 11-7 model documentation in Word and LaTeX. Tested in a clean environment without QuantLib."
       }
     },
     {

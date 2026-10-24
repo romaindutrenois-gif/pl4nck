@@ -14,8 +14,9 @@ runs locally; nothing is sent anywhere.
 | `tests/test_model.py` | The validation tests of `docs/test_plan.md` |
 | `tests/reference/` | QuantLib 1.44 reference values (data only; QuantLib is not needed) |
 | `tests/conventions/` | 611 tests of the conventions module |
-| `docs/test_plan.md` | Tests, what they check, acceptance criteria |
-| `docs/model_documentation.md` | Documentation outline aligned with SR 11-7, pre-filled |
+| `docs/test_plan.docx` | Tests, what they check, acceptance criteria, where each is implemented |
+| `docs/model_documentation.docx` | Model documentation aligned with SR 11-7, pre-filled; shaded paragraphs are yours to complete |
+| `docs/latex/` | The same two documents in LaTeX, for teams that write in LaTeX |
 | `examples/run_example.py` | Prices against benchmarks in one screen |
 
 ## Run it

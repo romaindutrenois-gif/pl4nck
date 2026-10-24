@@ -23,5 +23,7 @@ jobs:
         run: |
           python -m pip install -q pytest
           python -m pytest -q -p no:cacheprovider public/library/conventions/tests
+      - name: Install pandoc (Word and LaTeX documentation)
+        run: sudo apt-get update -q && sudo apt-get install -y -q pandoc
       - name: Frozen validation kits (assemble, install, test, run example)
         run: python tools/library/build_kits.py
