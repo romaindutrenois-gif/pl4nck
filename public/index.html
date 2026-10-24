@@ -514,7 +514,7 @@ function keepSession() {
 $('start').addEventListener('click', () => { keepSession(); $('intro').hidden = true; $('intake').hidden = false; showStep(); });
 
 // ---------- Model library entry (/?model=<id>) ----------
-const LIB_DEFAULTS = ['Prototype', 'Unit tests', 'Test plan', 'Documentation outline'];
+const LIB_DEFAULTS = ['Prototype', 'Test plan', 'Documentation outline']; // QuantLib references always ship; generated tests are opt-in
 const LIB_ROLE = [{ id: 'job', label: 'Your role', hint: 'optional', type: 'single', options: ['Model validation', 'Quant R&D', 'Front-office quant / structuring', 'Risk management', 'Other'] }];
 async function loadExtras(card) {
   const get = async (u) => { const r = await fetch(u); if (!r.ok) throw new Error(u); return r.text(); };

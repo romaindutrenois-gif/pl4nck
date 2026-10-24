@@ -338,7 +338,14 @@ export default async function handler(req) {
       model: MODEL,
       max_tokens: 9000,
       stream: true,
-      system: [SYSTEM_PROMPT.replace('{{MAPPING}}', await mappingText(req)), profile.library ? await libraryBlock(req, profile.library) : '', profileBlock(profile)].filter(Boolean).join('\n\n'),
+      system: [
+        // Library kits do not need the technology mapping (about 45% of the input tokens): send a pointer instead.
+        SYSTEM_PROMPT.replace('{{MAPPING}}', profile.library
+          ? '## Technology mapping\nNot loaded for model library requests. For quantum questions, answer briefly from the model card and point to the Technology mapping page.'
+          : await mappingText(req)),
+        profile.library ? await libraryBlock(req, profile.library) : '',
+        profileBlock(profile),
+      ].filter(Boolean).join('\n\n'),
       messages,
     }),
   });
