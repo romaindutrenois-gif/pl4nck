@@ -348,8 +348,23 @@ export default async function handler(req) {
     return json({ error: upstream.status === 429 ? 'busy' : 'upstream' }, 502);
   }
 
-  // Pass Anthropic's server-sent events straight through to the browser.
-  return new Response(upstream.body, {
+  // Pass Anthropic's server-sent events straight through to the browser, logging what
+  // the stream contained when it ends with no text or carries an error event.
+  let seen = '', texts = 0;
+  const dec = new TextDecoder();
+  const watch = new TransformStream({
+    transform(chunk, ctl) {
+      const t = dec.decode(chunk, { stream: true });
+      if (t.includes('"text_delta"')) texts++;
+      if (seen.length < 4000) seen += t;
+      if (t.includes('"type":"error"') || t.includes('"type": "error"')) console.error('anthropic stream error', profile.library || 'advisor', t.slice(0, 800));
+      ctl.enqueue(chunk);
+    },
+    flush() {
+      if (!texts) console.error('anthropic empty stream', profile.library || 'advisor', seen.slice(0, 2000));
+    },
+  });
+  return new Response(upstream.body.pipeThrough(watch), {
     headers: { 'content-type': 'text/event-stream', 'cache-control': 'no-cache' },
   });
 }

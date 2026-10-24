@@ -658,7 +658,8 @@ async function* streamText(r, end) {
         if (ev.type === 'content_block_delta' && ev.delta && ev.delta.type === 'text_delta') yield ev.delta.text;
         else if (ev.type === 'message_delta' && ev.delta && ev.delta.stop_reason) end.reason = ev.delta.stop_reason;
         else if (ev.type === 'message_stop') end.done = true;
-        else if (ev.type === 'error') throw new Error('The answer was cut off. Ask again.');
+        else if (ev.type === 'error') throw new Error(`The answer was cut off (${(ev.error && (ev.error.type + ': ' + ev.error.message)) || 'unknown error'}). Ask again.`);
+        if (ev.type) (end.events = end.events || []).push(ev.type === 'content_block_start' && ev.content_block ? 'block:' + ev.content_block.type : ev.type);
       }
     }
   }
@@ -692,7 +693,7 @@ async function send(text, hidden) {
     for await (const piece of source) { out += piece; el._raw = out; el.innerHTML = renderAnswer(out, false); }
     el.innerHTML = renderAnswer(out, true);
     if (!S.verdict) { const m = out.match(/```\s*verdict\s*\n([\s\S]*?)```/i); if (m) { try { S.verdict = JSON.parse(m[1]); } catch {} } }
-    if (!out) throw new Error('No answer came back. Try again.');
+    if (!out) throw new Error(`No answer came back (stop: ${end.reason || 'none'}; events: ${[...new Set(end.events || [])].join(', ') || 'none'}). Try again.`);
     S.messages.push({ role: 'assistant', content: out });
     if (!end.done || end.reason === 'max_tokens') {
       const note = document.createElement('div'); note.className = 'nudge';
