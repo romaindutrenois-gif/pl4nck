@@ -1,0 +1,27 @@
+name: Library tests
+
+# Runs every test shipped to users: the conventions module and each frozen
+# validation kit, in a clean environment without QuantLib.
+on:
+  push:
+    paths: ["public/library/**", "library_src/**", "tools/library/**", ".github/workflows/library.yml"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Conventions module
+        run: |
+          python -m pip install -q pytest
+          python -m pytest -q -p no:cacheprovider public/library/conventions/tests
+      - name: Frozen validation kits (assemble, install, test, run example)
+        run: python tools/library/build_kits.py
