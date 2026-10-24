@@ -77,17 +77,7 @@ Reply in the user's language (English by default; French if they write in French
 
 # Reference knowledge
 
-## Quantum algorithm families and finance use
-| Family | Finance use | Technology fit | Status |
-|---|---|---|---|
-| Amplitude estimation (QAE) | Monte Carlo pricing, VaR/CVaR, credit portfolio risk | High-fidelity gate-based, error-corrected (fault-tolerant) | Quadratic speed-up in theory; needs fault tolerance; years away |
-| QUBO / combinatorial optimisation (annealing, QAOA) | Portfolio optimisation, collateral allocation, constrained hedging, netting, calibration, reverse stress testing | Quantum annealers, neutral atoms, gate-based | Runs today on small instances; no proven advantage over good MILP/heuristic solvers on large problems; small-instance prototypes are a sensible first use case |
-| Generative models (quantum circuit Born machines) | Scenario generation, synthetic market data, fat-tailed distributions | Current noisy gate-based (NISQ) | Small scale (few dozen qubits, coarse distributions, few assets); research stage |
-| Quantum machine learning (kernels, variational classifiers) | Credit scoring, fraud/anomaly detection | NISQ gate-based | Most hyped, least proven; treat with strong scepticism |
-| Linear systems / PDE (HHL family) | PDE pricing | Fault-tolerant | Heavy caveats on data loading and readout |
-| Quantum-inspired (tensor networks) | PDE pricing, model compression, high-dimensional integration | Classical hardware, today | Not quantum hardware, but a genuine no-regret step |
-
-Comparison criteria for hardware: qubit count and quality (fidelities), connectivity, achievable circuit depth, error-correction roadmap, cloud access, cost, European sovereignty (European players exist in neutral atoms and photonics; superconducting and trapped ions are the other main gate-based families).
+{{MAPPING}}
 
 Key reference: Chakrabarti et al., "A Threshold for Quantum Advantage in Derivative Pricing", Quantum 5, 463 (2021, IBM and Goldman Sachs): pricing autocallables/TARFs with quantum advantage needs ~7.5k-8k logical qubits and a T-depth of ~46-54 million, executed in about a second. Logical qubits are error-corrected and each needs many physical qubits. Use this to anchor horizons for Monte Carlo pricing.
 
@@ -108,7 +98,39 @@ Use the same logic (observable criteria, benefit, sensitivity, quantum step last
 No-regret path: historical simulation, then GARCH + copulas, then classical generative models (VAE, GAN, diffusion), then quantum Born machines on reduced problems. Validation: distribution fit (Wasserstein, KS), tails (VaR/ES vs history), stylised facts (volatility clustering, fat tails, autocorrelation of returns and squared returns), cross-asset dependence, and documentation of why generated data is fit for purpose in risk models.
 
 # What this tool is (if asked)
-An early prototype to test what quants find useful. It does not store code or proprietary data. A future version may offer starter kits (Python model, benchmarks, tests, validation documentation). Do not promise features or dates.`;
+Pl4nck is a free research prototype. It gives an honest verdict on quantum computing for one use case, a no-regret roadmap, and on request a starter kit for the next step (Python prototype, benchmarks, unit tests, test plan, documentation outline aligned with SR 11-7) that the user adapts and validates in-house. It does not run models, take code or proprietary data, or replace validation or regulatory sign-off. It does not cover post-quantum cryptography beyond a pointer. The site also has a Technology mapping page (same reference data as below) and an About page. Do not promise features or dates.`;
+
+// ---------- reference mapping ----------
+// Single source of truth: public/mapping.json, also shown on the Technology mapping page.
+// Fetched from the deployment itself and cached per instance for 10 minutes.
+let mapCache = { at: 0, text: '' };
+
+function renderMapping(m) {
+  const H = m.horizons || {};
+  const fam = Object.fromEntries((m.families || []).map((f) => [f.id, f.name]));
+  const out = [`## Technology mapping (reviewed ${m.reviewed}; same data as the site's Technology mapping page, which users can consult)`, '', '### Algorithm families'];
+  for (const f of m.families || []) out.push(`- ${f.name}. Uses: ${f.uses.join(', ')}. Hardware: ${f.hardware}. Status: ${f.status} Horizon: ${H[f.horizon] || f.horizon}. No-regret: ${f.noRegret}`);
+  out.push('', '### By use case');
+  for (const u of m.useCases || []) out.push(`- ${u.name}: today ${u.today}; quantum route ${u.families.map((i) => fam[i]).join(', ') || 'none needed'}; horizon ${H[u.horizon] || u.horizon}; no-regret ${u.noRegret}`);
+  out.push('', '### Hardware');
+  for (const h of m.hardware || []) out.push(`- ${h.modality}: ${h.strengths} Limits: ${h.limits} State: ${h.state} Players: ${h.players.join(', ')}.`);
+  out.push('', 'Comparison criteria for hardware: qubit count and quality (fidelities), connectivity, achievable circuit depth, error-correction roadmap, cloud access, cost, European sovereignty. Vendor roadmaps are ambitions, not commitments; peer-reviewed results are the floor.');
+  out.push('', '### Players', (m.players || []).map((p) => `${p.name} (${p.category}, ${p.base}: ${p.focus})`).join('; '));
+  return out.join('\n');
+}
+
+async function mappingText(req) {
+  if (mapCache.text && Date.now() - mapCache.at < 600000) return mapCache.text;
+  try {
+    const r = await fetch(new URL('/mapping.json', req.url));
+    if (!r.ok) throw new Error(String(r.status));
+    mapCache = { at: Date.now(), text: renderMapping(await r.json()) };
+  } catch (e) {
+    console.error('mapping', e.message);
+    if (!mapCache.text) return '## Technology mapping\n(Reference mapping unavailable right now: rely on well-established facts only and be conservative on horizons.)';
+  }
+  return mapCache.text;
+}
 
 // ---------- shared: store ----------
 // Minimal Upstash Redis client over REST (works on Vercel Edge, no SDK).
@@ -254,7 +276,7 @@ export default async function handler(req) {
       model: MODEL,
       max_tokens: 9000,
       stream: true,
-      system: `${SYSTEM_PROMPT}\n\n${profileBlock(profile)}`,
+      system: `${SYSTEM_PROMPT.replace('{{MAPPING}}', await mappingText(req))}\n\n${profileBlock(profile)}`,
       messages,
     }),
   });

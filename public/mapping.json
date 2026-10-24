@@ -1,0 +1,247 @@
+{
+  "reviewed": "2026-10-24",
+  "horizons": {
+    "now": "Usable today",
+    "pilot": "Pilots, no proven advantage",
+    "late2020s": "Late 2020s, if roadmaps hold",
+    "2030s": "2030s, needs fault tolerance",
+    "unclear": "Unclear, possibly never",
+    "threat": "Threat, act now"
+  },
+  "families": [
+    {
+      "id": "qae",
+      "name": "Amplitude estimation (quantum Monte Carlo)",
+      "idea": "Estimates an expectation with error falling as 1/N instead of 1/sqrt(N): a quadratic speed-up in the number of samples.",
+      "uses": ["Monte Carlo pricing of exotics", "Greeks", "VaR / ES", "XVA / CVA", "Credit portfolio loss distributions"],
+      "hardware": "Fault-tolerant gate-based",
+      "status": "Speed-up proven in theory. Resource estimates for an autocall or TARF with advantage: about 7,500 logical qubits and a T-depth around 50 million, run in about a second (Chakrabarti et al., 2021). Loading distributions and payoffs into circuits dominates the cost. Only toy demonstrations so far.",
+      "horizon": "2030s",
+      "noRegret": "Variance reduction, quasi-Monte Carlo, AAD Greeks and GPU Monte Carlo. They set the bar any quantum pricer must beat, and they pay off now."
+    },
+    {
+      "id": "qubo",
+      "name": "Combinatorial optimisation (annealing, QAOA)",
+      "idea": "Encodes a discrete optimisation as an energy landscape (QUBO / Ising) and searches for low-energy solutions.",
+      "uses": ["Portfolio selection with cardinality or lot constraints", "Index tracking", "Collateral allocation", "Netting and settlement", "Reverse stress testing"],
+      "hardware": "Quantum annealers, neutral atoms (analog mode), gate-based",
+      "status": "Runs today on small and medium instances. No robust advantage over good MILP solvers or classical heuristics at scale. Theoretical scaling results for QAOA exist (JPMorgan, Argonne, Quantinuum, 2025) but are not yet a practical edge.",
+      "horizon": "pilot",
+      "noRegret": "Write the problem as a MILP or QUBO and benchmark commercial solvers, simulated annealing and GPU heuristics. A clean formulation is needed whatever the hardware."
+    },
+    {
+      "id": "qml",
+      "name": "Quantum machine learning (kernels, variational models)",
+      "idea": "Maps data into a quantum state space and trains a classifier or regressor there.",
+      "uses": ["Credit scoring / PD", "Fraud and anomaly detection", "Trading and execution prediction"],
+      "hardware": "Current noisy gate-based (NISQ)",
+      "status": "Most hyped, least proven. No reproducible advantage on real financial data against strong classical baselines; several proposed speed-ups have been dequantised. HSBC and IBM reported better bond-trade fill predictions in 2025, as a preliminary, not independently replicated result.",
+      "horizon": "unclear",
+      "noRegret": "Strong classical baselines (gradient boosting, well-tuned neural nets), feature engineering, and an ML validation framework (explainability, stability, drift)."
+    },
+    {
+      "id": "generative",
+      "name": "Quantum generative models (Born machines, quantum GANs)",
+      "idea": "Uses the output distribution of a quantum circuit as a generative model, which can represent some distributions compactly.",
+      "uses": ["Scenario generation", "Synthetic market data", "Fat-tailed and joint distributions"],
+      "hardware": "Current noisy gate-based, neutral atoms",
+      "status": "Research stage: a few dozen qubits, coarse distributions, few assets. No evidence yet of better tails or dependence than classical generators.",
+      "horizon": "2030s",
+      "noRegret": "Historical simulation, then GARCH and copulas, then classical generative models (VAE, GAN, diffusion), each with a documented validation of tails and stylised facts."
+    },
+    {
+      "id": "linear",
+      "name": "Linear systems and PDE solvers (HHL family)",
+      "idea": "Solves large linear systems or PDEs with a cost that grows slowly with dimension, under strict conditions.",
+      "uses": ["PDE pricing", "High-dimensional pricing problems"],
+      "hardware": "Fault-tolerant gate-based",
+      "status": "Speed-ups hold only when inputs load efficiently and a summary statistic is enough as output. For most finance PDEs these conditions remove the advantage.",
+      "horizon": "2030s",
+      "noRegret": "Efficient PDE schemes, sparse grids and tensor-train methods."
+    },
+    {
+      "id": "inspired",
+      "name": "Quantum-inspired methods (tensor networks, digital annealers)",
+      "idea": "Classical algorithms borrowed from quantum physics, run on CPUs and GPUs.",
+      "uses": ["PDE and high-dimensional pricing", "Monte Carlo and model compression", "Combinatorial optimisation"],
+      "hardware": "Classical CPU / GPU, or dedicated classical chips (Fujitsu Digital Annealer, Toshiba SQBM+)",
+      "status": "Usable today. Banks report speed-ups and smaller memory footprints in pilots (for example Crédit Agricole CIB with Multiverse and Pasqal, NatWest with Fujitsu).",
+      "horizon": "now",
+      "noRegret": "Yes: this is itself a no-regret step, and it builds the skills quantum methods will need."
+    },
+    {
+      "id": "randomness",
+      "name": "Certified randomness",
+      "idea": "Uses a quantum computer to produce random numbers whose randomness can be verified.",
+      "uses": ["Auditable random draws", "Cryptographic seeds"],
+      "hardware": "High-fidelity gate-based (trapped ions)",
+      "status": "Demonstrated by JPMorgan and Quantinuum (Nature, 2025). Niche: pseudo-random generators are fine for Monte Carlo pricing.",
+      "horizon": "pilot",
+      "noRegret": "Nothing to change in pricing; check random-number generator quality and seed management."
+    },
+    {
+      "id": "shor",
+      "name": "Shor's algorithm (cryptanalysis)",
+      "idea": "Factors integers and computes discrete logarithms efficiently, which breaks RSA and elliptic-curve cryptography.",
+      "uses": ["A threat to encryption and signatures, not a tool"],
+      "hardware": "Large fault-tolerant gate-based",
+      "status": "Estimates keep falling: under a million noisy qubits for RSA-2048 (Gidney, 2025). Data harvested today can be decrypted later. NIST published post-quantum standards in 2024.",
+      "horizon": "threat",
+      "noRegret": "Post-quantum cryptography migration: inventory, crypto-agility, priority to long-lived data. Out of Pl4nck's scope, but the one quantum topic that needs action now."
+    }
+  ],
+  "useCases": [
+    { "name": "Derivatives pricing by Monte Carlo", "group": "Pricing", "today": "MC with variance reduction, QMC, GPU", "families": ["qae"], "horizon": "2030s", "noRegret": "Variance reduction and a documented convergence study; GPU MC" },
+    { "name": "Derivatives pricing by PDE", "group": "Pricing", "today": "Finite differences, Fourier methods", "families": ["linear", "inspired"], "horizon": "now", "noRegret": "Tensor-train or sparse-grid solvers for higher dimensions" },
+    { "name": "Greeks and sensitivities", "group": "Pricing", "today": "Bump and revalue, pathwise, AAD", "families": ["qae"], "horizon": "2030s", "noRegret": "AAD: all first-order Greeks for a small multiple of one pricing" },
+    { "name": "VaR / ES", "group": "Risk measures (VaR / ES)", "today": "Historical simulation, MC VaR, full revaluation or proxies", "families": ["qae"], "horizon": "2030s", "noRegret": "Faster full revaluation, validated proxies, backtesting" },
+    { "name": "XVA / counterparty exposure", "group": "XVA / counterparty risk", "today": "Nested MC with regression, AAD, GPU", "families": ["qae"], "horizon": "2030s", "noRegret": "Regression-based exposures, AAD for XVA Greeks, GPU" },
+    { "name": "Credit portfolio loss and economic capital", "group": "Credit risk / portfolio models", "today": "Factor copula MC, importance sampling", "families": ["qae"], "horizon": "2030s", "noRegret": "Importance sampling on tail losses, documented convergence" },
+    { "name": "Credit scoring / PD", "group": "Credit risk / portfolio models", "today": "Logistic regression, gradient boosting", "families": ["qml"], "horizon": "unclear", "noRegret": "Strong classical baselines with explainability and stability tests" },
+    { "name": "Model calibration", "group": "Calibration", "today": "Local optimisers, global heuristics, neural-network pricers", "families": ["qubo", "inspired"], "horizon": "unclear", "noRegret": "Deep calibration (neural pricers), calibration diagnostics stored" },
+    { "name": "Hedging with discrete choices", "group": "Hedging", "today": "Heuristics, MILP, reinforcement learning", "families": ["qubo"], "horizon": "pilot", "noRegret": "Clean MILP formulation and solver benchmark" },
+    { "name": "Portfolio optimisation, convex (mean-variance)", "group": "Portfolio optimisation", "today": "Quadratic programming, solved well", "families": [], "horizon": "now", "noRegret": "None needed from quantum: classical solvers are fast and exact" },
+    { "name": "Portfolio optimisation with discrete constraints", "group": "Portfolio optimisation", "today": "MILP solvers, heuristics", "families": ["qubo", "inspired"], "horizon": "pilot", "noRegret": "QUBO and MILP formulations, benchmark on your instance sizes" },
+    { "name": "Collateral, netting and settlement optimisation", "group": "Portfolio optimisation", "today": "MILP, rule-based allocation", "families": ["qubo"], "horizon": "pilot", "noRegret": "Formulate and benchmark; measure the value of a better allocation" },
+    { "name": "Scenario generation and synthetic data", "group": "Scenario generation / synthetic data", "today": "Historical, GARCH + copulas, VAE / GAN / diffusion", "families": ["generative"], "horizon": "2030s", "noRegret": "Classical generators with tail and stylised-fact validation" },
+    { "name": "Stress testing (reverse)", "group": "Stress testing", "today": "Scenario search, optimisation over risk factors", "families": ["qubo"], "horizon": "pilot", "noRegret": "Formulate reverse stress as an optimisation; classical search first" },
+    { "name": "Fraud and anomaly detection", "group": "Other", "today": "Gradient boosting, graph methods, autoencoders", "families": ["qml"], "horizon": "unclear", "noRegret": "Classical baselines; label quality" },
+    { "name": "Trading and execution prediction", "group": "Other", "today": "Statistical and ML models", "families": ["qml"], "horizon": "unclear", "noRegret": "Classical baselines; robust out-of-sample testing" },
+    { "name": "Protecting data and signatures", "group": "Other", "today": "RSA, elliptic curves", "families": ["shor"], "horizon": "threat", "noRegret": "Post-quantum migration plan" }
+  ],
+  "hardware": [
+    {
+      "modality": "Superconducting",
+      "how": "Circuits cooled near absolute zero act as artificial atoms.",
+      "strengths": "Fast gates (nanoseconds), mature fabrication, widest cloud access and software ecosystem.",
+      "limits": "Cryogenics and wiring at scale; mostly nearest-neighbour connectivity; many physical qubits per logical qubit.",
+      "state": "IBM Nighthawk (120 qubits) and Loon test chip; Google Willow (105 qubits) showed error rates falling as codes grow (2024). IBM targets Starling, about 200 logical qubits, in 2029; Google targets useful error-corrected machines by the end of the decade.",
+      "players": ["IBM", "Google Quantum AI", "Rigetti", "IQM", "OQC", "Fujitsu / RIKEN"],
+      "fit": ["qae", "qml", "generative", "qubo"]
+    },
+    {
+      "modality": "Cat qubits (bosonic superconducting)",
+      "how": "Superconducting cavities encode qubits that suppress one type of error by design.",
+      "strengths": "Fewer physical qubits per logical qubit in principle.",
+      "limits": "Early: tens of qubits; full error correction not yet shown at scale.",
+      "state": "Alice & Bob (16 cat qubits; on-premise system; 18-qubit system ordered by GENCI). AWS Ocelot chip (2025).",
+      "players": ["Alice & Bob", "AWS"],
+      "fit": ["qae"]
+    },
+    {
+      "modality": "Trapped ions",
+      "how": "Charged atoms held by electric fields, manipulated with lasers.",
+      "strengths": "Highest fidelities, all-to-all connectivity, best logical-qubit results today.",
+      "limits": "Slow gates (microseconds to milliseconds), scaling traps to thousands of ions.",
+      "state": "Quantinuum Helios (98 qubits, about 48 logical qubits; record 99.9995% logical-memory fidelity, October 2026). Sol planned 2027, Apollo (fault-tolerant) 2029. IonQ Tempo (64 algorithmic qubits) after buying Oxford Ionics.",
+      "players": ["Quantinuum", "IonQ", "AQT"],
+      "fit": ["qae", "qml", "generative", "randomness"]
+    },
+    {
+      "modality": "Neutral atoms",
+      "how": "Atoms held in optical tweezers, entangled through Rydberg states.",
+      "strengths": "Scale (arrays of thousands of atoms), reconfigurable connectivity, analog mode suited to optimisation.",
+      "limits": "Slower cycles, atom loss, two-qubit fidelity around 99.5%; error-corrected computation (not just memory) still to prove.",
+      "state": "Dozens of logical qubits shown (QuEra/Harvard, Atom Computing/Microsoft, Infleqtion). Microsoft and Atom Computing building Magne (about 50 logical qubits). Google added a neutral-atom programme in March 2026. Pasqal systems run in European HPC centres.",
+      "players": ["QuEra", "Pasqal", "Atom Computing", "Infleqtion", "planqc", "Google Quantum AI"],
+      "fit": ["qubo", "qae", "generative"]
+    },
+    {
+      "modality": "Photonic",
+      "how": "Qubits carried by photons on chips, mostly at room temperature.",
+      "strengths": "Standard chip fabrication, natural networking, modular scale-up.",
+      "limits": "Photon loss and probabilistic gates; no large general-purpose machine yet.",
+      "state": "PsiQuantum building utility-scale sites in Brisbane and Chicago (late 2020s target). Xanadu Aurora (modular, 35 chips). Quandela in DARPA's benchmarking initiative.",
+      "players": ["PsiQuantum", "Xanadu", "Quandela", "ORCA"],
+      "fit": ["qae"]
+    },
+    {
+      "modality": "Silicon spin",
+      "how": "Electron spins in silicon, made with chip-industry processes.",
+      "strengths": "CMOS manufacturing and very high qubit density in principle.",
+      "limits": "Small systems so far; two-qubit fidelity around 99%.",
+      "state": "Quobly (€115m raised, first product targeted end 2026), Quantum Motion system at the UK NQCC, Diraq, Intel. C12 works on carbon nanotubes.",
+      "players": ["Quobly", "Quantum Motion", "Diraq", "Intel", "C12"],
+      "fit": ["qae"]
+    },
+    {
+      "modality": "Topological",
+      "how": "Qubits stored in exotic quasi-particles (Majorana modes), protected from noise by physics.",
+      "strengths": "Very low error rates in theory, small footprint.",
+      "limits": "The existence of a working topological qubit is still disputed by physicists.",
+      "state": "Microsoft Majorana 1 (2025) and Majorana 2 (June 2026) prototypes, a few qubits.",
+      "players": ["Microsoft"],
+      "fit": ["qae"]
+    },
+    {
+      "modality": "Quantum annealing",
+      "how": "Special-purpose superconducting machines that relax to low-energy solutions of an optimisation problem.",
+      "strengths": "Thousands of qubits available today for optimisation and sampling.",
+      "limits": "Not universal; advantage over classical heuristics contested.",
+      "state": "D-Wave Advantage2 (4,400+ qubits). D-Wave also bought Quantum Circuits (2026) to add gate-based machines.",
+      "players": ["D-Wave"],
+      "fit": ["qubo"]
+    },
+    {
+      "modality": "Quantum-inspired (classical)",
+      "how": "Classical hardware running algorithms borrowed from quantum physics.",
+      "strengths": "Available now, no new infrastructure.",
+      "limits": "No quantum speed-up; gains are classical algorithmic ones.",
+      "state": "Tensor-network software and dedicated chips (Fujitsu Digital Annealer, Toshiba SQBM+) used in bank pilots.",
+      "players": ["Multiverse Computing", "Fujitsu", "Toshiba", "NVIDIA (GPU simulation)"],
+      "fit": ["inspired"]
+    }
+  ],
+  "players": [
+    { "name": "IBM", "category": "Hardware", "focus": "Superconducting; Qiskit; cloud platform", "base": "US", "note": "Partner in many bank programmes (HSBC, Wells Fargo, Barclays)" },
+    { "name": "Google Quantum AI", "category": "Hardware", "focus": "Superconducting and neutral atoms; Cirq", "base": "US", "note": "Error-correction milestones with Willow" },
+    { "name": "Quantinuum", "category": "Hardware", "focus": "Trapped ions; software stack", "base": "US / UK", "note": "Leading logical-qubit results; JPMorgan partner" },
+    { "name": "IonQ", "category": "Hardware", "focus": "Trapped ions", "base": "US", "note": "Aggressive 2030 targets; bought Oxford Ionics" },
+    { "name": "Rigetti", "category": "Hardware", "focus": "Superconducting chiplets", "base": "US", "note": "108-qubit system (2026)" },
+    { "name": "IQM", "category": "Hardware", "focus": "Superconducting", "base": "Finland", "note": "Many on-premise systems in European HPC centres" },
+    { "name": "OQC", "category": "Hardware", "focus": "Superconducting", "base": "UK", "note": "Data-centre deployments" },
+    { "name": "Alice & Bob", "category": "Hardware", "focus": "Cat qubits", "base": "France", "note": "Fewer qubits per logical qubit by design" },
+    { "name": "QuEra", "category": "Hardware", "focus": "Neutral atoms", "base": "US", "note": "Harvard spin-out; Google invested" },
+    { "name": "Pasqal", "category": "Hardware", "focus": "Neutral atoms, analog and digital", "base": "France", "note": "Pilots with BNP Paribas and Crédit Agricole CIB" },
+    { "name": "Atom Computing", "category": "Hardware", "focus": "Neutral atoms", "base": "US", "note": "Builds Magne with Microsoft" },
+    { "name": "Infleqtion", "category": "Hardware", "focus": "Neutral atoms", "base": "US", "note": "Logical-qubit demonstrations, including Shor on logical qubits" },
+    { "name": "planqc", "category": "Hardware", "focus": "Neutral atoms", "base": "Germany", "note": "German national programmes" },
+    { "name": "PsiQuantum", "category": "Hardware", "focus": "Photonic", "base": "US", "note": "Aims straight for fault-tolerant scale" },
+    { "name": "Xanadu", "category": "Hardware", "focus": "Photonic; PennyLane", "base": "Canada", "note": "PennyLane is widely used for variational methods" },
+    { "name": "Quandela", "category": "Hardware", "focus": "Photonic", "base": "France", "note": "Credit-risk pilot with Crédit Agricole CIB" },
+    { "name": "Quobly", "category": "Hardware", "focus": "Silicon spin", "base": "France", "note": "CMOS route to scale" },
+    { "name": "Microsoft", "category": "Hardware", "focus": "Topological; Azure Quantum", "base": "US", "note": "Also partners on neutral atoms" },
+    { "name": "D-Wave", "category": "Hardware", "focus": "Annealing, adding gate-based", "base": "Canada / US", "note": "Most accessible for optimisation pilots" },
+    { "name": "Qiskit (IBM)", "category": "Software", "focus": "Open-source SDK", "base": "US", "note": "Includes finance modules (qiskit-finance)" },
+    { "name": "NVIDIA CUDA-Q", "category": "Software", "focus": "GPU simulation, hybrid quantum-classical", "base": "US", "note": "Simulate circuits on GPUs before touching hardware" },
+    { "name": "PennyLane (Xanadu)", "category": "Software", "focus": "Differentiable quantum programming", "base": "Canada", "note": "Variational and quantum ML work" },
+    { "name": "Classiq", "category": "Software", "focus": "High-level circuit synthesis", "base": "Israel", "note": "Finance work with Citi" },
+    { "name": "Q-CTRL", "category": "Software", "focus": "Error suppression, control", "base": "Australia", "note": "Improves results on today's hardware" },
+    { "name": "Riverlane", "category": "Software", "focus": "Error-correction stack", "base": "UK", "note": "Decoders for fault-tolerant machines" },
+    { "name": "Phasecraft", "category": "Software", "focus": "Algorithms for near-term hardware", "base": "UK", "note": "Resource-efficient algorithms" },
+    { "name": "Multiverse Computing", "category": "Software", "focus": "Quantum-inspired, tensor networks", "base": "Spain", "note": "Finance pilots; usable on classical hardware" },
+    { "name": "QC Ware", "category": "Software", "focus": "Finance algorithms", "base": "US", "note": "Monte Carlo work with Goldman Sachs" },
+    { "name": "IBM Quantum Platform", "category": "Cloud access", "focus": "IBM machines", "base": "US", "note": "Free tier for small experiments" },
+    { "name": "Amazon Braket", "category": "Cloud access", "focus": "Multi-vendor (ions, atoms, superconducting)", "base": "US", "note": "One account, several hardware types" },
+    { "name": "Azure Quantum", "category": "Cloud access", "focus": "Multi-vendor; resource estimator", "base": "US", "note": "Resource estimator useful for go/no-go analyses" },
+    { "name": "OVHcloud, Scaleway", "category": "Cloud access", "focus": "European quantum access and emulators", "base": "France", "note": "Sovereignty option" },
+    { "name": "JPMorgan Chase", "category": "Finance", "focus": "Optimisation, randomness, Monte Carlo research", "base": "US", "note": "Largest in-house quantum research team in banking" },
+    { "name": "HSBC", "category": "Finance", "focus": "Trading prediction, quantum-safe networks", "base": "UK", "note": "Bond-trading trial with IBM (2025)" },
+    { "name": "Goldman Sachs", "category": "Finance", "focus": "Derivatives pricing resource estimates", "base": "US", "note": "Co-authored the reference pricing threshold paper" },
+    { "name": "BNP Paribas", "category": "Finance", "focus": "Collateral optimisation, pricing", "base": "France", "note": "Works with Pasqal" },
+    { "name": "Crédit Agricole CIB", "category": "Finance", "focus": "Derivatives valuation, credit risk", "base": "France", "note": "Pilots with Pasqal, Multiverse and Quandela" },
+    { "name": "Wells Fargo, Barclays, Citi", "category": "Finance", "focus": "Optimisation, Monte Carlo, ML", "base": "US / UK", "note": "Research programmes with IBM and software vendors" },
+    { "name": "DARPA QBI", "category": "Public programmes", "focus": "Independent test of utility-scale claims by 2033", "base": "US", "note": "Useful filter on vendor roadmaps" },
+    { "name": "EU, France, UK, Germany", "category": "Public programmes", "focus": "National strategies, HPC-integrated machines", "base": "Europe", "note": "EuroHPC quantum computers; UK NQCC; French national strategy" }
+  ],
+  "references": [
+    { "title": "Chakrabarti et al., A threshold for quantum advantage in derivative pricing (Quantum, 2021)", "url": "https://arxiv.org/abs/2012.03819" },
+    { "title": "Stamatopoulos et al., Option pricing using quantum computers (Quantum, 2020)", "url": "https://arxiv.org/abs/1905.02666" },
+    { "title": "Egger et al., Credit risk analysis using quantum computers (2019)", "url": "https://arxiv.org/abs/1907.03044" },
+    { "title": "Herman et al., Quantum computing for finance (Nature Reviews Physics, 2023)", "url": "https://arxiv.org/abs/2201.02773" },
+    { "title": "Google Quantum AI, Quantum error correction below the surface code threshold (2024)", "url": "https://arxiv.org/abs/2408.13687" },
+    { "title": "Gidney, How to factor 2048-bit RSA integers with less than a million noisy qubits (2025)", "url": "https://arxiv.org/abs/2505.15917" },
+    { "title": "Krasnok, What quantum computer to buy? (2026)", "url": "https://arxiv.org/abs/2604.04761" },
+    { "title": "IBM quantum roadmap", "url": "https://www.ibm.com/roadmaps/quantum/" }
+  ]
+}
