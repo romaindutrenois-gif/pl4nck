@@ -4,869 +4,326 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Pl4nck</title>
-<meta name="description" content="An honest verdict on quantum computing for your models, and the no-regret steps that pay off meanwhile.">
+<meta name="description" content="Quantum computing will reach pricing and risk, but not before error-corrected machines arrive. Pl4nck helps quant teams spend the wait well: honest verdicts, no-regret roadmaps and validated model kits.">
+<script>
+  // Old library links pointed at /?model=<id>: send them to the tool.
+  if (new URLSearchParams(location.search).has('model')) location.replace('/launch' + location.search);
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site.css">
 <style>
-/* landing */
-.hero{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:start}
-h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.6vw,62px);line-height:1.04;letter-spacing:-.02em;margin:0 0 22px}
-.lead{font-size:18px;line-height:1.6;color:var(--muted);max-width:44ch;margin:0 0 30px}
-.start{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.btn{appearance:none;border:0;border-radius:var(--r-sm);padding:13px 22px;background:var(--ink);color:var(--paper);font-weight:600;cursor:pointer}
-.btn:disabled{opacity:.35;cursor:not-allowed}
+/* Hero band: the trading floor at night. Tokens are re-pointed so the shared bar reads on dark. */
+.band{
+  --paper:#0f1e33;--sheet:#17294a;--ink:#e9eef6;--muted:#9fb0ca;--rule:#2a3d5e;--accent:#9aa8ff;--amber:#e3b25d;
+  background:radial-gradient(120% 90% at 85% 40%,#1a2f57 0%,#0f1e33 55%,#0b1628 100%);color:var(--ink);
+}
+.band .wrap{padding-bottom:56px}
+.band .bar{margin-bottom:40px}
+.hero{display:grid;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);gap:48px;align-items:center}
+.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(36px,4.6vw,58px);line-height:1.06;letter-spacing:-.02em;margin:0 0 22px;max-width:15ch}
+.hero .lead{font-size:18px;line-height:1.6;color:var(--muted);max-width:46ch;margin:0 0 30px}
+.ctas{display:flex;flex-wrap:wrap;gap:12px}
+.band .btn{background:var(--ink);color:#0f1e33}
+.band .btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px #3b5179}
 .btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule)}
-.btn.small{padding:7px 12px;font-size:14px}
-.fine{font-size:14px;color:var(--muted)}
-.consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--muted);margin:26px 0 0;max-width:52ch;line-height:1.5}
-.consent input{margin-top:3px;accent-color:var(--accent);width:16px;height:16px;flex:none}
-.sample-note{font-size:13px;color:var(--muted);margin:10px 2px 0}
+.stage{position:relative}
+.stage canvas{display:block;width:100%;height:420px}
+.stage figcaption{font-size:13.5px;line-height:1.5;color:var(--muted);margin-top:12px;max-width:60ch}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:18px;height:2px;vertical-align:middle;margin-right:7px}
 
-/* verdict card: the one memorable element */
-.verdict{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-md);padding:26px 26px 22px;position:relative}
-.verdict .kind{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:14px}
-.verdict .kind b{color:var(--ink);font-weight:600}
-.verdict .head{font-family:var(--serif);font-size:clamp(22px,2.6vw,27px);line-height:1.22;letter-spacing:-.01em;margin:0 0 20px}
-.facts{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;margin:0 0 24px;font-size:15px}
-.facts dt{color:var(--muted)}
-.facts dd{margin:0;font-weight:500}
-.facts dd.horizon{color:var(--amber)}
-.ladder{list-style:none;margin:0 0 22px;padding:0;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;align-items:start;position:relative}
-.ladder li{position:relative;padding-top:24px;font-size:12.5px;line-height:1.3;color:var(--muted);padding-right:6px}
-.ladder li::before{content:"";position:absolute;left:0;right:0;top:8px;height:2px;background:var(--ink)}
-.ladder li:last-child::before{display:none}
-.ladder li.here::before,.ladder li.future::before{background:var(--rule)}
-.ladder li:nth-last-child(2)::before{background:none;border-top:2px dashed var(--amber);height:0}
-.ladder li::after{content:"";position:absolute;left:0;top:3px;width:12px;height:12px;border-radius:50%;background:var(--ink);box-sizing:border-box}
-.ladder li.future::after{background:var(--sheet);border:2px solid var(--rule)}
-.ladder li.here{color:var(--ink);font-weight:600}
-.ladder li.here::after{width:16px;height:16px;top:1px;left:-2px;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
-.ladder li.quantum{color:var(--amber);font-weight:600}
-.ladder li.quantum::after{background:var(--sheet);border:2px solid var(--amber);border-radius:2px;transform:rotate(45deg)}
-.ladder .you{display:block;font-size:11.5px;font-weight:600;color:var(--accent);margin-top:3px}
-.next{border-top:1px solid var(--rule);padding-top:16px;display:grid;gap:4px}
-.next .lbl{font-size:13px;color:var(--muted)}
-.next .step{font-weight:600;font-size:16px}
-.next .why{font-size:14.5px;color:var(--muted)}
-.skeleton{color:var(--muted);font-family:var(--serif);font-size:20px}
-.skeleton::after{content:"";display:inline-block;width:.6em;animation:dots 1.2s steps(4) infinite;overflow:hidden;vertical-align:bottom}
-@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
-@media (prefers-reduced-motion:reduce){.skeleton::after{animation:none;content:"…"}}
+/* Below the band */
+.page section{margin:72px 0 0}
+.page h2{margin-top:0}
+.gap{overflow:hidden;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-md);padding:28px 28px 22px}
+.ruler{position:relative;height:86px;margin:34px 6px 8px}
+.ruler .axis{position:absolute;left:0;right:0;top:40px;height:2px;background:var(--rule)}
+.ruler .tick{position:absolute;top:54px;font-size:12px;color:var(--muted);transform:translateX(-50%)}
+.ruler .tick::before{content:"";position:absolute;left:50%;top:-14px;width:1px;height:8px;background:var(--rule)}
+.pin{position:absolute;top:0;transform:translateX(-50%);text-align:center;width:150px}
+.pin .dot{display:block;width:14px;height:14px;border-radius:50%;margin:0 auto 6px;position:relative;top:27px}
+.pin b{display:block;font-size:13.5px;margin-top:-34px;margin-bottom:24px;white-space:nowrap}
+.pin.now .dot{background:var(--accent)}
+.pin.road .dot{background:var(--sheet);border:2px solid var(--accent)}
+.pin.need .dot{background:var(--sheet);border:2px solid var(--amber);border-radius:2px;transform:rotate(45deg)}
+.pin.need b{color:var(--amber);text-align:right;transform:translateX(-30px)}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin-top:20px}
+.facts p{margin:0;font-size:14.5px;color:var(--muted)}
+.facts strong{display:block;font-family:var(--serif);font-weight:500;font-size:22px;color:var(--ink);margin-bottom:4px}
+.sym{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:9px;vertical-align:2px}
+.sym.now{background:var(--accent)}
+.sym.road{box-shadow:inset 0 0 0 2px var(--accent)}
+.sym.need{box-shadow:inset 0 0 0 2px var(--amber);border-radius:1px;transform:rotate(45deg) scale(.85)}
+.facts .src{display:block;font-size:12.5px;margin-top:6px}
+.steps{list-style:none;padding:0;margin:26px 0 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;counter-reset:s}
+.steps li{position:relative;padding:34px 22px 0 0;margin:0;max-width:none;counter-increment:s}
+.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--paper);font-size:13px;font-weight:600;display:grid;place-items:center}
+.steps li::after{content:"";position:absolute;left:30px;right:8px;top:11px;height:2px;background:var(--ink)}
+.steps li:nth-child(2)::after{background:none;border-top:2px dashed var(--amber);height:0}
+.steps li:last-child::before{background:var(--paper);color:var(--amber);box-shadow:inset 0 0 0 2px var(--amber)}
+.steps li:last-child::after{display:none}
+.steps h3{font-family:var(--serif);font-weight:500;font-size:21px;margin:0 0 6px}
+.steps p{margin:0;font-size:15px;color:var(--muted)}
+.ways{display:grid;gap:0;margin-top:18px;border-top:1px solid var(--rule)}
+.ways a{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:24px;padding:20px 0;border-bottom:1px solid var(--rule);color:inherit;text-decoration:none}
+.ways a:hover .w{color:var(--accent)}
+.ways .w{font-family:var(--serif);font-size:26px;line-height:1.2}
+.ways p{margin:0;color:var(--muted);font-size:15.5px}
+.foot{margin:64px 0 0;padding-top:20px;border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;color:var(--muted)}
+.foot span{flex:1 1 320px}
 
-/* intake */
-.steps{display:flex;gap:6px;margin:0 0 30px}
-.steps i{height:3px;flex:1;background:var(--rule);border-radius:2px}
-.steps i.on{background:var(--ink)}
-h2{font-family:var(--serif);font-weight:400;font-size:34px;letter-spacing:-.015em;margin:0 0 6px}
-.sub{color:var(--muted);margin:0 0 30px}
-.q{margin:0 0 30px}
-.q .ql{display:block;font-weight:600;margin-bottom:10px}
-.q .hint{font-weight:400;color:var(--muted);font-size:14px;margin-left:8px}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{border:1px solid var(--rule);background:var(--sheet);border-radius:var(--r-sm);padding:8px 13px;font-size:14.5px;cursor:pointer;text-align:left}
-.chip:hover{border-color:var(--ink)}
-.chip[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
-.text{width:100%;border:1px solid var(--rule);background:var(--sheet);border-radius:var(--r-sm);padding:10px 12px}
-.nav{display:flex;align-items:center;gap:12px;margin-top:8px;border-top:1px solid var(--rule);padding-top:22px}
-.nav .spacer{flex:1}
-
-/* conversation */
-.convo{display:flex;flex-direction:column;gap:26px}
-.me{align-self:flex-end;max-width:80%;background:var(--ink);color:var(--paper);border-radius:var(--r-md) var(--r-md) 2px var(--r-md);padding:10px 14px;white-space:pre-wrap}
-.ans{font-size:16.5px;line-height:1.65}
-.ans p{margin:0 0 12px;max-width:68ch}
-.ans .verdict{margin-bottom:22px}
-.ans h1,.ans h2,.ans h3{font-family:var(--serif);font-weight:500;font-size:20px;margin:18px 0 6px}
-.ans ul,.ans ol{margin:0 0 12px;padding-left:22px;max-width:66ch}
-.ans li{margin:4px 0}
-.ans code{font-size:.9em;background:var(--accent-soft);padding:1px 5px;border-radius:4px}
-.ans table{border-collapse:collapse;margin:6px 0 14px;font-size:14.5px;width:100%;background:var(--sheet)}
-.ans th,.ans td{border:1px solid var(--rule);padding:7px 10px;text-align:left;vertical-align:top}
-.ans .tablewrap{overflow-x:auto}
-.ask{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-.ask .chip{background:transparent;border-style:dashed}
-.ask .chip:hover{border-style:solid}
-.ask a.chip{text-decoration:none;color:inherit}
-.ask .chip.again{border-style:solid;background:var(--sheet);font-weight:600}
-.err{color:var(--amber)}
-.steplink{all:unset;cursor:pointer;color:inherit;text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
-.steplink:hover{text-decoration-color:currentColor}
-.steplink:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
-.laddertip{font-size:13px;color:var(--muted);margin:-8px 0 18px}
-.code{border:1px solid var(--rule);border-radius:var(--r-sm);background:var(--sheet);margin:6px 0 14px;overflow:hidden}
-.codebar{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--muted)}
-.copy{background:none;border:0;color:var(--accent);cursor:pointer;font-size:13px;padding:2px 4px}
-.kitmenu{border:1px solid var(--ink);border-radius:var(--r-md);background:var(--sheet);padding:20px 20px 14px}
-.kitmenu h3{font-family:var(--serif);font-weight:500;font-size:22px;margin:0 0 4px}
-.kitmenu .fine{margin:0 0 14px}
-.parts{display:grid;gap:4px;margin-bottom:6px}
-.part{display:flex;gap:12px;align-items:flex-start;padding:10px 8px;border-radius:var(--r-sm);cursor:pointer}
-.part:hover{background:var(--paper)}
-.part input{margin-top:4px;width:16px;height:16px;accent-color:var(--accent);flex:none}
-.part b{display:block;font-weight:600}
-.pdesc{display:block;font-size:14.5px;color:var(--muted)}
-.pfiles{display:block;font-size:12.5px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin-top:2px}
-.kitmenu .nav{margin-top:6px;padding-top:14px}
-.kit{border:1px solid var(--rule);border-radius:var(--r-md);background:var(--sheet);margin:8px 0 16px;overflow:hidden}
-.kithead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
-.kithead b{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;margin-right:10px}
-.fmeta{font-size:13px;color:var(--muted);margin-left:auto;padding-left:12px;white-space:nowrap}
-.kitbody{padding:8px 14px 4px;font-size:14px}
-.tree{list-style:none;margin:0;padding:0 0 0 16px;max-width:none}
-.kitbody>.tree{padding-left:0}
-.tree li{margin:2px 0}
-.dname{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--muted)}
-.tree summary{display:flex;align-items:center;cursor:pointer;padding:3px 0;list-style:none}
-.tree summary::-webkit-details-marker{display:none}
-.tree summary::before{content:"";width:7px;height:7px;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:rotate(-45deg);margin-right:9px;flex:none;transition:transform .12s}
-.tree details[open]>summary::before{transform:rotate(45deg)}
-.fname{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-.tree pre code{background:none;padding:0;font-size:inherit}
-.tree pre{margin:6px 0 10px;padding:10px 12px;border:1px solid var(--rule);border-radius:var(--r-sm);background:var(--paper);overflow-x:auto;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;max-height:340px}
-.kitnote{font-size:13px;color:var(--muted);margin:4px 14px 12px!important}
-@media (prefers-reduced-motion:reduce){.tree summary::before{transition:none}}
-.code pre code{background:none;padding:0;font-size:inherit}
-.code pre{margin:0;padding:12px 14px;overflow-x:auto;font:13.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-.profile{font-size:14px;color:var(--muted)}
-.nudge{display:flex;gap:12px;align-items:center;flex-wrap:wrap;border:1px solid var(--rule);background:var(--sheet);border-radius:var(--r-md);padding:12px 16px;font-size:15px}
-.nudge span{flex:1;min-width:200px}
-
-.composer{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(to bottom,transparent,var(--paper) 28%);padding:22px 20px calc(12px + env(safe-area-inset-bottom))}
-.composer .inner{max-width:680px;margin:0 auto}
-.composer .box{display:flex;gap:8px;align-items:flex-end;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-md);padding:6px}
-.composer textarea{flex:1;resize:none;border:0;background:transparent;min-height:40px;max-height:160px;padding:9px 10px;outline:none}
-.composer .meta{display:flex;gap:12px;align-items:center;margin-top:8px;font-size:13px;color:var(--muted);flex-wrap:wrap}
-.composer .meta button{background:none;border:0;padding:0;color:var(--accent);cursor:pointer;font-size:13px}
-.ref{font-variant-numeric:tabular-nums;letter-spacing:.03em}
-
-dialog{border:1px solid var(--rule);border-radius:var(--r-md);background:var(--sheet);color:var(--ink);padding:0;width:min(560px,calc(100% - 32px));max-height:calc(100% - 32px)}
-dialog::backdrop{background:rgba(8,14,26,.45)}
-dialog form{padding:26px}
-dialog h2{font-size:26px;margin-bottom:20px}
-
-@media (max-width:820px){
-  .hero{grid-template-columns:1fr;gap:36px}
-  .bar{margin-bottom:36px}
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr;gap:28px}
+  .stage canvas{height:320px}
+  .facts,.steps{grid-template-columns:1fr}
+  .steps li{padding:0 0 22px 38px}
+  .steps li::after{left:11px;right:auto;top:30px;bottom:4px;width:2px;height:auto}
+  .steps li:nth-child(2)::after{border-top:0;border-left:2px dashed var(--amber);width:0;height:auto}
+  .ways a{grid-template-columns:1fr;gap:6px}
 }
 @media (max-width:560px){
-  .verdict{padding:20px 18px 18px}
-  .ladder{grid-auto-flow:row;grid-auto-columns:auto;gap:0}
-  .ladder li{padding:0 0 14px 26px;font-size:14px}
-  .ladder li::before{left:5px;right:auto;top:12px;bottom:0;width:2px;height:auto}
-  .ladder li:last-child::before{display:none}
-  .ladder li:nth-last-child(2)::before{background:none;border-top:0;border-left:2px dashed var(--amber);width:0;height:auto}
-  .ladder li::after{top:3px}
-  .ladder li.here::after{top:1px;left:-2px}
-  .ladder .you{display:inline;margin-left:8px}
-  .proto{display:none}
+  .pin{width:16px}
+  .pin b{display:none}
+  .ruler{height:70px;margin-top:4px}
 }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="bar">
-    <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><span class="name">Pl4nck</span></a>
-    <nav class="tabs" aria-label="Sections">
-      <a href="/" aria-current="page">Launch Pl4nck</a>
-      <a href="/library">Model library</a>
-      <a href="/technology">Technology mapping</a>
-      <a href="/about">About</a>
-    </nav>
-    <span class="proto">Research prototype</span>
-  </div>
+<div class="band">
+  <div class="wrap">
+    <div class="bar">
+      <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><span class="name">Pl4nck</span></a>
+      <nav class="tabs" aria-label="Sections">
+        <a href="/launch">Launch Pl4nck</a>
+        <a href="/library">Model library</a>
+        <a href="/technology">Technology mapping</a>
+        <a href="/about">About</a>
+      </nav>
+      <span class="proto">Research prototype</span>
+    </div>
 
-  <!-- Landing -->
-  <section id="intro" class="hero">
-    <div>
-      <h1>Get quantum-ready</h1>
-      <p class="lead">Assess where quantum computing stands, design your model roadmap, and generate prototype code and model validation documentation.</p>
-      <div class="start">
-        <button class="btn" id="start" disabled>Get my verdict</button>
-        <span class="fine">Four short questions. No account.</span>
+    <div class="hero">
+      <div>
+        <h1>The models you validate today are the benchmarks quantum will have to beat.</h1>
+        <p class="lead">Quantum computing will reach pricing and risk, but only once error-corrected machines arrive, most likely in the 2030s. Pl4nck helps quant teams spend the wait well: honest verdicts, no-regret roadmaps and validated model kits that pay off whether quantum delivers or not.</p>
+        <div class="ctas">
+          <a class="btn" href="/launch">Assess a use case</a>
+          <a class="btn quiet" href="/library">Browse the model library</a>
+        </div>
       </div>
-      <label class="consent"><input type="checkbox" id="consent">
-        <span>I agree that my answers, the conversation and any feedback are stored for 12 months to improve this prototype (<a href="/privacy" target="_blank" rel="noopener">privacy notice</a>). I won't share confidential information, code or data from my employer.</span></label>
-    </div>
-    <div>
-      <div id="sample"></div>
-      <p class="sample-note">Example verdict for a validation quant pricing autocalls by Monte Carlo.</p>
-    </div>
-  </section>
-
-  <!-- Model library: direct kit generation -->
-  <section id="libstart" class="narrow" hidden>
-    <p class="fine"><a href="/library">← Model library</a></p>
-    <h2 id="libname"></h2>
-    <p class="sub" id="libsum"></p>
-    <div id="librole"></div>
-    <div class="q"><span class="ql">Kit contents <span class="hint">pick what you need</span></span>
-      <div class="parts" id="libparts"></div>
-      <p class="fine">Always included: QuantLib reference values for the tests, and the conventions module (day counts, calendars, schedules).</p></div>
-    <label class="consent"><input type="checkbox" id="libconsent">
-      <span>I agree that my choices, the conversation and any feedback are stored for 12 months to improve this prototype (<a href="/privacy" target="_blank" rel="noopener">privacy notice</a>). I won't share confidential information, code or data from my employer.</span></label>
-    <div class="nav"><span class="spacer"></span><button class="btn" id="libgo" disabled>Generate the kit</button></div>
-  </section>
-
-  <!-- Intake -->
-  <section id="intake" class="narrow" hidden>
-    <div class="steps" id="progress"></div>
-    <h2 id="steptitle"></h2>
-    <p class="sub" id="stepsub"></p>
-    <div id="questions"></div>
-    <div class="nav">
-      <button class="btn quiet" id="back">Back</button>
-      <span class="spacer"></span>
-      <span class="fine" id="req"></span>
-      <button class="btn" id="next">Next</button>
-    </div>
-  </section>
-
-  <!-- Conversation -->
-  <section id="chat" class="narrow" hidden>
-    <div class="convo" id="msgs"></div>
-  </section>
-</div>
-
-<div class="composer" id="composer" hidden>
-  <div class="inner">
-    <div class="box">
-      <textarea id="input" rows="1" placeholder="Ask a follow-up question" aria-label="Your question"></textarea>
-      <button class="btn small" id="send">Ask</button>
-    </div>
-    <div class="meta">
-      <button id="fbopen" type="button">Give feedback (30 seconds)</button>
-      <span id="turns"></span>
-      <span style="margin-left:auto">Session <span class="ref" id="sref"></span> · <a href="/privacy" target="_blank" rel="noopener">Privacy</a></span>
+      <figure class="stage" style="margin:0">
+        <canvas id="fan" role="img" aria-label="Monte Carlo price paths fanning out over one year; their final prices are collected into the amplitudes of a four-qubit register."></canvas>
+        <div class="legend"><span><i style="background:#9aa8ff"></i>Monte Carlo paths, as priced today</span><span><i style="background:#e3b25d"></i>The same distribution as qubit amplitudes</span></div>
+        <figcaption>On the left, one year of an equity simulated by Monte Carlo. On the right, its final distribution loaded onto 4 qubits: 16 states whose amplitudes are the square roots of the probabilities. Loading the distribution is the first step of quantum amplitude estimation, the algorithm behind quantum Monte Carlo.</figcaption>
+      </figure>
     </div>
   </div>
 </div>
 
-<dialog id="fb">
-  <form method="dialog">
-    <h2>Was this useful?</h2>
-    <div id="fbq"></div>
-    <div class="q"><label class="ql" for="fbcomment">Anything to add? <span class="hint">optional</span></label>
-      <textarea class="text" id="fbcomment" rows="3" maxlength="1500" placeholder="What was missing, wrong, or surprisingly useful"></textarea></div>
-    <div class="q"><label class="ql" for="fbemail">Email <span class="hint">optional, for early access or a starter kit</span></label>
-      <input class="text" id="fbemail" type="email" maxlength="120" placeholder="you@example.com">
-      <p class="fine" style="margin:6px 0 0">Only used to contact you about this project. You can ask to delete it at any time.</p></div>
-    <div class="nav"><button class="btn quiet" value="cancel" type="submit">Not now</button><span class="spacer"></span><button class="btn" value="send" type="submit">Send feedback</button></div>
-  </form>
-</dialog>
+<div class="wrap">
+  <main class="page">
+    <section aria-labelledby="h-gap">
+      <h2 id="h-gap">Where quantum stands for pricing</h2>
+      <p>Quantum amplitude estimation makes the Monte Carlo error fall as 1/N instead of 1/√N. The theory is sound. The machines are not there yet: a useful advantage on derivatives pricing needs about a hundred times more error-corrected qubits than exist today.</p>
+      <div class="gap">
+        <div class="ruler" id="ruler" aria-hidden="true"><div class="axis"></div></div>
+        <div class="facts">
+          <p><strong><span class="sym now"></span>Dozens</strong>logical qubits demonstrated so far, on trapped ions and neutral atoms.<span class="src">Quantinuum, QuEra, Atom Computing, 2024 to 2026</span></p>
+          <p><strong><span class="sym road"></span>About 200</strong>logical qubits targeted for 2029 by the leading roadmaps. Roadmaps are ambitions, not commitments.<span class="src">IBM Starling; Quantinuum Apollo</span></p>
+          <p><strong><span class="sym need"></span>About 7,500</strong>logical qubits for an advantage on autocalls and TARFs, running in about a second.<span class="src">Chakrabarti et al., Quantum 5, 463 (2021)</span></p>
+        </div>
+      </div>
+      <p class="fine">Logarithmic scale. Details and sources in the <a href="/technology">technology mapping</a>, reviewed every month.</p>
+    </section>
+
+    <section aria-labelledby="h-wait">
+      <h2 id="h-wait">Spend the wait well</h2>
+      <p>A quantum pricer will be judged against your best classical one. Everything that makes that benchmark strong pays off now, and it is the same work whether quantum arrives in 2032 or never.</p>
+      <ol class="steps">
+        <li><h3>Benchmark what you run</h3><p>Independent reference values, documented errors, tests with criteria fixed in advance. The validated kits start here.</p></li>
+        <li><h3>Make it faster and safer</h3><p>Variance reduction, adjoint Greeks, richer models compared, findings closed. Gains you bank today.</p></li>
+        <li><h3>Decide with numbers</h3><p>A reduced case on a simulator, a resource estimate against your classical cost, and a dated go or no-go.</p></li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="h-ways">
+      <h2 id="h-ways">Start where you are</h2>
+      <div class="ways">
+        <a href="/launch"><span class="w">Assess a use case</span><p>Four short questions on your role, use case and current model. You get an honest verdict, the hardware that fits, and a roadmap from where you stand.</p></a>
+        <a href="/library"><span class="w">Download a validated kit</span><p>Prototype, tests against QuantLib reference values, conventions module and model documentation in Word and LaTeX. Runs on your machine; nothing is uploaded.</p></a>
+        <a href="/technology"><span class="w">Read the landscape</span><p>Quantum computing for finance by use case, algorithm, hardware and player, with horizons stated plainly.</p></a>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span>Pl4nck is a free research prototype, built by a practising quant for quant teams in banks and asset managers.</span>
+      <a href="/about">About</a>
+      <a href="/about#contact">Contact</a>
+      <a href="/privacy">Privacy</a>
+    </footer>
+  </main>
+</div>
 
 <script>
 (() => {
 'use strict';
 
-// ---------- Questions ----------
-const STEPS = [
-  { title: 'About you', sub: 'So the answer matches your role.', qs: [
-    { id: 'job', label: 'Your role', type: 'single', required: true, options: ['Quant R&D', 'Model validation', 'Front-office quant / structuring', 'Risk management', 'Portfolio management', 'Innovation / exploration', 'Management / planning', 'Other'] },
-    { id: 'seniority', label: 'Experience', type: 'single', options: ['0–3 years', '3–8 years', '8+ years', 'Head of team'] },
-    { id: 'institution', label: 'Institution', type: 'single', options: ['Global bank', 'National / regional bank', 'Asset manager', 'Insurer', 'Consultancy / vendor', 'Academic', 'Other'] },
-  ]},
-  { title: 'Your use case', sub: 'Pick one use case for a sharp verdict. You can assess another one afterwards.', qs: [
-    { id: 'objectives', label: 'Problem', hint: 'pick the main one', type: 'single', required: true, options: ['Pricing', 'Risk measures (VaR / ES)', 'XVA / counterparty risk', 'Credit risk / portfolio models', 'Calibration', 'Hedging', 'Portfolio optimisation', 'Scenario generation / synthetic data', 'Stress testing'] },
-    { id: 'assetClasses', label: 'Asset class', hint: 'pick the main one', type: 'single', required: true, options: ['Equity', 'Rates', 'Credit', 'FX', 'Commodities', 'Multi-asset', 'Structured products / securitisation'] },
-  ]},
-  { title: 'Your model', sub: 'The model you use today for this use case. The family is enough, nothing confidential.', qs: [
-    { id: 'models', label: 'Model', hint: 'pick one, or type it below', type: 'single', required: true, orText: 'modelsOther', options: ['Black-Scholes', 'Local volatility', 'Heston / stochastic vol', 'Local-stochastic vol', 'SABR', 'Hull-White / short rate', 'LMM', 'Copulas', 'Historical simulation', 'Monte Carlo VaR', 'GARCH', 'Mean-variance', 'Machine learning', 'Not sure / none'] },
-    { id: 'modelsOther', label: 'Other model', hint: 'name only, optional', type: 'text', max: 80, placeholder: 'e.g. Bergomi, Cheyette, Vasicek' },
-    { id: 'qcKnowledge', label: 'Your quantum computing knowledge', type: 'single', required: true, options: ['None', 'I have read about it', 'I followed a course', 'I experimented hands-on (e.g. Qiskit)', 'I work on it professionally'] },
-  ]},
-  { title: 'Your needs', sub: 'What would make the next ten minutes worth it?', qs: [
-    { id: 'painPoints', label: 'What hurts most today?', hint: 'select all that apply', type: 'multi', options: ['Computation time', 'Model accuracy / robustness', 'Validation findings / model risk', 'Documentation burden (SR 11-7…)', 'Data quality / availability', 'Skills / upskilling', 'Budget / management buy-in', 'Keeping up with new technology'] },
-    { id: 'goals', label: 'What do you want from this session?', hint: 'select all that apply', type: 'multi', required: true, options: ['Understand where QC really stands', 'Know which quantum hardware fits my use case', 'A roadmap to improve my models', 'Validation / documentation templates', 'A business case for management', 'Just curious'] },
-  ]},
-];
-const FOLLOWUPS = [
-  'Starter quantum circuit for my use case',
-  'Roadmap to quantum readiness, with classical benchmarks',
-  'Starter kit for my next step',
-  'Which hardware fits, and why?',
-  'What would a validator check at my next step?',
-  'Help me make the business case',
-  'Bibliography on relevant research',
-];
-const FEEDBACK = [
-  { id: 'mostUseful', label: 'What was most useful?', hint: 'select all that apply', type: 'multi', options: ['The honest verdict', 'Hardware / technology fit', 'The roadmap', 'Validation / documentation pointers', 'Quantified benefits', 'Nothing yet'] },
-  { id: 'wantsKit', label: 'Would you want a starter kit for your next step? (Python model, benchmarks, tests, validation documentation)', type: 'single', options: ['Yes', 'Maybe', 'No'] },
-  { id: 'wouldReturn', label: 'Would you use this again?', type: 'single', options: ['Yes', 'Maybe', 'No'] },
-];
-const MAX_TURNS = 20;
-const KIT_PARTS = [
-  { id: 'Prototype', desc: 'Installable Python package with the model, ready to adapt.', files: 'src/, pyproject.toml, README.md', on: true },
-  { id: 'Benchmarks', desc: 'Closed forms or reference values to validate against.', files: 'benchmarks.py', on: true },
-  { id: 'Unit tests', desc: 'pytest checks with acceptance criteria: error bounds, convergence, seed stability.', files: 'tests/' },
-  { id: 'Test plan', desc: 'The validation tests as a table, with acceptance criteria.', files: 'docs/test_plan.md' },
-  { id: 'Documentation outline', desc: 'Model documentation sections aligned with SR 11-7, with what to write in each.', files: 'docs/model_documentation.md' },
-  { id: 'Example', desc: 'Short script comparing the prototype with the benchmark.', files: 'examples/run_example.py' },
-];
-const SAMPLE = {
-  headline: 'Quantum won’t price your autocalls this decade. Variance reduction will pay now.',
-  horizon: 'Not before the 2030s',
-  technology: 'Fault-tolerant gate-based',
-  ladder: ['MC under Black-Scholes', 'Variance reduction', 'Local / stochastic vol', 'Robust Greeks', 'Quantum readiness'],
-  current: 0,
-  next: 'Control variates and a documented convergence study',
-  sensitivity: 'A control variate with ρ = 0.99 needs about 50× fewer paths for the same error.',
-};
-
-// ---------- State ----------
-const $ = (id) => document.getElementById(id);
-const S = {
-  sessionId: (crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('')),
-  startedAt: new Date().toISOString(),
-  consent: false, step: 0, answers: {}, fb: {}, messages: [], busy: false, nudged: false, asked: new Set(),
-};
-const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-
-// ---------- Verdict card ----------
-function verdictCard(v, interactive) {
-  const steps = Array.isArray(v.ladder) && v.ladder.length ? v.ladder.slice(0, 8) : [];
-  const cur = Math.max(0, Math.min(Number(v.current) || 0, Math.max(steps.length - 2, 0)));
-  const ladder = steps.map((s, i) => {
-    const cls = i === steps.length - 1 ? 'quantum' : i === cur ? 'here' : i > cur ? 'future' : '';
-    const label = interactive
-      ? `<button type="button" class="steplink" data-ask="${esc(i === steps.length - 1 ? 'Starter quantum circuit for my use case' : 'Starter kit for the step: ' + s)}">${esc(s)}</button>`
-      : esc(s);
-    return `<li class="${cls}">${label}${i === cur ? '<span class="you">You are here</span>' : ''}</li>`;
-  }).join('');
-  return `<article class="verdict" aria-label="Verdict">
-    <div class="kind"><b>Verdict</b></div>
-    <p class="head">${esc(v.headline)}</p>
-    <dl class="facts">
-      <dt>Quantum advantage</dt><dd class="horizon">${esc(v.horizon)}</dd>
-      <dt>Hardware that fits</dt><dd>${esc(v.technology)}</dd>
-    </dl>
-    ${ladder ? `<ol class="ladder" aria-label="Readiness ladder">${ladder}</ol>` : ''}
-    ${ladder && interactive ? '<p class="laddertip">Select a step for a starter kit: prototype, test plan and documentation outline.</p>' : ''}
-    <div class="next"><span class="lbl">Your next no-regret step</span><span class="step">${esc(v.next)}</span>${v.sensitivity ? `<span class="why">${esc(v.sensitivity)}</span>` : ''}</div>
-  </article>`;
+// ---------- Gap ruler (log scale, 10 to 10,000 logical qubits) ----------
+const ruler = document.getElementById('ruler');
+const pos = (n) => ((Math.log10(n) - 1) / 3) * 100;
+for (const n of [10, 100, 1000, 10000]) {
+  const t = document.createElement('span'); t.className = 'tick'; t.style.left = pos(n) + '%';
+  t.textContent = n.toLocaleString('en-US'); ruler.append(t);
 }
-$('sample').innerHTML = verdictCard(SAMPLE);
-
-// Renders a streamed answer: verdict block (wherever it appears) + markdown.
-function renderAnswer(text, done) {
-  const wait = '<p class="skeleton">Weighing your setup</p>';
-  const start = text.search(/```\s*verdict/i);
-  if (start < 0) {
-    const tail = text.slice(-12);
-    if (/`{1,3}\s*v?e?r?d?i?c?t?$/i.test(tail) && !/\n\S/.test(text.trimEnd().slice(-12))) return body(text.replace(/`{1,3}\s*\w*$/, ''), done) + wait;
-    return body(text, done);
-  }
-  const before = body(text.slice(0, start), done);
-  const open = text.indexOf('\n', start);
-  const close = open >= 0 ? text.indexOf('```', open) : -1;
-  if (close < 0) return before + wait;
-  let card = '';
-  try { card = verdictCard(JSON.parse(text.slice(open + 1, close)), true); } catch { card = ''; }
-  return before + card + body(text.slice(close + 3), done);
+for (const [n, cls, label] of [[50, 'now', 'Today'], [200, 'road', '2029 roadmaps'], [7500, 'need', 'Pricing advantage']]) {
+  const m = document.createElement('div'); m.className = 'pin ' + cls; m.style.left = pos(n) + '%';
+  m.innerHTML = `<b>${label}</b><span class="dot"></span>`; ruler.append(m);
 }
 
-// ---------- Code projects: files, tree, zip ----------
-function parseFiles(text) {
-  const lines = text.replace(/\r/g, '').split('\n'); const files = []; const out = []; let cur = null;
-  for (const l of lines) {
-    if (cur) {
-      if (/^\s*```\s*$/.test(l)) { cur.complete = true; cur = null; } else cur.lines.push(l);
-      continue;
-    }
-    const m = l.match(/^\s*```([\w+-]*)\s+file=([^\s`]+)/);
-    if (m) {
-      cur = { lang: m[1], path: m[2].replace(/^\.?\/+/, '').replace(/\.\.\//g, ''), lines: [], complete: false };
-      files.push(cur);
-      if (files.length === 1) out.push('', '%%KIT%%', '');
-      continue;
-    }
-    out.push(l);
+// ---------- Hero: Monte Carlo paths feeding a 4-qubit register ----------
+const canvas = document.getElementById('fan');
+const ctx = canvas.getContext('2d');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const BLUE = '154,168,255', AMBER = '227,178,93', TEXT = '159,176,202';
+const STEPS = 90, BATCH = 36, BINS = 16;
+const S0 = 100, SIGMA = 0.25, MU = 0.03;
+const LO = 50, HI = 190;                     // price window shown on the vertical axis
+let W = 0, H = 0, split = 0, dpr = 1;
+let seed = 7;
+const rand = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+const gauss = () => { let u = 0; while (!u) u = rand(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rand()); };
+
+const counts = new Float64Array(BINS);
+const shown = new Float64Array(BINS);        // displayed amplitudes, eased toward target
+let total = 0, batch = [], ghosts = [], step = 0, fade = 1, hold = 0, running = false, last = 0;
+
+function newBatch() {
+  if (batch.length) { ghosts.unshift(batch); ghosts = ghosts.slice(0, 3); }
+  batch = [];
+  const dt = 1 / STEPS;
+  for (let i = 0; i < BATCH; i++) {
+    const p = [S0];
+    for (let k = 1; k <= STEPS; k++) p.push(p[k - 1] * Math.exp((MU - SIGMA * SIGMA / 2) * dt + SIGMA * Math.sqrt(dt) * gauss()));
+    batch.push(p);
   }
-  for (const f of files) { f.code = f.lines.join('\n'); delete f.lines; }
-  return { files, stripped: out.join('\n') };
+  step = 0; fade = 1; hold = 0;
 }
-// Library kits also carry static files (QuantLib references, conventions module), added client-side.
-function kitFiles(text) {
-  const r = parseFiles(text);
-  if (S.library && S.extras && r.files.length) {
-    const root = r.files[0].path.split('/')[0];
-    for (const x of S.extras) if (!r.files.some((f) => f.path === root + '/' + x.path)) r.files.push({ ...x, path: root + '/' + x.path });
-  }
-  return r;
-}
-function body(text, done) {
-  const { files, stripped } = kitFiles(text);
-  let html = md(stripped);
-  if (!files.length) return html;
-  const panel = kitPanel(files, done);
-  return html.includes('<p>%%KIT%%</p>') ? html.replace('<p>%%KIT%%</p>', panel) : html + panel;
-}
-function kitPanel(files, done) {
-  const root = files[0].path.split('/')[0] || 'starter_kit';
-  const tree = {};
-  for (const f of files) {
-    const parts = f.path.split('/'); let node = tree;
-    parts.slice(0, -1).forEach((p) => { node[p] = node[p] || {}; node = node[p]; });
-    node[parts[parts.length - 1]] = f;
-  }
-  const lines = files.reduce((n, f) => n + (f.code && !f.static ? f.code.split('\n').length : 0), 0);
-  const draw = (node) => '<ul class="tree">' + Object.keys(node).sort((x, y) => {
-    const dx = !('code' in node[x]), dy = !('code' in node[y]);
-    return dx === dy ? x.localeCompare(y) : dx ? -1 : 1;
-  }).map((k) => {
-    const v = node[k];
-    if ('code' in v && v.static) {
-      return `<li><span class="fname">${esc(k)}</span><span class="fmeta">from the library · ${Math.max(1, Math.round(v.code.length / 1024))} KB</span></li>`;
-    }
-    if ('code' in v) {
-      const n = v.code ? v.code.split('\n').length : 0;
-      return `<li><details><summary><span class="fname">${esc(k)}</span><span class="fmeta">${v.complete ? n + (n === 1 ? ' line' : ' lines') : 'writing…'}</span></summary><pre><code>${esc(v.code)}</code></pre></details></li>`;
-    }
-    return `<li><span class="dname">${esc(k)}/</span>${draw(v)}</li>`;
-  }).join('') + '</ul>';
-  const top = Object.keys(tree).length === 1 && tree[root] && !('code' in tree[root]) ? tree[root] : tree;
-  const ready = done && files.every((f) => f.complete);
-  return `<section class="kit"><div class="kithead"><div><b>${esc(root)}</b><span class="fmeta">${files.length} files · ${lines} lines generated</span></div>
-    <button type="button" class="btn small dlzip"${ready ? '' : ' disabled'}>${ready ? 'Download .zip' : 'Writing files…'}</button></div>
-    <div class="kitbody">${draw(top)}</div><p class="kitnote">Select a file to preview it. Everything is in the .zip.</p></section>`;
-}
-const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
-function crc32(u8) { let c = 0xffffffff; for (let i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }
-function makeZip(files) {
-  const enc = new TextEncoder(); const d = new Date();
-  const time = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
-  const date = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
-  const parts = []; const central = []; let offset = 0;
-  for (const f of files) {
-    const name = enc.encode(f.path); const data = enc.encode(f.code.endsWith('\n') ? f.code : f.code + '\n'); const crc = crc32(data);
-    const h = new DataView(new ArrayBuffer(30));
-    [[0, 0x04034b50, 4], [4, 20, 2], [6, 0x0800, 2], [8, 0, 2], [10, time, 2], [12, date, 2], [14, crc, 4], [18, data.length, 4], [22, data.length, 4], [26, name.length, 2], [28, 0, 2]]
-      .forEach(([o, v, n]) => (n === 4 ? h.setUint32(o, v, true) : h.setUint16(o, v, true)));
-    const c = new DataView(new ArrayBuffer(46));
-    [[0, 0x02014b50, 4], [4, 20, 2], [6, 20, 2], [8, 0x0800, 2], [10, 0, 2], [12, time, 2], [14, date, 2], [16, crc, 4], [20, data.length, 4], [24, data.length, 4], [28, name.length, 2], [30, 0, 2], [32, 0, 2], [34, 0, 2], [36, 0, 2], [38, 0, 4], [42, offset, 4]]
-      .forEach(([o, v, n]) => (n === 4 ? c.setUint32(o, v, true) : c.setUint16(o, v, true)));
-    parts.push(new Uint8Array(h.buffer), name, data); central.push(new Uint8Array(c.buffer), name);
-    offset += 30 + name.length + data.length;
-  }
-  const cdSize = central.reduce((n, p) => n + p.length, 0);
-  const e = new DataView(new ArrayBuffer(22));
-  [[0, 0x06054b50, 4], [4, 0, 2], [6, 0, 2], [8, files.length, 2], [10, files.length, 2], [12, cdSize, 4], [16, offset, 4], [20, 0, 2]]
-    .forEach(([o, v, n]) => (n === 4 ? e.setUint32(o, v, true) : e.setUint16(o, v, true)));
-  return new Blob([...parts, ...central, new Uint8Array(e.buffer)], { type: 'application/zip' });
-}
-function downloadKit(ans) {
-  const { files } = kitFiles(ans._raw || '');
-  if (!files.length) return;
-  const a = document.createElement('a'); a.href = URL.createObjectURL(makeZip(files));
-  a.download = (files[0].path.split('/')[0] || 'starter_kit') + '.zip';
-  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+const y = (s) => H - 28 - ((Math.min(Math.max(s, LO), HI) - LO) / (HI - LO)) * (H - 56);
+const binOf = (s) => Math.min(BINS - 1, Math.max(0, Math.floor(((s - LO) / (HI - LO)) * BINS)));
+
+function resize() {
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const r = canvas.getBoundingClientRect();
+  W = r.width; H = r.height;
+  canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  split = W * (W < 520 ? 0.56 : 0.64);
+  draw();
 }
 
-// ---------- Question renderer ----------
-function renderQuestions(container, qs, store, onChange) {
-  container.textContent = '';
-  for (const q of qs) {
-    const wrap = document.createElement('div'); wrap.className = 'q';
-    const lab = document.createElement('span'); lab.className = 'ql'; lab.textContent = q.label;
-    if (q.hint || !q.required) { const h = document.createElement('span'); h.className = 'hint'; h.textContent = q.hint || 'optional'; lab.append(h); }
-    wrap.append(lab);
-    if (q.type === 'text') {
-      const inp = document.createElement('input'); inp.className = 'text'; inp.maxLength = q.max || 80;
-      inp.placeholder = q.placeholder || ''; inp.value = store[q.id] || ''; inp.setAttribute('aria-label', q.label);
-      inp.addEventListener('input', () => {
-        store[q.id] = inp.value;
-        const owner = qs.find((o) => o.orText === q.id);
-        if (owner && inp.value.trim() && store[owner.id]) { store[owner.id] = ''; container.querySelectorAll('.chip[aria-pressed=true]').forEach((c) => { if (owner.options.includes(c.textContent)) c.setAttribute('aria-pressed', 'false'); }); }
-        onChange && onChange();
-      });
-      wrap.append(inp);
-    } else {
-      const chips = document.createElement('div'); chips.className = 'chips'; chips.setAttribute('role', 'group'); chips.setAttribute('aria-label', q.label);
-      for (const opt of q.options) {
-        const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = opt;
-        const sel = q.type === 'multi' ? (store[q.id] || []).includes(opt) : store[q.id] === opt;
-        b.setAttribute('aria-pressed', String(sel));
-        b.addEventListener('click', () => {
-          if (q.type === 'multi') {
-            const cur = new Set(store[q.id] || []);
-            cur.has(opt) ? cur.delete(opt) : cur.add(opt);
-            store[q.id] = q.options.filter((o) => cur.has(o));
-          } else store[q.id] = store[q.id] === opt ? '' : opt;
-          b.setAttribute('aria-pressed', String(q.type === 'multi' ? store[q.id].includes(opt) : store[q.id] === opt));
-          if (q.type === 'single') chips.querySelectorAll('.chip').forEach((c) => { if (c !== b) c.setAttribute('aria-pressed', 'false'); });
-          onChange && onChange();
-        });
-        chips.append(b);
-      }
-      wrap.append(chips);
-    }
-    container.append(wrap);
-  }
-}
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  const x = (k) => 8 + (k / STEPS) * (split - 16);
+  // axis hints
+  ctx.strokeStyle = `rgba(${TEXT},0.18)`; ctx.lineWidth = 1;
+  ctx.setLineDash([2, 4]);
+  ctx.beginPath(); ctx.moveTo(8, y(S0)); ctx.lineTo(split - 8, y(S0)); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = `rgba(${TEXT},0.7)`; ctx.font = '12px "Instrument Sans", system-ui, sans-serif';
+  ctx.fillText('spot 100', 10, y(S0) - 6);
+  ctx.fillText('today', 8, H - 8);
+  ctx.textAlign = 'right'; ctx.fillText('1 year', split - 8, H - 8); ctx.textAlign = 'left';
 
-// ---------- Landing ----------
-$('consent').addEventListener('change', (e) => { S.consent = e.target.checked; $('start').disabled = !S.consent; });
-// Once a session starts, the other tabs open in a new window so the conversation is kept.
-function keepSession() {
-  document.querySelectorAll('.tabs a:not([aria-current]), .brand').forEach((a) => { a.target = '_blank'; a.rel = 'noopener'; });
-}
-$('start').addEventListener('click', () => { keepSession(); $('intro').hidden = true; $('intake').hidden = false; showStep(); });
-
-// ---------- Model library entry (/?model=<id>) ----------
-const LIB_DEFAULTS = ['Prototype', 'Test plan', 'Documentation outline']; // QuantLib references always ship; generated tests are opt-in
-const LIB_ROLE = [{ id: 'job', label: 'Your role', hint: 'optional', type: 'single', options: ['Model validation', 'Quant R&D', 'Front-office quant / structuring', 'Risk management', 'Other'] }];
-async function loadExtras(card) {
-  const get = async (u) => { const r = await fetch(u); if (!r.ok) throw new Error(u); return r.text(); };
-  const manifest = JSON.parse(await get('/library/conventions/manifest.json'));
-  const extras = [];
-  for (const f of manifest) {
-    let path = null;
-    if (f.startsWith('pl4nck_conventions/')) path = 'src/' + f;
-    else if (f === 'tests/test_conventions.py') path = 'tests/conventions/test_conventions.py';
-    else if (f === 'tests/reference/conventions_quantlib.json') path = 'tests/conventions/reference/conventions_quantlib.json';
-    if (path) extras.push({ path, code: await get('/library/conventions/' + f), complete: true, static: true });
-  }
-  extras.push({ path: `tests/reference/${card.id}_quantlib.json`, code: await get(card.reference), complete: true, static: true });
-  return extras;
-}
-async function initLibrary() {
-  const id = new URLSearchParams(location.search).get('model');
-  if (!id) return;
-  let card;
-  try { card = (await (await fetch('/library/models.json')).json()).models.find((m) => m.id === id && m.status === 'available'); } catch { return; }
-  if (!card) return;
-  S.library = card;
-  $('intro').hidden = true; $('libstart').hidden = false;
-  $('libname').textContent = `Validation kit: ${card.name}`;
-  $('libsum').textContent = card.summary;
-  renderQuestions($('librole'), LIB_ROLE, S.answers, () => {});
-  $('libparts').innerHTML = KIT_PARTS.map((p) => `<label class="part"><input type="checkbox" value="${esc(p.id)}"${LIB_DEFAULTS.includes(p.id) ? ' checked' : ''}><span><b>${esc(p.id)}</b><span class="pdesc">${esc(p.desc)}</span><span class="pfiles">${esc(p.files)}</span></span></label>`).join('');
-  const sync = () => { $('libgo').disabled = !($('libconsent').checked && $('libparts').querySelector('input:checked')); };
-  $('libparts').addEventListener('change', sync); $('libconsent').addEventListener('change', sync); sync();
-  $('libgo').addEventListener('click', async () => {
-    const picked = [...$('libparts').querySelectorAll('input:checked')].map((i) => i.value);
-    S.consent = true; keepSession();
-    $('libgo').disabled = true; $('libgo').textContent = 'Preparing…';
-    try { S.extras = await loadExtras(card); } catch { S.extras = []; }
-    $('libstart').hidden = true; $('chat').hidden = false; $('composer').hidden = false;
-    $('sref').textContent = S.sessionId.slice(0, 8);
-    const box = document.createElement('p'); box.className = 'profile';
-    box.textContent = ['Model library', card.name, S.answers.job].filter(Boolean).join(' / ');
-    $('msgs').append(box);
-    send(`Validation kit for the model: ${card.name}. Generate only: ${picked.join(', ')}.`);
+  // earlier batches, faint: the fan builds up
+  ghosts.forEach((g, i) => {
+    ctx.strokeStyle = `rgba(${BLUE},${0.09 / (i + 1)})`; ctx.lineWidth = 1;
+    for (const p of g) { ctx.beginPath(); ctx.moveTo(x(0), y(p[0])); for (let k = 1; k <= STEPS; k++) ctx.lineTo(x(k), y(p[k])); ctx.stroke(); }
   });
-}
-initLibrary();
+  // current batch
+  for (const p of batch) {
+    ctx.strokeStyle = `rgba(${BLUE},${0.55 * fade})`; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(x(0), y(p[0]));
+    for (let k = 1; k <= step; k++) ctx.lineTo(x(k), y(p[k]));
+    ctx.stroke();
+    if (step === STEPS) {
+      ctx.fillStyle = `rgba(${BLUE},${0.9 * fade})`;
+      ctx.beginPath(); ctx.arc(x(STEPS), y(p[STEPS]), 2, 0, 7); ctx.fill();
+    }
+  }
 
-// ---------- Intake ----------
-function stepValid() {
-  const has = (id) => (Array.isArray(S.answers[id]) ? S.answers[id].length : (S.answers[id] || '').trim());
-  return STEPS[S.step].qs.every((q) => !q.required || has(q.id) || (q.orText && has(q.orText)));
+  // register: 16 basis states, bar length = amplitude sqrt(p)
+  const left = split + 26, right = W - 10, binH = (H - 56) / BINS;
+  const maxAmp = Math.max(...shown, 1e-9);
+  ctx.strokeStyle = `rgba(${AMBER},0.35)`;
+  ctx.beginPath(); ctx.moveTo(left - 10, 28); ctx.lineTo(left - 10, H - 28); ctx.stroke();
+  for (let b = 0; b < BINS; b++) {
+    const yc = H - 28 - (b + 0.5) * binH;
+    const len = (shown[b] / maxAmp) * (right - left - 44);
+    ctx.fillStyle = `rgba(${AMBER},0.85)`;
+    ctx.fillRect(left, yc - binH * 0.32, Math.max(len, 1), binH * 0.64);
+    if (b % 3 === 0 || b === BINS - 1) {
+      ctx.fillStyle = `rgba(${TEXT},0.75)`; ctx.font = '11px ui-monospace, Menlo, Consolas, monospace';
+      ctx.textAlign = 'right'; ctx.fillText('|' + b.toString(2).padStart(4, '0') + '⟩', right, yc + 4); ctx.textAlign = 'left';
+    }
+  }
+  ctx.fillStyle = `rgba(${AMBER},0.95)`; ctx.font = '12px "Instrument Sans", system-ui, sans-serif';
+  ctx.fillText(W < 520 ? '4 qubits' : '4 qubits, amplitude √p', left - 10, 16);
 }
-function refreshNav() {
-  const ok = stepValid();
-  $('next').disabled = !ok;
-  $('req').textContent = ok ? '' : 'Answer the questions without “optional” to continue';
-  $('back').style.visibility = S.step === 0 ? 'hidden' : 'visible';
-  $('next').textContent = S.step === STEPS.length - 1 ? 'Get my verdict' : 'Next';
+
+function collect() {
+  for (const p of batch) { counts[binOf(p[STEPS])]++; total++; }
 }
-function showStep() {
-  const st = STEPS[S.step];
-  $('progress').innerHTML = STEPS.map((_, i) => `<i class="${i <= S.step ? 'on' : ''}"></i>`).join('');
-  $('progress').setAttribute('aria-label', `Step ${S.step + 1} of ${STEPS.length}`);
-  $('steptitle').textContent = st.title;
-  $('stepsub').textContent = st.sub;
-  renderQuestions($('questions'), st.qs, S.answers, refreshNav);
-  refreshNav();
-  window.scrollTo({ top: 0 });
+function ease() {
+  let moving = false;
+  for (let b = 0; b < BINS; b++) {
+    const target = total ? Math.sqrt(counts[b] / total) : 0;
+    const d = target - shown[b];
+    if (Math.abs(d) > 1e-4) moving = true;
+    shown[b] += d * 0.08;
+  }
+  return moving;
 }
-$('back').addEventListener('click', () => { if (S.step > 0) { S.step--; showStep(); } });
-$('next').addEventListener('click', () => {
-  if (!stepValid()) return;
-  if (S.step < STEPS.length - 1) { S.step++; showStep(); return; }
-  startChat();
+
+function frame(t) {
+  if (!running) return;
+  if (t - last > 28) {
+    last = t;
+    if (step < STEPS) { step = Math.min(STEPS, step + 1); if (step === STEPS) collect(); }
+    else if (hold < 30) hold++;
+    else { fade -= 0.04; if (fade <= 0) newBatch(); }
+    ease();
+    draw();
+  }
+  requestAnimationFrame(frame);
+}
+
+function staticFrame() {
+  // Reduced motion: show converged state at once.
+  for (let i = 0; i < 40; i++) { newBatch(); collect(); }
+  newBatch(); step = STEPS; collect();
+  for (let b = 0; b < BINS; b++) shown[b] = Math.sqrt(counts[b] / total);
+  draw();
+}
+
+// Start from a partly built register so the picture reads at once.
+for (let i = 0; i < 6; i++) { newBatch(); collect(); }
+for (let b = 0; b < BINS; b++) shown[b] = Math.sqrt(counts[b] / total);
+newBatch();
+window.addEventListener('resize', resize);
+resize();
+if (reduce) { staticFrame(); return; }
+const io = new IntersectionObserver(([e]) => {
+  const vis = e.isIntersecting && !document.hidden;
+  if (vis && !running) { running = true; requestAnimationFrame(frame); }
+  else if (!vis) running = false;
 });
-function profile() {
-  const a = S.answers;
-  return {
-    job: a.job || '', seniority: a.seniority || '', institution: a.institution || '',
-    objectives: [].concat(a.objectives || []), assetClasses: [].concat(a.assetClasses || []),
-    models: [].concat(a.models || []), modelsOther: (a.modelsOther || '').trim(),
-    qcKnowledge: a.qcKnowledge || '', painPoints: a.painPoints || [], goals: a.goals || [],
-    library: S.library ? S.library.id : '',
-  };
-}
-
-// ---------- Conversation ----------
-function startChat() {
-  $('intake').hidden = true; $('chat').hidden = false; $('composer').hidden = false;
-  $('sref').textContent = S.sessionId.slice(0, 8);
-  const p = profile();
-  const box = document.createElement('p'); box.className = 'profile';
-  box.textContent = [p.job, p.objectives.join(', '), p.assetClasses.join(', '), [...p.models, p.modelsOther].filter(Boolean).join(', ')].filter(Boolean).join(' / ');
-  $('msgs').append(box);
-  send('Based on my profile, give me your verdict.', true);
-}
-
-const LIB_FOLLOWUPS = [
-  'What would a validator challenge first on this model?',
-  'Which classical improvements come next for this model?',
-  'Is there any quantum angle for this model?',
-];
-function followups() {
-  document.querySelectorAll('.ask').forEach((n) => n.remove());
-  if (S.library) {
-    const row = document.createElement('div'); row.className = 'ask'; row.setAttribute('aria-label', 'Suggested questions');
-    const more = document.createElement('button'); more.type = 'button'; more.className = 'chip again'; more.textContent = 'Generate other kit parts';
-    more.addEventListener('click', () => showKitMenu(S.library.name));
-    row.append(more);
-    for (const f of LIB_FOLLOWUPS.filter((x) => !S.asked.has(x))) {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = f;
-      b.addEventListener('click', () => { S.asked.add(f); send(f); });
-      row.append(b);
-    }
-    const back = document.createElement('a'); back.className = 'chip'; back.href = '/library'; back.target = '_blank'; back.rel = 'noopener'; back.textContent = 'Back to the library';
-    row.append(back);
-    $('msgs').append(row);
-    return;
-  }
-  const left = FOLLOWUPS.filter((f) => !S.asked.has(f));
-  const row = document.createElement('div'); row.className = 'ask'; row.setAttribute('aria-label', 'Suggested questions');
-  const again = document.createElement('button'); again.type = 'button'; again.className = 'chip again'; again.textContent = 'Assess another use case';
-  again.addEventListener('click', restart);
-  for (const f of left) {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = f;
-    b.addEventListener('click', () => { if (/^Starter kit/.test(f)) { showKitMenu(nextStepLabel()); return; } S.asked.add(f); send(f); });
-    row.append(b);
-  }
-  row.append(again);
-  $('msgs').append(row);
-}
-
-async function* streamText(r, end) {
-  const reader = r.body.getReader(); const dec = new TextDecoder(); let buf = '';
-  for (;;) {
-    const { value, done } = await reader.read(); if (done) return;
-    buf += dec.decode(value, { stream: true });
-    let i;
-    while ((i = buf.indexOf('\n\n')) >= 0) {
-      const chunk = buf.slice(0, i); buf = buf.slice(i + 2);
-      for (const line of chunk.split('\n')) {
-        if (!line.startsWith('data:')) continue;
-        let ev; try { ev = JSON.parse(line.slice(5)); } catch { continue; }
-        if (ev.type === 'content_block_delta' && ev.delta && ev.delta.type === 'text_delta') yield ev.delta.text;
-        else if (ev.type === 'message_delta' && ev.delta && ev.delta.stop_reason) end.reason = ev.delta.stop_reason;
-        else if (ev.type === 'message_stop') end.done = true;
-        else if (ev.type === 'error') throw new Error(`The answer was cut off (${(ev.error && (ev.error.type + ': ' + ev.error.message)) || 'unknown error'}). Ask again.`);
-        if (ev.type) (end.events = end.events || []).push(ev.type === 'content_block_start' && ev.content_block ? 'block:' + ev.content_block.type : ev.type);
-      }
-    }
-  }
-}
-
-async function send(text, hidden) {
-  if (S.busy || !text.trim()) return;
-  if (S.messages.filter((m) => m.role === 'user').length >= MAX_TURNS) {
-    const n = document.createElement('p'); n.className = 'fine'; n.textContent = 'This session has reached its 20-question limit.'; $('msgs').append(n); openFb(); return;
-  }
-  S.busy = true; $('send').disabled = true;
-  document.querySelectorAll('.ask, .kitmenu').forEach((n) => n.remove());
-  S.messages.push({ role: 'user', content: text });
-  if (!hidden) { const me = document.createElement('div'); me.className = 'me'; me.textContent = text; $('msgs').append(me); }
-  const el = document.createElement('div'); el.className = 'ans'; el.setAttribute('aria-live', 'polite');
-  el.innerHTML = '<p class="skeleton">Weighing your setup</p>';
-  $('msgs').append(el);
-  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  let out = '';
-  const end = { done: !!window.QR_DEMO, reason: '' };
-  try {
-    const source = window.QR_DEMO ? demoStream(S.messages.length === 1, text) : await (async () => {
-      const r = await fetch('/api/chat', { method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ profile: profile(), messages: S.messages }) });
-      if (!r.ok || !r.body) {
-        const e = await r.json().catch(() => ({}));
-        throw new Error(e.error === 'rate_limited' ? 'Daily limit reached. Come back tomorrow.' : 'The advisor is unavailable. Try again in a minute.');
-      }
-      return streamText(r, end);
-    })();
-    for await (const piece of source) { out += piece; el._raw = out; el.innerHTML = renderAnswer(out, false); }
-    el.innerHTML = renderAnswer(out, true);
-    if (!S.verdict) { const m = out.match(/```\s*verdict\s*\n([\s\S]*?)```/i); if (m) { try { S.verdict = JSON.parse(m[1]); } catch {} } }
-    if (!out) throw new Error(`No answer came back (stop: ${end.reason || 'none'}; events: ${[...new Set(end.events || [])].join(', ') || 'none'}). Try again.`);
-    S.messages.push({ role: 'assistant', content: out });
-    if (!end.done || end.reason === 'max_tokens') {
-      const note = document.createElement('div'); note.className = 'nudge';
-      note.innerHTML = `<span>${end.reason === 'max_tokens' ? 'The answer reached its length limit.' : 'The answer was interrupted.'}</span>`;
-      const c = document.createElement('button'); c.className = 'btn small'; c.textContent = 'Continue';
-      c.onclick = () => { note.remove(); send('Continue exactly where you stopped, without repeating anything.', true); };
-      note.append(c); el.after(note);
-    }
-    log();
-    followups();
-    if (S.messages.filter((m) => m.role === 'assistant').length === 2 && !S.nudged) nudge();
-  } catch (err) {
-    S.messages.pop();
-    el.innerHTML = `<p class="err">${esc(err.message || 'Something went wrong. Try again.')}</p>`;
-    const b = document.createElement('button'); b.className = 'btn small quiet'; b.textContent = 'Try again';
-    b.onclick = () => { el.remove(); send(text, hidden); }; el.append(b);
-  } finally {
-    S.busy = false; $('send').disabled = false;
-    $('turns').textContent = `${S.messages.filter((m) => m.role === 'user').length} of ${MAX_TURNS} questions`;
-  }
-}
-
-function nudge() {
-  S.nudged = true;
-  const n = document.createElement('div'); n.className = 'nudge';
-  n.innerHTML = '<span>Is this useful so far? Thirty seconds of feedback shapes what comes next.</span>';
-  const b = document.createElement('button'); b.className = 'btn small'; b.textContent = 'Give feedback'; b.onclick = openFb;
-  n.append(b); $('msgs').insertBefore(n, document.querySelector('.ask'));
-}
-
-const input = $('input');
-input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 160) + 'px'; });
-input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } });
-$('send').addEventListener('click', submit);
-function submit() { const t = input.value.trim(); if (!t) return; input.value = ''; input.style.height = 'auto'; send(t); }
-
-$('msgs').addEventListener('click', (e) => {
-  const dl = e.target.closest('.dlzip');
-  if (dl) { downloadKit(dl.closest('.ans')); return; }
-  const step = e.target.closest('.steplink');
-  if (step) { const q = step.dataset.ask; const m = q.match(/^Starter kit for the step: (.*)$/); if (m) { showKitMenu(m[1]); return; } send(q); return; }
-  const copy = e.target.closest('.copy');
-  if (copy) {
-    const code = copy.closest('.code').querySelector('code').textContent;
-    const done = () => { copy.textContent = 'Copied'; setTimeout(() => { copy.textContent = 'Copy'; }, 1600); };
-    if (navigator.clipboard) navigator.clipboard.writeText(code).then(done, () => {}); else done();
-  }
+io.observe(canvas);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) running = false;
+  else if (!running) { running = true; requestAnimationFrame(frame); }
 });
-
-function nextStepLabel() {
-  const v = S.verdict; if (!v) return 'my next step';
-  if (v.next) return v.next;
-  const l = Array.isArray(v.ladder) ? v.ladder : []; const c = Number(v.current) || 0;
-  return l[Math.min(c + 1, Math.max(l.length - 2, 0))] || 'my next step';
-}
-function showKitMenu(step) {
-  document.querySelectorAll('.kitmenu').forEach((n) => n.remove());
-  const box = document.createElement('section'); box.className = 'kitmenu';
-  box.innerHTML = `<h3>${S.library ? 'Validation kit' : 'Starter kit'}: ${esc(step)}</h3><p class="fine">Pick only what you need. Each part is generated on demand and lands in a .zip.</p>
-    <div class="parts">${KIT_PARTS.map((p) => `<label class="part"><input type="checkbox" value="${esc(p.id)}"${p.on ? ' checked' : ''}><span><b>${esc(p.id)}</b><span class="pdesc">${esc(p.desc)}</span><span class="pfiles">${esc(p.files)}</span></span></label>`).join('')}</div>
-    <div class="nav"><button type="button" class="btn quiet small kcancel">Cancel</button><span class="spacer"></span><button type="button" class="btn small kgo"></button></div>`;
-  const go = box.querySelector('.kgo');
-  const sync = () => { const n = box.querySelectorAll('input:checked').length; go.disabled = !n; go.textContent = n ? `Generate selected (${n})` : 'Select at least one part'; };
-  box.addEventListener('change', sync); sync();
-  box.querySelector('.kcancel').onclick = () => box.remove();
-  go.onclick = () => {
-    const picked = [...box.querySelectorAll('input:checked')].map((i) => i.value);
-    box.remove(); send(S.library ? `Validation kit for the model: ${step}. Generate only: ${picked.join(', ')}.` : `Starter kit for the step: ${step}. Generate only: ${picked.join(', ')}.`);
-  };
-  const ask = document.querySelector('.ask');
-  $('msgs').insertBefore(box, ask || null);
-  box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-function restart() {
-  if (S.busy) return;
-  log();
-  for (const k of ['objectives', 'assetClasses', 'models', 'modelsOther']) delete S.answers[k];
-  S.sessionId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
-  S.startedAt = new Date().toISOString();
-  S.messages = []; S.asked = new Set(); S.fb = {}; S.nudged = false; S.verdict = null;
-  $('msgs').textContent = ''; $('turns').textContent = '';
-  $('fbopen').textContent = 'Give feedback (30 seconds)';
-  $('chat').hidden = true; $('composer').hidden = true; $('intake').hidden = false;
-  S.step = 1; showStep();
-}
-
-// ---------- Feedback ----------
-function openFb() { renderQuestions($('fbq'), FEEDBACK, S.fb); $('fbcomment').value = S.fb.comment || ''; $('fbemail').value = S.fb.email || ''; $('fb').showModal(); }
-$('fbopen').addEventListener('click', openFb);
-$('fb').addEventListener('close', () => {
-  if ($('fb').returnValue !== 'send') return;
-  S.fb.comment = $('fbcomment').value; S.fb.email = $('fbemail').value;
-  log();
-  $('fbopen').textContent = 'Feedback sent. Thank you';
-});
-
-// ---------- Logging ----------
-function log() {
-  if (!S.consent || window.QR_DEMO) return;
-  fetch('/api/log', { method: 'POST', headers: { 'content-type': 'application/json' }, keepalive: true,
-    body: JSON.stringify({ sessionId: S.sessionId, consent: true, consentVersion: '2026-10-14', startedAt: S.startedAt, lang: navigator.language,
-      profile: profile(), messages: S.messages, feedback: S.fb }) }).catch(() => {});
-}
-
-// ---------- Demo mode (preview only, no API) ----------
-async function* demoStream(first, q = '') {
-  const circuit = '**What it demonstrates**\nAmplitude estimation of a call payoff on a 3-qubit discretised lognormal.\nExact statevector, so it runs anywhere.\n\n```python\nimport numpy as np\nfrom qiskit import QuantumCircuit\nfrom qiskit.quantum_info import Statevector\n\n# 8-point lognormal grid for S_T\ngrid = np.linspace(60, 140, 8)\np = np.exp(-0.5 * (np.log(grid / 100) / 0.2) ** 2); p /= p.sum()\n\nqc = QuantumCircuit(3)\nqc.prepare_state(np.sqrt(p))\nprobs = Statevector(qc).probabilities()\nprint("quantum E[payoff]:", probs @ np.maximum(grid - 100, 0))\nprint("classical check:  ", p @ np.maximum(grid - 100, 0))\n```\n\n**How to grow it toward your use case**\n- Encode the payoff in an ancilla rotation.\n- Replace exact probabilities by amplitude estimation.\n- Add time steps for path dependence.\n\n**Limits**\nIllustrative only: no speed-up at this size.\nCheck against your current Qiskit version.';
-  const F = '`' + '`' + '`';
-  const kit = "**What's inside**\n- **src/** - Monte Carlo pricer with antithetics and a geometric-Asian control variate.\n- **benchmarks.py** - closed-form geometric Asian used as the reference.\n- **tests/** - pytest checks: 3-standard-error agreement, convergence rate, seed stability.\n- **docs/** - test plan and an SR 11-7 documentation outline.\n\n" +
-    F + "markdown file=mc_variance_reduction/README.md\n# MC variance reduction starter kit\nPrototype, benchmarks, tests and documentation outline.\n" + F + "\n\n" +
-    F + "toml file=mc_variance_reduction/pyproject.toml\n[project]\nname = \"mc_variance_reduction\"\nrequires-python = \">=3.10\"\ndependencies = [\"numpy\", \"scipy\"]\n\n[project.optional-dependencies]\ntest = [\"pytest\"]\n" + F + "\n\n" +
-    F + "python file=mc_variance_reduction/src/mc_variance_reduction/__init__.py\nfrom .model import price_asian\n" + F + "\n\n" +
-    F + "python file=mc_variance_reduction/src/mc_variance_reduction/model.py\nimport numpy as np\n\ndef price_asian(s0, k, r, sigma, t, n_steps, n_paths, seed=0, control=True):\n    \"\"\"Arithmetic Asian call by Monte Carlo, with antithetics and a geometric control variate.\"\"\"\n    rng = np.random.default_rng(seed)\n    ...\n" + F + "\n\n" +
-    F + "python file=mc_variance_reduction/src/mc_variance_reduction/benchmarks.py\ndef geometric_asian_call(s0, k, r, sigma, t, n_steps):\n    \"\"\"Closed form for the discretely monitored geometric Asian call.\"\"\"\n" + F + "\n\n" +
-    F + "python file=mc_variance_reduction/tests/test_model.py\ndef test_within_three_standard_errors():\n    ...\n" + F + "\n\n" +
-    F + "markdown file=mc_variance_reduction/docs/test_plan.md\n| Test | Checks | Acceptance |\n|---|---|---|\n" + F + "\n\n" +
-    F + "markdown file=mc_variance_reduction/docs/model_documentation.md\n# Model documentation outline\n" + F + "\n\n" +
-    "**How to run**\n" + F + "bash\npip install -e .[test]\npytest\n" + F + "\n\n_Draft, not reviewed: adapt it to your data, standards and validation policy._";
-  const text = /starter kit/i.test(q) ? kit : /circuit/i.test(q) ? circuit : first
-    ? '```verdict\n' + JSON.stringify({ ...SAMPLE, current: 1, ladder: ['MC under Black-Scholes', 'Variance reduction', 'Local / stochastic vol', 'Robust Greeks', 'GPU and AAD', 'Quantum readiness'] }) + '\n```\n\n' +
-      'Quantum Monte Carlo promises a quadratic speed-up through amplitude estimation, but the published estimates for autocalls need thousands of error-corrected qubits. That hardware does not exist yet.\n\n' +
-      'Your setup already prices by Monte Carlo under Black-Scholes. The step with the best payoff now is variance reduction with a documented convergence study: it cuts compute and gives validation the convergence argument it asks for, whether or not quantum ever arrives.'
-    : 'For your objective, **amplitude estimation** is the relevant algorithm, so you need **high-fidelity, error-corrected gate-based machines**.\n\n| Family | Fit | Why |\n|---|---|---|\n| Gate-based, fault-tolerant | Yes | Runs amplitude estimation at depth |\n| Today’s noisy gate-based | Demos only | Too shallow for useful precision |\n| Annealers | No | Built for optimisation, not integration |\n\nWatch error-correction roadmaps rather than raw qubit counts.';
-  for (let i = 0; i < text.length; i += 18) { await new Promise((r) => setTimeout(r, 22)); yield text.slice(i, i + 18); }
-}
-
-// ---------- Minimal, safe markdown ----------
-function inline(s) {
-  s = esc(s);
-  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
-  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  s = s.replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
-  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-  return s;
-}
-function md(src) {
-  const lines = src.replace(/\r/g, '').split('\n'); let html = ''; let i = 0;
-  const isRow = (l) => /^\s*\|.*\|\s*$/.test(l);
-  const cells = (l) => l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => inline(c.trim()));
-  const isList = (l) => /^\s*([-*+]|\d+[.)])\s+/.test(l);
-  while (i < lines.length) {
-    const l = lines[i];
-    if (/^\s*```/.test(l)) {
-      const lang = l.replace(/^\s*```/, '').trim(); const code = []; i++;
-      while (i < lines.length && !/^\s*```/.test(lines[i])) code.push(lines[i++]);
-      i++;
-      if (/^verdict$/i.test(lang)) continue;
-      html += `<div class="code"><div class="codebar"><span>${esc(lang || 'code')}</span><button type="button" class="copy">Copy</button></div><pre><code>${esc(code.join('\n'))}</code></pre></div>`;
-      continue;
-    }
-    if (!l.trim() || /^\s*(-{3,}|\*{3,})\s*$/.test(l)) { i++; continue; }
-    let m;
-    if ((m = l.match(/^(#{1,4})\s+(.*)$/))) { html += `<h3>${inline(m[2])}</h3>`; i++; continue; }
-    if (isRow(l)) {
-      const rows = []; while (i < lines.length && isRow(lines[i])) rows.push(lines[i++]);
-      const body = rows.filter((r) => !/^\s*\|?\s*:?-{2,}/.test(r));
-      if (!body.length) continue;
-      html += '<div class="tablewrap"><table><thead><tr>' + cells(body[0]).map((c) => `<th>${c}</th>`).join('') + '</tr></thead><tbody>' +
-        body.slice(1).map((r) => '<tr>' + cells(r).map((c) => `<td>${c}</td>`).join('') + '</tr>').join('') + '</tbody></table></div>';
-      continue;
-    }
-    if (isList(l)) {
-      const ordered = /^\s*\d+[.)]/.test(l); const items = [];
-      while (i < lines.length && isList(lines[i])) { items.push(lines[i].replace(/^\s*([-*+]|\d+[.)])\s+/, '')); i++;
-        while (i < lines.length && /^\s{2,}\S/.test(lines[i]) && !isList(lines[i])) { items[items.length - 1] += '\n' + lines[i].trim(); i++; } }
-      const t = ordered ? 'ol' : 'ul'; html += `<${t}>` + items.map((x) => `<li>${x.split('\n').map(inline).join('<br>')}</li>`).join('') + `</${t}>`; continue;
-    }
-    const para = []; while (i < lines.length && lines[i].trim() && !/^(#{1,4}\s|\s*\||\s*```)/.test(lines[i]) && !isList(lines[i])) para.push(lines[i++]);
-    if (para.length) html += `<p>${para.map(inline).join('<br>')}</p>`; else i++;
-  }
-  return html;
-}
 })();
 </script>
 </body>

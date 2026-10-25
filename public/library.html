@@ -59,7 +59,7 @@
   <div class="bar">
     <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><span class="name">Pl4nck</span></a>
     <nav class="tabs" aria-label="Sections">
-      <a href="/">Launch Pl4nck</a>
+      <a href="/launch">Launch Pl4nck</a>
       <a href="/library" aria-current="page">Model library</a>
       <a href="/technology">Technology mapping</a>
       <a href="/about">About</a>
@@ -133,9 +133,9 @@ function modelDetail(m) {
       <div><span class="badge b-available">Validated kit v${esc(m.kit.version)}</span> <span class="fine">released ${esc(m.kit.released)}</span></div>
       <p>${esc(m.kit.summary)}</p>
       <div class="actions"><a class="btn" href="${esc(m.kit.download)}" download>Download the validation kit (.zip)</a>
-        <a class="btn quiet" href="/?model=${encodeURIComponent(m.id)}">Generate a custom variant</a></div>
+        <a class="btn quiet" href="/launch?model=${encodeURIComponent(m.id)}">Generate a custom variant</a></div>
     </div>` : `<div class="actions">
-      <a class="btn" href="/?model=${encodeURIComponent(m.id)}">Generate prototype &amp; validation kit</a>
+      <a class="btn" href="/launch?model=${encodeURIComponent(m.id)}">Generate prototype &amp; validation kit</a>
       <a class="btn quiet" href="${esc(m.reference)}" download>QuantLib reference values (.json)</a>
     </div>`}
     <p class="fine">Reference values: ${esc(m.referenceContents)}</p>
