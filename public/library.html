@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Model library · Pl4nck</title>
+<title>Library · Pl4nck</title>
 <meta name="description" content="Pricing and risk models with pre-registered validation tests, QuantLib reference values and a generated prototype and validation kit.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -60,20 +60,21 @@
     <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><span class="name">Pl4nck</span></a>
     <nav class="tabs" aria-label="Sections">
       <a href="/launch">Launch Pl4nck</a>
-      <a href="/library" aria-current="page">Model library</a>
+      <a href="/library" aria-current="page">Library</a>
       <a href="/technology">Technology mapping</a>
+      <a href="/resources">Resources</a>
       <a href="/about">About</a>
     </nav>
     <span class="proto">Research prototype</span>
   </div>
 
   <main class="page">
-    <h1>Model library</h1>
-    <p class="lead">Pick a model, get a Python prototype and a validation kit: pre-registered tests, QuantLib reference values and a documentation outline. You run and adapt it in-house; nothing of yours is uploaded.</p>
+    <h1>Library</h1>
+    <p class="lead">Validated kits for the models you run today, and for the quantum circuits you may run tomorrow: prototype, pre-registered tests, independent reference values and documentation. Everything runs on your machine; nothing of yours is uploaded.</p>
 
     <div class="layout">
       <aside class="side">
-        <input class="search" id="q" type="search" placeholder="Search models" aria-label="Search models">
+        <input class="search" id="q" type="search" placeholder="Search the library" aria-label="Search the library">
         <div class="filters" id="filters" role="group" aria-label="Asset class"></div>
         <nav class="list" id="list" aria-label="Models"></nav>
       </aside>
@@ -123,7 +124,8 @@ function modelDetail(m) {
     return `<h2>${esc(m.name)}</h2>
       <div class="meta">${badge(m.status)}<span>${esc(m.assetClass)}</span></div>
       <p>${esc(m.summary)}</p>
-      ${m.quantlib && m.quantlib.length ? `<p class="fine">QuantLib reference available: </p><div class="tags">${m.quantlib.map((c) => `<span class="tag">${esc(c)}</span>`).join('')}</div>` : '<p class="fine">No QuantLib reference in the Python bindings: references will come from closed forms.</p>'}
+      ${m.assetClass === 'Quantum circuits' ? '<p class="fine">Circuit kits run on a local simulator first: Qiskit circuit, classical check, tests and a resource estimate (logical qubits, depth). Running on real hardware will use your own IBM Quantum or Amazon Braket account; Pl4nck never holds access keys.</p>'
+        : m.quantlib && m.quantlib.length ? `<p class="fine">QuantLib reference available: </p><div class="tags">${m.quantlib.map((c) => `<span class="tag">${esc(c)}</span>`).join('')}</div>` : '<p class="fine">No QuantLib reference in the Python bindings: references will come from closed forms.</p>'}
       <div class="callout"><p>This kit is not built yet. Want it sooner? Tell us through the <a href="/about#contact">contact address</a>.</p></div>`;
   }
   return `<h2>${esc(m.name)}</h2>

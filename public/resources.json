@@ -1,0 +1,271 @@
+{
+  "reviewed": "2026-10-26",
+  "sections": [
+    {
+      "id": "learn",
+      "name": "Learn quantum computing",
+      "intro": "From first principles to running circuits, with no physics background assumed.",
+      "items": [
+        {
+          "title": "IBM Quantum Learning",
+          "url": "https://quantum.cloud.ibm.com/learning",
+          "by": "IBM",
+          "kind": "Courses",
+          "note": "Free courses from basics to algorithms, with Qiskit notebooks. The most direct route to running your first circuit."
+        },
+        {
+          "title": "PennyLane Codebook",
+          "url": "https://pennylane.ai/codebook",
+          "by": "Xanadu",
+          "kind": "Interactive course",
+          "note": "Short coding exercises that build intuition gate by gate."
+        },
+        {
+          "title": "Quantum Country",
+          "url": "https://quantum.country/",
+          "by": "Matuschak and Nielsen",
+          "kind": "Essay",
+          "note": "An introduction to quantum computing built to be remembered, with spaced-repetition questions."
+        },
+        {
+          "title": "Quantum algorithms for data analysis",
+          "url": "https://quantumalgorithms.org/",
+          "by": "Kerenidis and collaborators",
+          "kind": "Open book",
+          "note": "Rigorous lecture notes, including a chapter on quantum Monte Carlo."
+        },
+        {
+          "title": "Physics 219: quantum computation",
+          "url": "https://preskill.caltech.edu/ph219/ph219_2026.html",
+          "by": "John Preskill, Caltech",
+          "kind": "Course notes",
+          "note": "The classic Caltech graduate course, with lecture notes, for readers who want the theory in depth."
+        }
+      ]
+    },
+    {
+      "id": "research",
+      "name": "Research on quantum finance",
+      "intro": "The papers behind the verdicts and horizons in Pl4nck. Start with a review, then the pricing line.",
+      "items": [
+        {
+          "title": "Quantum computing for finance",
+          "url": "https://arxiv.org/abs/2201.02773",
+          "by": "Herman et al., Nature Reviews Physics, 2023",
+          "kind": "Review",
+          "note": "The most complete recent survey of algorithms and use cases."
+        },
+        {
+          "title": "Quantum computing for finance: state-of-the-art and future prospects",
+          "url": "https://arxiv.org/abs/2006.14510",
+          "by": "Egger et al., IEEE TQE, 2020",
+          "kind": "Review",
+          "note": "IBM's view of pricing, risk and optimisation use cases."
+        },
+        {
+          "title": "Quantum computing for finance: overview and prospects",
+          "url": "https://arxiv.org/abs/1807.03890",
+          "by": "Orús, Mugel and Lizaso, 2019",
+          "kind": "Review",
+          "note": "An early, accessible overview of the field."
+        },
+        {
+          "title": "Quantum speedup of Monte Carlo methods",
+          "url": "https://arxiv.org/abs/1504.06987",
+          "by": "Montanaro, Proc. R. Soc. A, 2015",
+          "kind": "Paper",
+          "note": "Where the quadratic Monte Carlo speed-up is established in general."
+        },
+        {
+          "title": "Quantum amplitude amplification and estimation",
+          "url": "https://arxiv.org/abs/quant-ph/0005055",
+          "by": "Brassard, Høyer, Mosca and Tapp, 2002",
+          "kind": "Paper",
+          "note": "The original amplitude estimation algorithm."
+        },
+        {
+          "title": "Quantum computational finance: Monte Carlo pricing of financial derivatives",
+          "url": "https://arxiv.org/abs/1805.00109",
+          "by": "Rebentrost, Gupt and Bromley, Phys. Rev. A, 2018",
+          "kind": "Paper",
+          "note": "First application of amplitude estimation to option pricing."
+        },
+        {
+          "title": "Option pricing using quantum computers",
+          "url": "https://arxiv.org/abs/1905.02666",
+          "by": "Stamatopoulos et al., Quantum, 2020",
+          "kind": "Paper",
+          "note": "Circuits for European, Asian and basket options, run on IBM hardware."
+        },
+        {
+          "title": "Quantum risk analysis",
+          "url": "https://arxiv.org/abs/1806.06893",
+          "by": "Woerner and Egger, npj Quantum Information, 2019",
+          "kind": "Paper",
+          "note": "VaR and CVaR by amplitude estimation."
+        },
+        {
+          "title": "Credit risk analysis using quantum computers",
+          "url": "https://arxiv.org/abs/1907.03044",
+          "by": "Egger et al., IEEE Trans. Computers, 2021",
+          "kind": "Paper",
+          "note": "Economic capital for a credit portfolio with a Gaussian factor model."
+        },
+        {
+          "title": "A threshold for quantum advantage in derivative pricing",
+          "url": "https://arxiv.org/abs/2012.03819",
+          "by": "Chakrabarti et al., Quantum, 2021",
+          "kind": "Paper",
+          "note": "The resource estimate behind 'about 7,500 logical qubits' for autocalls and TARFs."
+        },
+        {
+          "title": "How to factor 2048-bit RSA integers with less than a million noisy qubits",
+          "url": "https://arxiv.org/abs/2505.15917",
+          "by": "Gidney, 2025",
+          "kind": "Paper",
+          "note": "Why post-quantum migration is urgent even though useful pricing is not."
+        }
+      ]
+    },
+    {
+      "id": "tools",
+      "name": "Software",
+      "intro": "Open-source libraries for classical reference models and for quantum circuits.",
+      "items": [
+        {
+          "title": "QuantLib",
+          "url": "https://www.quantlib.org/",
+          "by": "Open source",
+          "kind": "Classical library",
+          "note": "The reference open-source library for pricing and risk. Pl4nck's kits are tested against it."
+        },
+        {
+          "title": "Implementing QuantLib",
+          "url": "https://leanpub.com/implementingquantlib",
+          "by": "Luigi Ballabio",
+          "kind": "Book (free to read online)",
+          "note": "How QuantLib is designed, by its lead maintainer."
+        },
+        {
+          "title": "Qiskit",
+          "url": "https://www.ibm.com/quantum/qiskit",
+          "by": "IBM, open source",
+          "kind": "Quantum SDK",
+          "note": "The most widely used SDK; runs on simulators and IBM hardware."
+        },
+        {
+          "title": "Qiskit Finance",
+          "url": "https://github.com/qiskit-community/qiskit-finance",
+          "by": "Qiskit community",
+          "kind": "Quantum library",
+          "note": "Distribution loading, option payoffs and portfolio problems for Qiskit."
+        },
+        {
+          "title": "PennyLane",
+          "url": "https://pennylane.ai/",
+          "by": "Xanadu, open source",
+          "kind": "Quantum SDK",
+          "note": "Differentiable programming, suited to variational methods and quantum machine learning."
+        },
+        {
+          "title": "CUDA-Q",
+          "url": "https://developer.nvidia.com/cuda-q",
+          "by": "NVIDIA, open source",
+          "kind": "Quantum SDK",
+          "note": "Fast GPU simulation and hybrid quantum-classical workflows."
+        },
+        {
+          "title": "Cirq",
+          "url": "https://quantumai.google/cirq",
+          "by": "Google, open source",
+          "kind": "Quantum SDK",
+          "note": "Google's framework for writing and simulating circuits."
+        },
+        {
+          "title": "Quirk",
+          "url": "https://algassert.com/quirk",
+          "by": "Craig Gidney",
+          "kind": "Circuit simulator",
+          "note": "Drag-and-drop circuits in the browser with live state display. The fastest way to build intuition."
+        }
+      ]
+    },
+    {
+      "id": "access",
+      "name": "Run on simulators and hardware",
+      "intro": "Cloud access to real quantum processors and emulators. Most offer a free tier or credits for small experiments.",
+      "items": [
+        {
+          "title": "IBM Quantum Platform",
+          "url": "https://quantum.cloud.ibm.com/",
+          "by": "IBM",
+          "kind": "Superconducting",
+          "note": "Free monthly time on real IBM processors, plus the visual Composer for building circuits."
+        },
+        {
+          "title": "Amazon Braket",
+          "url": "https://aws.amazon.com/braket/",
+          "by": "AWS",
+          "kind": "Multi-vendor",
+          "note": "One account for trapped ions, neutral atoms and superconducting machines from several vendors."
+        },
+        {
+          "title": "Azure Quantum",
+          "url": "https://learn.microsoft.com/azure/quantum",
+          "by": "Microsoft",
+          "kind": "Multi-vendor",
+          "note": "Hardware access and documentation for the Q# ecosystem."
+        },
+        {
+          "title": "Quantum resource estimator",
+          "url": "https://learn.microsoft.com/azure/quantum/intro-to-resource-estimation",
+          "by": "Microsoft",
+          "kind": "Planning tool",
+          "note": "Estimates logical and physical qubits and run time for an algorithm: the basis of a go or no-go."
+        },
+        {
+          "title": "OVHcloud Quantum Platform",
+          "url": "https://corporate.ovhcloud.com/en/newsroom/news/quantum-platform/",
+          "by": "OVHcloud",
+          "kind": "European access",
+          "note": "European cloud access to emulators and quantum processors, for teams with sovereignty constraints."
+        }
+      ]
+    },
+    {
+      "id": "regulation",
+      "name": "Model risk and regulation",
+      "intro": "The frameworks any model, classical or quantum, has to satisfy before use in a bank.",
+      "items": [
+        {
+          "title": "SR 11-7: Guidance on model risk management",
+          "url": "https://www.federalreserve.gov/supervisionreg/srletters/sr1107.htm",
+          "by": "Federal Reserve and OCC, 2011",
+          "kind": "US guidance",
+          "note": "The reference text on model development, validation and governance."
+        },
+        {
+          "title": "ECB guide to internal models (revised July 2025)",
+          "url": "https://www.bankingsupervision.europa.eu/press/pr/date/2025/html/ssm.pr250728~2b36305822.en.html",
+          "by": "European Central Bank",
+          "kind": "EU guidance",
+          "note": "Supervisory expectations for internal models in the euro area, with links to the guide."
+        },
+        {
+          "title": "SS1/23: Model risk management principles for banks",
+          "url": "https://www.bankofengland.co.uk/prudential-regulation/publication/2023/may/model-risk-management-principles-for-banks-ss",
+          "by": "Bank of England PRA, 2023",
+          "kind": "UK guidance",
+          "note": "The UK principles, in force since May 2024."
+        },
+        {
+          "title": "Post-quantum cryptography standards",
+          "url": "https://csrc.nist.gov/projects/post-quantum-cryptography",
+          "by": "NIST",
+          "kind": "Security standard",
+          "note": "FIPS 203, 204 and 205, published in 2024: the basis of every post-quantum migration plan."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Resources · Pl4nck</title>
+<meta name="description" content="Courses, research papers, software, hardware access and regulation for quants working on quantum computing for finance.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<style>
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:16px;display:grid;gap:2px}
+.toc a{color:var(--muted);text-decoration:none;font-size:14.5px;padding:6px 10px;border-radius:var(--r-sm)}
+.toc a:hover{color:var(--ink);background:var(--sheet)}
+.sec{margin:0 0 46px;scroll-margin-top:16px}
+.sec h2{margin-top:0}
+.sec>p{color:var(--muted);margin:0 0 14px}
+.items{border-top:1px solid var(--rule)}
+.item{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:6px 24px;padding:14px 0;border-bottom:1px solid var(--rule)}
+.item a{font-weight:600;text-decoration:none;color:var(--ink)}
+.item a:hover{color:var(--accent);text-decoration:underline}
+.item .by{display:block;font-size:13.5px;color:var(--muted);margin-top:2px}
+.item p{margin:0;font-size:14.5px;color:var(--muted)}
+.kind{display:inline-block;font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:1px 8px;margin-right:6px}
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr}
+  .toc{position:static;display:flex;flex-wrap:wrap;gap:4px}
+  .item{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar">
+    <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><span class="name">Pl4nck</span></a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="/launch">Launch Pl4nck</a>
+      <a href="/library">Library</a>
+      <a href="/technology">Technology mapping</a>
+      <a href="/resources" aria-current="page">Resources</a>
+      <a href="/about">About</a>
+    </nav>
+    <span class="proto">Research prototype</span>
+  </div>
+
+  <main class="page">
+    <h1>Resources</h1>
+    <p class="lead">Where to learn, what to read and which tools to use, chosen for quants. Every link is checked when the list is reviewed; last review <span id="reviewed">recently</span>.</p>
+    <div class="layout">
+      <nav class="toc" id="toc" aria-label="Sections of this page"></nav>
+      <div id="list"></div>
+    </div>
+    <p id="err" class="muted" hidden>The list could not be loaded. Reload the page to try again.</p>
+    <div class="callout"><p>A resource worth adding, or a broken link? Write to the <a href="/about#contact">contact address</a>. Pl4nck has no sponsored links.</p></div>
+  </main>
+</div>
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+fetch('/resources.json', { cache: 'no-cache' })
+  .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then((d) => {
+    const dt = new Date(d.reviewed + 'T12:00:00Z');
+    $('reviewed').textContent = isNaN(dt) ? d.reviewed : dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    $('toc').innerHTML = d.sections.map((s) => `<a href="#${esc(s.id)}">${esc(s.name)}</a>`).join('');
+    $('list').innerHTML = d.sections.map((s) => `
+      <section class="sec" id="${esc(s.id)}">
+        <h2>${esc(s.name)}</h2>
+        <p>${esc(s.intro)}</p>
+        <div class="items">${s.items.map((i) => `
+          <div class="item">
+            <div><a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a><span class="by">${esc(i.by)}</span></div>
+            <p><span class="kind">${esc(i.kind)}</span>${esc(i.note)}</p>
+          </div>`).join('')}</div>
+      </section>`).join('');
+  })
+  .catch(() => { $('err').hidden = false; });
+})();
+</script>
+</body>
+</html>

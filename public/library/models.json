@@ -19,7 +19,8 @@
     "Equity / FX",
     "Rates",
     "Credit",
-    "Market risk"
+    "Market risk",
+    "Quantum circuits"
   ],
   "models": [
     {
@@ -482,6 +483,30 @@
       "quantlib": [
         "GJRGARCHModel (option pricing variant)"
       ]
+    },
+    {
+      "id": "qae_european",
+      "status": "planned",
+      "name": "Amplitude estimation: European call",
+      "assetClass": "Quantum circuits",
+      "summary": "Load a discretised lognormal on 3 to 5 qubits, encode the call payoff in an ancilla rotation, and estimate the price by amplitude estimation. Checked against Black-Scholes, with a resource estimate showing how far this is from an advantage.",
+      "quantlib": []
+    },
+    {
+      "id": "qaoa_portfolio",
+      "status": "planned",
+      "name": "QAOA: portfolio with a cardinality constraint",
+      "assetClass": "Quantum circuits",
+      "summary": "Pick k assets out of 4 to 6 under a mean-variance objective, written as a QUBO and solved with QAOA on a simulator. Checked against the exact solution found by enumeration.",
+      "quantlib": []
+    },
+    {
+      "id": "born_machine",
+      "status": "planned",
+      "name": "Born machine: return distribution",
+      "assetClass": "Quantum circuits",
+      "summary": "A small parameterised circuit trained to reproduce a fat-tailed return distribution. Checked against historical and GARCH benchmarks on tails and stylised facts.",
+      "quantlib": []
     }
   ]
 }
