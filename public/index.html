@@ -230,8 +230,8 @@ function resize() {
   W = r.width; H = r.height;
   canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const cb = canvas.getBoundingClientRect();
-  const barBottom = document.querySelector('.top .bar').getBoundingClientRect().bottom - cb.top;
+  // Menu height, independent of the scroll position (the menu scrolls away, the canvas stays pinned).
+  const barBottom = document.querySelector('.top').offsetHeight;
   // First screen is the animation alone: paths across most of the width, the register on the right.
   const wrapLeft = Math.max(16, (W - 1040) / 2 + 20);
   X0 = wrapLeft; RX1 = Math.min(W - 16, W - wrapLeft + 40);
@@ -328,8 +328,15 @@ function staticFrame() {
 for (let i = 0; i < 6; i++) { newBatch(); collect(); }
 for (let b = 0; b < BINS; b++) shown[b] = Math.sqrt(counts[b] / total);
 newBatch();
-window.addEventListener('resize', resize);
-resize();
+// Phones resize the viewport when the address bar shows or hides during scrolling:
+// redraw only for real size changes, so the picture does not jump.
+let lastW = 0, lastH = 0;
+function maybeResize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  if (w !== lastW || Math.abs(h - lastH) > 140) { lastW = w; lastH = h; resize(); }
+}
+window.addEventListener('resize', maybeResize);
+maybeResize();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);
 if (reduce) { staticFrame(); return; }
 
@@ -344,10 +351,12 @@ function onScroll() {
   canvas.style.opacity = String(Math.min(1, Math.max(0, (t - vh) / (vh * 0.25))));
   canvas.style.transform = `scale(${1 + p * 0.06})`;
   cue.style.opacity = String(Math.max(0, 1 - p * 6));
+  if (!running && !document.hidden && window.scrollY < window.innerHeight * 1.5) { running = true; requestAnimationFrame(frame); }
 }
 window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
 onScroll();
-const io = new IntersectionObserver(([e]) => {
+const io = new IntersectionObserver((entries) => {
+  const e = entries[entries.length - 1];
   const vis = e.isIntersecting && !document.hidden;
   if (vis && !running) { running = true; requestAnimationFrame(frame); }
   else if (!vis) running = false;
