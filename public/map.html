@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Model map · Pl4nck</title>
-<meta name="description" content="A map of pricing and risk models and the quantum algorithms that build on them: what is implemented, in progress, not yet explored, and quantum.">
+<meta name="description" content="A map of pricing and risk models, engines, curves, volatility and instruments, from QuantLib to the quantum algorithms that build on them: what is implemented, in progress, not yet explored, and quantum.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
 @media (prefers-color-scheme:dark){:root{--s-done:#5cc796;--s-wip:#f0ad4e;--s-todo:#7f8ba1;--s-quantum:#8ea2ff}}
 
 .toolbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 14px}
-.seg{display:inline-flex;border:1px solid var(--rule);border-radius:var(--r-sm);overflow:hidden;background:var(--sheet)}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--rule);border-radius:var(--r-sm);overflow:hidden;background:var(--sheet)}
 .seg button{appearance:none;border:0;background:none;padding:7px 12px;font:inherit;font-size:14px;color:var(--muted);cursor:pointer}
 .seg button+button{border-left:1px solid var(--rule)}
 .seg button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
@@ -25,20 +25,53 @@
 .hint{font-size:13.5px;color:var(--muted);margin:0 0 10px}
 
 /* 3D stage */
-.stage3d{position:relative;height:min(72vh,640px);min-height:420px;border-radius:var(--r-md);overflow:hidden;
+.stage3d{position:relative;height:min(74vh,680px);min-height:440px;border-radius:var(--r-md);overflow:hidden;
   background:radial-gradient(120% 90% at 60% 30%,#1a2f57 0%,#0f1e33 55%,#0b1628 100%);color:#e9eef6}
 .stage3d canvas{display:block;width:100%;height:100%;cursor:grab}
 .stage3d canvas:active{cursor:grabbing}
 .labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.labels span{position:absolute;transform:translate(-50%,-160%);font-size:11.5px;white-space:nowrap;color:#dfe6f3;text-shadow:0 1px 3px #0b1628,0 0 2px #0b1628;transition:opacity .2s}
+.labels span{position:absolute;transform:translate(-50%,-160%);font-size:11px;white-space:nowrap;color:#dfe6f3;text-shadow:0 1px 3px #0b1628,0 0 2px #0b1628;transition:opacity .2s}
 .labels span.q{color:#b9c6ff;font-weight:600}
-.labels span.layer{font-family:var(--serif);font-size:15px;color:#9fb0ca;transform:translate(0,-50%)}
+.labels span.cl{font-family:var(--serif);font-size:16px;color:#c9d4e6;transform:translate(-50%,-50%);letter-spacing:.01em}
 .stage3d .cta2d{position:absolute;right:16px;bottom:16px;background:#e9eef6;color:#0f1e33}
-.stage3d .note3d{position:absolute;left:16px;top:14px;margin:0;font-size:12.5px;color:#9fb0ca;max-width:46ch;padding:6px 10px;border-radius:8px;background:rgba(11,22,40,.72)}
+.stage3d .note3d{position:absolute;left:16px;top:14px;margin:0;font-size:12.5px;color:#9fb0ca;max-width:50ch;padding:6px 10px;border-radius:8px;background:rgba(11,22,40,.72)}
 @media (max-width:640px){.stage3d .note3d{right:16px;max-width:none}}
 .stage3d .fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;color:#9fb0ca}
 
-/* 2D view */
+/* families view */
+.bubbles{border:1px solid var(--rule);border-radius:var(--r-md);background:var(--sheet);margin-bottom:14px}
+.bubbles svg{display:block;width:100%;height:auto}
+.bub{cursor:pointer}
+.bub:focus-visible circle.disc{stroke:var(--accent);stroke-width:3}
+.famtools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;font-size:13.5px;color:var(--muted)}
+.famtools button{border:1px solid var(--rule);background:var(--paper);border-radius:var(--r-sm);padding:4px 9px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
+.famlayout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
+.boxes{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-items:start}
+.box{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-md);padding:12px 14px 14px}
+.box.wide{grid-column:1/-1}
+.box h3{font-size:17px;margin:0;font-family:var(--serif);font-weight:500}
+.box .cov{font-size:12.5px;color:var(--muted);margin:2px 0 8px}
+.box .cov b{color:var(--ink)}
+.grpname{font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:10px 0 5px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip,.grp{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--rule);background:var(--paper);border-radius:999px;padding:3px 9px 3px 7px;font:inherit;font-size:12.5px;line-height:1.35;color:var(--ink);cursor:pointer;text-align:left}
+.chip i{flex:none;width:9px;height:9px;border-radius:50%}
+.chip.s-todo i{background:transparent;box-shadow:inset 0 0 0 1.5px var(--s-todo)}
+.chip.s-done i{background:var(--s-done)}.chip.s-wip i{background:var(--s-wip)}.chip.s-quantum i{background:var(--s-quantum)}
+.chip.s-done{border-color:color-mix(in srgb,var(--s-done) 55%,var(--rule))}
+.chip.s-wip{border-color:color-mix(in srgb,var(--s-wip) 55%,var(--rule))}
+.chip.s-quantum{border-color:color-mix(in srgb,var(--s-quantum) 55%,var(--rule))}
+.chip.sel{box-shadow:0 0 0 2px var(--ink);border-color:var(--ink)}
+.chip.rel,.grp.rel{box-shadow:0 0 0 2px var(--accent)}
+.sel-on .chip:not(.sel):not(.rel),.sel-on .grp:not(.rel){opacity:.35}
+.grp{border-radius:var(--r-sm);padding:4px 9px}
+.grp b{font-weight:600}
+.grp{white-space:nowrap;flex-wrap:nowrap}
+.grp .gbar{flex:none;display:inline-block;width:40px;height:5px;border-radius:3px;margin:0}
+.grp .more{color:var(--muted);font-size:12px}
+.less{border:0;background:none;color:var(--accent);font:inherit;font-size:12px;cursor:pointer;padding:2px 4px}
+
+/* 2D roadmap */
 .view2d{border:1px solid var(--rule);border-radius:var(--r-md);background:var(--sheet);position:relative}
 .scroll{overflow:auto;border-radius:var(--r-md)}
 .zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:6px;z-index:2}
@@ -52,19 +85,29 @@ svg text{font-family:var(--sans)}
 
 .layout{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
 .panel{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-md);padding:16px 18px;max-width:760px}
-.panel h2{font-size:22px;margin:0 0 6px}
+.panel.side{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+.panel h2{font-size:22px;margin:0 0 4px}
+.panel .close{float:right;border:1px solid var(--rule);background:var(--paper);border-radius:var(--r-sm);width:30px;height:30px;font-size:18px;line-height:1;cursor:pointer;color:var(--ink);margin:-4px -4px 0 8px}
+.panel .kind{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 6px}
 .panel p{font-size:14.5px;margin:0 0 10px}
 .panel .st{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;margin-bottom:10px}
 .panel .st i{width:10px;height:10px;border-radius:50%}
 .panel .choose{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
 .panel .choose button{border:1px solid var(--rule);background:var(--paper);border-radius:var(--r-sm);padding:5px 9px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
 .panel .choose button[aria-pressed=true]{border-color:var(--ink);background:var(--ink);color:var(--paper)}
-.panel .rel{font-size:13.5px;color:var(--muted)}
-.panel .rel b{color:var(--ink);font-weight:600}
+.panel .rel{font-size:13.5px;color:var(--muted);margin-bottom:8px}
+.panel .rel b{display:block;color:var(--ink);font-weight:600;margin-bottom:3px}
+.panel .go{border:0;background:none;padding:0;font:inherit;font-size:13.5px;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.panel details{font-size:13px;color:var(--muted);margin:0 0 10px}
+.panel details summary{cursor:pointer;color:var(--ink)}
+.panel code{font-size:12px}
 .summary{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;color:var(--muted);margin:10px 0 0}
 .summary b{color:var(--ink)}
 @media (max-width:900px){
   .stage3d{height:62vh}
+  .famlayout{grid-template-columns:minmax(0,1fr)}
+  .panel.side{display:none;position:fixed;left:8px;right:8px;bottom:8px;top:auto;max-height:50vh;z-index:5;box-shadow:0 -6px 24px rgba(0,0,0,.18);max-width:none}
+  .panel.side.open{display:block}
 }
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
@@ -86,12 +129,13 @@ svg text{font-family:var(--sans)}
   <main class="page">
     <p class="fine"><a href="/library">Library</a> / Model map</p>
     <h1>Model map</h1>
-    <p class="lead">Pricing and risk models, the methods that connect them, and the quantum algorithms that build on them. See at a glance what is implemented, what is in progress and what is left, then mark your own institution's progress.</p>
+    <p class="lead">Everything a pricing library is made of, from conventions and curves to models, engines and instruments, and the quantum algorithms that build on them. See what is implemented, what is in progress and what is left, then mark your own institution's coverage.</p>
 
     <div class="toolbar">
       <div class="seg" role="group" aria-label="View">
         <button type="button" data-view="3d" aria-pressed="true">3D overview</button>
-        <button type="button" data-view="roadmap" aria-pressed="false">2D roadmap</button>
+        <button type="button" data-view="families" aria-pressed="false">Families</button>
+        <button type="button" data-view="roadmap" aria-pressed="false">Roadmap</button>
         <button type="button" data-view="paths" aria-pressed="false">Paths to quantum</button>
       </div>
       <div class="seg" role="group" aria-label="Whose status">
@@ -103,10 +147,20 @@ svg text{font-family:var(--sans)}
 
     <section id="v3d">
       <div class="stage3d" id="stage">
-        <canvas id="gl" aria-label="Three-dimensional model map: classical models on the floor, quantum algorithms on a layer above, linked to the models they build on."></canvas>
+        <canvas id="gl" aria-label="Three-dimensional map: one cloud per family (conventions, curves, volatility, models, methods, engines, instruments, risk), with the quantum algorithms floating above."></canvas>
         <div class="labels" id="labels" aria-hidden="true"></div>
-        <p class="note3d">Drag to rotate, scroll or pinch to zoom. Classical models sit on the floor; the quantum layer floats above the models it builds on.</p>
-        <button class="btn small cta2d" type="button" id="to2d">Explore in 2D</button>
+        <p class="note3d">Drag to rotate, scroll or pinch to zoom, click a point to open it. Each cloud is a family; the quantum cloud floats above the models it builds on.</p>
+        <button class="btn small cta2d" type="button" id="to2d">Explore the families</button>
+      </div>
+    </section>
+
+    <section id="vfam" hidden>
+      <p class="hint">Each bubble is a family; the bands show how many links connect two families. Click a bubble to show or hide it below, then select any item to see its links.</p>
+      <div class="bubbles"><svg id="bubbles" role="group" aria-label="Families and the links between them"></svg></div>
+      <div class="famtools"><span id="famcount"></span><button type="button" id="famall">Show all</button><button type="button" id="famnone">Hide all</button></div>
+      <div class="famlayout">
+        <div class="boxes" id="boxes"></div>
+        <aside class="panel side" id="fpanel" aria-live="polite"></aside>
       </div>
     </section>
 
@@ -115,16 +169,18 @@ svg text{font-family:var(--sans)}
       <div class="layout">
         <div class="view2d">
           <div class="zoom"><button type="button" id="zin" aria-label="Zoom in">+</button><button type="button" id="zout" aria-label="Zoom out">−</button></div>
-          <div class="scroll" id="scroll"><svg id="svg" role="img" aria-label="Model map"></svg></div>
+          <div class="scroll" id="scroll"><svg id="svg" role="img" aria-label="Model roadmap"></svg></div>
         </div>
         <aside class="panel" id="panel" aria-live="polite"></aside>
       </div>
-      <div class="toolbar" style="margin-top:14px">
-        <button class="btn small quiet" type="button" id="export">Export as image</button>
-        <button class="btn small quiet" type="button" id="reset" hidden>Reset my statuses</button>
-        <span class="summary" id="summary"></span>
-      </div>
     </section>
+
+    <div class="toolbar" id="foot" hidden style="margin-top:14px">
+      <button class="btn small quiet" type="button" id="export">Export as image</button>
+      <button class="btn small quiet" type="button" id="reset" hidden>Reset my statuses</button>
+      <span class="summary" id="summary"></span>
+    </div>
+    <p class="fine" id="source"></p>
   </main>
 </div>
 
@@ -137,7 +193,11 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const data = await (await fetch('/map.json', { cache: 'no-cache' })).json();
 const byId = Object.fromEntries(data.nodes.map((n) => [n.id, n]));
+const cloudById = Object.fromEntries(data.clouds.map((c) => [c.id, c]));
 const edges = data.edges.map(([from, to, type]) => ({ from, to, type: type || 'builds' }));
+const coreNodes = data.nodes.filter((n) => n.core);
+const coreEdges = data.core_edges.map(([from, to, type]) => ({ from, to, type: type ? 'quantum' : 'builds' }));
+const nbr = {}; edges.forEach((e) => { (nbr[e.from] = nbr[e.from] || new Set()).add(e.to); (nbr[e.to] = nbr[e.to] || new Set()).add(e.from); });
 let mode = 'pl4nck', view = '3d', selected = null;
 
 let bank = {};
@@ -150,11 +210,17 @@ function status(n) {
   if (n.quantum) return 'quantum';
   return mode === 'pl4nck' ? n.coverage : (bank[n.id] || 'todo');
 }
-const explored = (n) => mode === 'pl4nck' ? n.coverage === 'done' || n.quantum && false : bank[n.id] === 'done';
+const isDone = (n) => n.quantum ? mode === 'bank' && bank[n.id] === 'done' : status(n) === 'done';
 const color = (s) => css('--s-' + s);
+function statusLabel(n) {
+  if (n.quantum) return mode === 'bank' ? (bank[n.id] === 'done' ? 'Quantum, explored' : 'Quantum, not yet explored') : 'Quantum';
+  const s = status(n);
+  return mode === 'pl4nck' ? { done: 'Kit available', wip: 'Next in the library', todo: 'Later' }[s] : data.statuses[s];
+}
+$('source').textContent = `Classes and links from QuantLib ${data.quantlib} (C++ and Python sources), folded to one item per concept; Pl4nck items added for risk, methods and quantum. Reviewed ${data.reviewed}.`;
 
-// ---------- Layout: columns by depth along "builds on" links, rows by lane ----------
-const preds = {}; edges.forEach((e) => (preds[e.to] = preds[e.to] || []).push(e.from));
+// ---------- Roadmap layout (curated layer): columns by depth along "builds on", rows by lane ----------
+const preds = {}; coreEdges.forEach((e) => (preds[e.to] = preds[e.to] || []).push(e.from));
 const depth = {};
 function d(id) {
   if (depth[id] != null) return depth[id];
@@ -162,54 +228,238 @@ function d(id) {
   depth[id] = p.length ? 1 + Math.max(...p.map(d)) : 0;
   return depth[id];
 }
-data.nodes.forEach((n) => { if (!n.quantum) d(n.id); });
+coreNodes.forEach((n) => { if (!n.quantum) d(n.id); });
 const maxDepth = Math.max(...Object.values(depth));
-data.nodes.forEach((n) => { if (n.quantum) depth[n.id] = maxDepth + 1; });
-
-const slots = {};          // lane -> depth -> [ids]
-data.nodes.forEach((n) => { ((slots[n.lane] = slots[n.lane] || {})[depth[n.id]] = slots[n.lane][depth[n.id]] || []).push(n.id); });
+coreNodes.forEach((n) => { if (n.quantum) depth[n.id] = maxDepth + 1; });
+const slots = {};
+coreNodes.forEach((n) => { ((slots[n.lane] = slots[n.lane] || {})[depth[n.id]] = slots[n.lane][depth[n.id]] || []).push(n.id); });
 const laneRows = {}; let row = 0;
 data.lanes.forEach((l) => {
   const h = Math.max(1, ...Object.values(slots[l.id] || {}).map((a) => a.length));
   laneRows[l.id] = { start: row, height: h }; row += h;
 });
 const totalRows = row;
-const pos = {};            // id -> {col, row}
-data.nodes.forEach((n) => {
+const pos = {};
+coreNodes.forEach((n) => {
   const list = slots[n.lane][depth[n.id]];
   pos[n.id] = { col: depth[n.id], row: laneRows[n.lane].start + list.indexOf(n.id) + (laneRows[n.lane].height - list.length) / 2 };
 });
 
 // ---------- Legend and summary ----------
+function scopeNodes() { return view === 'roadmap' || view === 'paths' ? coreNodes : data.nodes; }
 function renderLegend() {
   const items = mode === 'pl4nck'
     ? [['done', 'Kit available'], ['wip', 'Next'], ['todo', 'Later'], ['quantum', 'Quantum']]
     : [['done', data.statuses.done], ['wip', data.statuses.wip], ['todo', data.statuses.todo], ['quantum', 'Quantum']];
   $('legend').innerHTML = items.map(([s, t]) => `<span><i style="background:${color(s)}"></i>${esc(t)}</span>`).join('');
-  const classical = data.nodes.filter((n) => !n.quantum);
+  const all = scopeNodes(), classical = all.filter((n) => !n.quantum);
   const count = (s) => classical.filter((n) => status(n) === s).length;
-  $('summary').innerHTML = `<span><b>${count('done')}</b> ${mode === 'pl4nck' ? 'with a kit' : 'implemented'}</span><span><b>${count('wip')}</b> ${mode === 'pl4nck' ? 'next' : 'in progress'}</span><span><b>${count('todo')}</b> ${mode === 'pl4nck' ? 'later' : 'not yet explored'}</span><span><b>${data.nodes.length - classical.length}</b> quantum</span>`;
+  $('summary').innerHTML = `<span><b>${count('done')}</b> ${mode === 'pl4nck' ? 'with a kit' : 'implemented'}</span><span><b>${count('wip')}</b> ${mode === 'pl4nck' ? 'next' : 'in progress'}</span><span><b>${count('todo')}</b> ${mode === 'pl4nck' ? 'later' : 'not yet explored'}</span><span><b>${all.length - classical.length}</b> quantum</span>`;
   $('reset').hidden = mode !== 'bank';
+  $('export').hidden = !(view === 'roadmap' || view === 'paths');
 }
 
-// ---------- 2D (SVG) ----------
+// ---------- Panel (shared by the families view and the roadmap) ----------
+function panelHtml() {
+  if (!selected) {
+    if (view === 'families') return `<h2>How to read it</h2>
+      <p>${data.nodes.length} items in ${data.clouds.length} families. Each QuantLib class is folded into one item per concept: the variants are listed inside.</p>
+      <p class="rel">Large groups are folded: click one to open it. ${mode === 'bank' ? 'Select an item to set its status for your institution; the bubbles count your coverage. Statuses stay in this browser; nothing is sent.' : 'Select an item to see what it builds on, what it prices and where it leads.'}</p>`;
+    return `<h2>${view === 'paths' ? 'Paths to quantum' : 'How to read it'}</h2>
+      <p>${view === 'paths' ? 'Only the models and methods that lead to a quantum algorithm are highlighted. Each one is a no-regret step: it pays off whether or not quantum delivers.' : 'The curated roadmap: left to right, from foundations to more advanced models, then the quantum algorithms that build on them. Solid lines: builds on. Dashed blue lines: quantum counterpart. The Families view shows everything.'}</p>
+      <p class="rel">${mode === 'bank' ? 'Select a model to set its status for your institution. Statuses stay in this browser; nothing is sent.' : 'Select a model to see what it builds on and where it leads.'}</p>`;
+  }
+  const n = byId[selected], s = status(n);
+  const rel = (list) => list.map((id) => `<button type="button" class="go" data-go="${id}">${esc(byId[id].name)}</button>`).join(', ');
+  const inB = edges.filter((e) => e.to === n.id && e.type !== 'prices').map((e) => e.from);
+  const outB = edges.filter((e) => e.from === n.id && e.type !== 'prices').map((e) => e.to);
+  const prices = edges.filter((e) => e.from === n.id && e.type === 'prices').map((e) => e.to);
+  const pricedBy = edges.filter((e) => e.to === n.id && e.type === 'prices').map((e) => e.from);
+  const choices = n.quantum ? [['done', 'Explored'], ['todo', 'Not yet explored']] : [['done', 'Implemented'], ['wip', 'In progress'], ['todo', 'Not yet explored']];
+  const ql = (n.ql || []).filter((c) => /^[A-Z]/.test(c) || /^[a-z]+[A-Z]/.test(c));
+  return `<button type="button" class="close" data-close aria-label="Close">×</button><p class="kind">${esc(cloudById[n.cloud].name)}${n.group ? ' · ' + esc(n.group) : ''}</p>
+    <h2>${esc(n.name)}</h2>
+    <span class="st"><i style="background:${color(s)}"></i>${esc(statusLabel(n))}</span>
+    <p>${esc(n.note)}</p>
+    ${mode === 'bank' ? `<div class="choose" role="group" aria-label="Status for my institution">${choices.map(([k, t]) => `<button type="button" data-set="${k}" aria-pressed="${(bank[n.id] || 'todo') === k}">${esc(t)}</button>`).join('')}</div>` : ''}
+    ${n.variants ? `<p class="rel"><b>Variants</b>${esc(n.variants.join('; '))}</p>` : ''}
+    ${inB.length ? `<p class="rel"><b>Builds on</b>${rel(inB)}</p>` : ''}
+    ${outB.length ? `<p class="rel"><b>Leads to</b>${rel(outB)}</p>` : ''}
+    ${prices.length ? `<p class="rel"><b>Prices</b>${rel(prices)}</p>` : ''}
+    ${pricedBy.length ? `<p class="rel"><b>Priced by ${pricedBy.length} engine${pricedBy.length > 1 ? 's' : ''}</b>${rel(pricedBy)}</p>` : ''}
+    ${ql.length ? `<details><summary>In QuantLib: ${ql.length} class${ql.length > 1 ? 'es' : ''}</summary><p>${ql.map((c) => `<code>${esc(c)}</code>`).join(', ')}</p></details>` : (n.core ? '<p class="rel">Not in QuantLib: added by Pl4nck.</p>' : '')}
+    ${n.library ? `<p><a href="/library#${esc(n.library)}">Open in the library</a></p>` : ''}`;
+}
+function renderPanel() {
+  const el = view === 'families' ? $('fpanel') : $('panel');
+  el.innerHTML = panelHtml();
+  el.classList.toggle('open', !!selected);
+}
+function onPanelClick(e) {
+  const b = e.target.closest('[data-set]');
+  if (b && selected) { bank[selected] = b.dataset.set; saveBank(); renderAll(); return; }
+  if (e.target.closest('[data-close]')) { selected = null; renderAll(); return; }
+  const g = e.target.closest('[data-go]');
+  if (g) select(g.dataset.go, true);
+}
+$('panel').addEventListener('click', onPanelClick);
+$('fpanel').addEventListener('click', onPanelClick);
+
+function select(id, reveal) {
+  selected = id;
+  const n = id && byId[id];
+  if (n && (view === 'roadmap' || view === 'paths') && !n.core) { setView('families'); }
+  if (n && view === 'families') {
+    openClouds.add(n.cloud);
+    const key = n.cloud + '|' + (n.group || '');
+    if (bigGroup(key) || n.cloud === 'engines') expanded.add(key);
+  }
+  renderAll();
+  if (reveal && n && view === 'families') document.querySelector(`.chip[data-id="${CSS.escape(id)}"]`)?.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+}
+
+// ---------- Families view ----------
+const FOLD_AT = 12;
+const openClouds = new Set(data.clouds.map((c) => c.id));
+const expanded = new Set();
+const groupsOf = {};       // cloud -> [{key, name, ids}]
+data.nodes.forEach((n) => {
+  const list = groupsOf[n.cloud] = groupsOf[n.cloud] || [];
+  const key = n.cloud + '|' + (n.group || '');
+  let g = list.find((x) => x.key === key);
+  if (!g) list.push(g = { key, name: n.group || '', ids: [] });
+  g.ids.push(n.id);
+});
+const groupByKey = Object.fromEntries(Object.values(groupsOf).flat().map((g) => [g.key, g]));
+const bigGroup = (key) => groupByKey[key] && groupByKey[key].ids.length > FOLD_AT;
+
+// bubble positions (viewBox units), wide and narrow layouts
+const POS = {
+  wide: { W: 1000, H: 400, at: { conv: [95, 105], curves: [105, 290], vol: [290, 95], models: [300, 285], methods: [505, 92], engines: [530, 268], instruments: [770, 270], risk: [770, 92], quantum: [925, 185] } },
+  narrow: { W: 400, H: 760, at: { conv: [80, 70], curves: [260, 75], vol: [90, 225], models: [290, 225], methods: [100, 365], engines: [255, 400], instruments: [110, 560], risk: [300, 575], quantum: [205, 700] } },
+};
+const radius = (n, narrow) => (narrow ? 16 : 18) + (narrow ? 4.2 : 5) * Math.sqrt(n);
+function wrapAll(t, max) {
+  const words = t.split(' '); const lines = ['']; for (const w of words) { if ((lines[lines.length - 1] + ' ' + w).trim().length > max && lines[lines.length - 1]) lines.push(w); else lines[lines.length - 1] = (lines[lines.length - 1] + ' ' + w).trim(); }
+  return lines;
+}
+function renderBubbles() {
+  const narrow = $('bubbles').parentElement.clientWidth < 640;
+  const L = narrow ? POS.narrow : POS.wide;
+  const svg = $('bubbles');
+  svg.setAttribute('viewBox', `0 0 ${L.W} ${L.H}`);
+  const ink = css('--ink'), muted = css('--muted'), rule = css('--rule'), sheet = css('--sheet'), paper = css('--paper'), accent = css('--accent');
+  // links between families (all of them, or only the selected item's)
+  const pair = {};
+  const touched = new Set();
+  for (const e of edges) {
+    if (selected && e.from !== selected && e.to !== selected) continue;
+    const a = byId[e.from].cloud, b = byId[e.to].cloud;
+    if (selected) { touched.add(a); touched.add(b); }
+    if (a === b) continue;
+    const k = [a, b].sort().join('|');
+    (pair[k] = pair[k] || { n: 0, q: false }).n++;
+    if (e.type === 'quantum') pair[k].q = true;
+  }
+  let out = '';
+  const R = {};
+  for (const c of data.clouds) R[c.id] = radius(data.nodes.filter((n) => n.cloud === c.id).length, narrow);
+  for (const [k, v] of Object.entries(pair)) {
+    const [a, b] = k.split('|'); const [x1, y1] = L.at[a], [x2, y2] = L.at[b];
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 1;
+    const bend = 0.12 * len, cx = mx - dy / len * bend, cy = my + dx / len * bend;
+    const w = Math.min(14, 1.2 + 2.3 * Math.log2(1 + v.n));
+    const col = v.q && (a === 'quantum' || b === 'quantum') ? css('--s-quantum') : selected ? accent : muted;
+    out += `<path d="M${x1},${y1} Q${cx},${cy} ${x2},${y2}" fill="none" stroke="${col}" stroke-opacity="${selected ? 0.7 : 0.28}" stroke-width="${w}" stroke-linecap="round"/>`;
+    const lx = 0.25 * x1 + 0.5 * cx + 0.25 * x2, ly = 0.25 * y1 + 0.5 * cy + 0.25 * y2;
+    const t = String(v.n), tw = 8 + t.length * 7;
+    out += `<g><rect x="${lx - tw / 2}" y="${ly - 9}" width="${tw}" height="18" rx="9" fill="${paper}" stroke="${rule}"/><text x="${lx}" y="${ly + 4}" font-size="11.5" fill="${ink}" text-anchor="middle">${t}</text></g>`;
+  }
+  for (const c of data.clouds) {
+    const [x, y] = L.at[c.id], r = R[c.id];
+    const list = data.nodes.filter((n) => n.cloud === c.id);
+    const done = list.filter(isDone).length, wip = list.filter((n) => !n.quantum && status(n) === 'wip').length;
+    const open = openClouds.has(c.id), dim = selected && !touched.has(c.id);
+    const circ = 2 * Math.PI * (r + 5);
+    const arc = (frac, off, col) => frac > 0 ? `<circle cx="${x}" cy="${y}" r="${r + 5}" fill="none" stroke="${col}" stroke-width="5" stroke-dasharray="${frac * circ} ${circ}" stroke-dashoffset="${-off * circ}" transform="rotate(-90 ${x} ${y})"/>` : '';
+    // small bubbles: name underneath, count inside; large ones: both inside
+    const inside = r >= 44, fs = narrow ? 12 : 12.5;
+    const lines = wrapAll(c.name, inside ? 15 : 22).slice(0, 2);
+    const top = inside ? y - (lines.length * (fs + 2)) / 2 + 2 : y + r + 18;
+    out += `<g class="bub" data-cloud="${c.id}" tabindex="0" role="button" aria-pressed="${open}" aria-label="${esc(c.name)}: ${done} of ${list.length}${open ? ', shown' : ', hidden'}" opacity="${dim ? 0.35 : 1}">
+      <circle cx="${x}" cy="${y}" r="${r + 5}" fill="none" stroke="${rule}" stroke-width="5"/>
+      ${arc(done / list.length, 0, c.id === 'quantum' ? css('--s-quantum') : color('done'))}${arc(wip / list.length, done / list.length, color('wip'))}
+      <circle class="disc" cx="${x}" cy="${y}" r="${r}" fill="${open ? sheet : paper}" stroke="${open ? ink : rule}" stroke-width="${open ? 1.6 : 1}" ${open ? '' : 'stroke-dasharray="4 3"'}/>
+      ${lines.map((t, i) => `<text x="${x}" y="${top + i * (fs + 2) + fs * 0.4}" font-size="${fs}" font-weight="600" fill="${open ? ink : muted}" text-anchor="middle">${esc(t)}</text>`).join('')}
+      <text x="${x}" y="${inside ? top + lines.length * (fs + 2) + fs * 0.6 : y + 4}" font-size="${inside ? 11.5 : 12.5}" fill="${muted}" text-anchor="middle">${done} / ${list.length}</text>
+    </g>`;
+  }
+  svg.innerHTML = out;
+  svg.setAttribute('aria-label', 'Families and the links between them');
+  const shown = data.clouds.filter((c) => openClouds.has(c.id)).length;
+  $('famcount').textContent = `${shown} of ${data.clouds.length} families shown`;
+}
+function toggleCloud(id) { openClouds.has(id) ? openClouds.delete(id) : openClouds.add(id); renderFamilies(); }
+$('bubbles').addEventListener('click', (e) => { const g = e.target.closest('.bub'); if (g) toggleCloud(g.dataset.cloud); });
+$('bubbles').addEventListener('keydown', (e) => { if (e.key !== 'Enter' && e.key !== ' ') return; const g = e.target.closest('.bub'); if (!g) return; e.preventDefault(); toggleCloud(g.dataset.cloud); document.querySelector(`.bub[data-cloud="${g.dataset.cloud}"]`)?.focus(); });
+$('famall').addEventListener('click', () => { data.clouds.forEach((c) => openClouds.add(c.id)); renderFamilies(); });
+$('famnone').addEventListener('click', () => { openClouds.clear(); renderFamilies(); });
+
+function renderBoxes() {
+  const linked = selected ? nbr[selected] || new Set() : new Set();
+  const chip = (n) => `<button type="button" class="chip s-${status(n)}${n.id === selected ? ' sel' : ''}${linked.has(n.id) ? ' rel' : ''}" data-id="${n.id}" title="${esc(statusLabel(n))}"><i></i>${esc(n.name)}</button>`;
+  let out = '';
+  for (const c of data.clouds) {
+    if (!openClouds.has(c.id)) continue;
+    const list = data.nodes.filter((n) => n.cloud === c.id);
+    const done = list.filter(isDone).length, wip = list.filter((n) => !n.quantum && status(n) === 'wip').length;
+    const groups = groupsOf[c.id];
+    out += `<section class="box${c.id === 'engines' || c.id === 'instruments' ? ' wide' : ''}"><h3>${esc(c.name)}</h3>
+      <p class="cov"><b>${done}</b> of ${list.length} ${c.id === 'quantum' ? (mode === 'bank' ? 'explored' : 'quantum') : mode === 'pl4nck' ? 'with a kit' : 'implemented'}${wip ? ` · <b>${wip}</b> ${mode === 'pl4nck' ? 'next' : 'in progress'}` : ''}</p>`;
+    if (c.id === 'engines') {
+      // engines: one fold per instrument family; opened families are listed below the folds
+      const folded = groups.filter((g) => !expanded.has(g.key)), open = groups.filter((g) => expanded.has(g.key));
+      if (folded.length) out += `<p class="grpname">By instrument</p><div class="chips">${folded.map((g) => grpChip(g, linked)).join('')}</div>`;
+      for (const g of open) out += `<p class="grpname">${esc(g.name)} <button type="button" class="less" data-grp="${esc(g.key)}">fold</button></p><div class="chips">${g.ids.map((id) => chip(byId[id])).join('')}</div>`;
+    } else {
+      for (const g of groups) {
+        const big = g.ids.length > FOLD_AT && !expanded.has(g.key);
+        if (groups.length > 1 || big) out += `<p class="grpname">${esc(g.name)}${g.ids.length > FOLD_AT && !big ? ` <button type="button" class="less" data-grp="${esc(g.key)}">fold</button>` : ''}</p>`;
+        out += `<div class="chips">${big ? grpChip(g, linked) : g.ids.map((id) => chip(byId[id])).join('')}</div>`;
+      }
+    }
+    out += `</section>`;
+  }
+  const box = $('boxes');
+  box.innerHTML = out || '<p class="hint">No family shown. Click a bubble above.</p>';
+  box.classList.toggle('sel-on', !!selected);
+}
+function grpChip(g, linked) {
+  const ns = g.ids.map((id) => byId[id]);
+  const done = ns.filter(isDone).length, wip = ns.filter((n) => !n.quantum && status(n) === 'wip').length, k = g.ids.filter((id) => linked.has(id) || id === selected).length;
+  const a = 100 * done / ns.length, b = a + 100 * wip / ns.length, todo = 'color-mix(in srgb,var(--s-todo) 35%,transparent)';
+  const bar = `<span class="gbar" style="background:linear-gradient(90deg,var(--s-done) ${a}%,var(--s-wip) ${a}% ${b}%,${todo} ${b}%)"></span>`;
+  return `<button type="button" class="grp${k ? ' rel' : ''}" data-grp="${esc(g.key)}" aria-expanded="false"><span>${esc(g.name)} <b>${ns.length}</b></span>${bar}${k ? `<span class="more">${k} linked</span>` : ''}</button>`;
+}
+$('boxes').addEventListener('click', (e) => {
+  const g = e.target.closest('[data-grp]');
+  if (g) { const k = g.dataset.grp; expanded.has(k) ? expanded.delete(k) : expanded.add(k); renderBoxes(); return; }
+  const c = e.target.closest('.chip');
+  if (c) { selected = selected === c.dataset.id ? null : c.dataset.id; renderAll(); document.querySelector(`.chip[data-id="${CSS.escape(c.dataset.id)}"]`)?.focus({ preventScroll: true }); }
+});
+function renderFamilies() { renderBubbles(); renderBoxes(); renderPanel(); }
+
+// ---------- Roadmap (SVG) ----------
 const COLW = 172, ROWH = 54, LANEW = 140, PADT = 40, NODEW = 150, NODEH = 38;
 let scale = null; // null = fit to width
 const nx = (id) => LANEW + pos[id].col * COLW + 12;
 const ny = (id) => PADT + pos[id].row * ROWH + (ROWH - NODEH) / 2;
 const ancestors = (id, acc = new Set()) => { (preds[id] || []).forEach((p) => { if (!acc.has(p)) { acc.add(p); ancestors(p, acc); } }); return acc; };
-const onQuantumPath = new Set(data.nodes.filter((n) => n.quantum).flatMap((n) => [n.id, ...ancestors(n.id)]));
-
-function wrapAll(t, max) {
-  const words = t.split(' '); const lines = ['']; for (const w of words) { if ((lines[lines.length - 1] + ' ' + w).trim().length > max && lines[lines.length - 1]) lines.push(w); else lines[lines.length - 1] = (lines[lines.length - 1] + ' ' + w).trim(); }
-  return lines;
-}
-// two lines at most: tighten the font for the few long names rather than cut them
+const onQuantumPath = new Set(coreNodes.filter((n) => n.quantum).flatMap((n) => [n.id, ...ancestors(n.id)]));
 function wrapText(t) {
   const a = wrapAll(t, 19); if (a.length <= 2) return { lines: a, fs: 12.5 };
   return { lines: wrapAll(t, 23).slice(0, 2), fs: 11.2 };
 }
-
 function render2d() {
   const W = LANEW + (maxDepth + 2) * COLW + 20, H = PADT + totalRows * ROWH + 20;
   const ink = css('--ink'), muted = css('--muted'), rule = css('--rule'), paper = css('--paper'), sheet = css('--sheet');
@@ -218,28 +468,25 @@ function render2d() {
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.setAttribute('width', W * scale); svg.setAttribute('height', H * scale);
   let out = `<rect x="0" y="0" width="${W}" height="${H}" fill="${sheet}"/>`;
-  // lanes
   data.lanes.forEach((l, i) => {
     const r = laneRows[l.id], y = PADT + r.start * ROWH;
     if (i) out += `<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="${rule}"/>`;
     const ll = wrapAll(l.name, 15).slice(0, 2), ly = y + r.height * ROWH / 2 + (ll.length === 1 ? 5 : -3);
     out += ll.map((t, k) => `<text x="14" y="${ly + k * 16}" font-size="13" font-weight="600" fill="${muted}">${esc(t)}</text>`).join('');
   });
-  // column header
   const qx = LANEW + (maxDepth + 1) * COLW;
   out += `<rect x="${qx}" y="0" width="${COLW + 20}" height="${H}" fill="${css('--s-quantum')}" opacity="0.07"/>`;
   out += `<text x="${LANEW + 12}" y="24" font-size="12.5" fill="${muted}">Foundations</text><text x="${qx - 12}" y="24" font-size="12.5" fill="${muted}" text-anchor="end">More advanced</text><text x="${qx + 12}" y="24" font-size="12.5" font-weight="600" fill="${css('--s-quantum')}">Quantum</text>`;
-  // edges
-  for (const e of edges) {
+  const sel = selected && byId[selected].core ? selected : null;
+  for (const e of coreEdges) {
     const x1 = nx(e.from) + NODEW, y1 = ny(e.from) + NODEH / 2, x2 = nx(e.to), y2 = ny(e.to) + NODEH / 2;
     const back = x2 <= x1; const mx = back ? Math.max(x1, x2) + 40 : (x1 + x2) / 2;
     const dPath = back ? `M${x1},${y1} C${mx},${y1} ${x2 - 40},${y2} ${x2},${y2}` : `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
     const q = e.type === 'quantum';
-    const dim = view === 'paths' && !(onQuantumPath.has(e.from) && onQuantumPath.has(e.to)) || selected && e.from !== selected && e.to !== selected && view !== 'paths';
+    const dim = view === 'paths' && !(onQuantumPath.has(e.from) && onQuantumPath.has(e.to)) || sel && e.from !== sel && e.to !== sel && view !== 'paths';
     out += `<path class="edge${dim ? ' dim' : ''}" d="${dPath}" fill="none" stroke="${q ? css('--s-quantum') : muted}" stroke-width="${q ? 1.8 : 1.2}" ${q ? 'stroke-dasharray="5 4"' : ''} opacity="${q ? 0.9 : 0.55}"/>`;
   }
-  // nodes
-  for (const n of data.nodes) {
+  for (const n of coreNodes) {
     const s = status(n), c = color(s), x = nx(n.id), y = ny(n.id);
     const hollow = n.quantum && mode === 'bank' && bank[n.id] !== 'done';
     const fill = s === 'todo' ? paper : hollow ? paper : c;
@@ -248,40 +495,12 @@ function render2d() {
     const { lines, fs } = wrapText(n.name);
     const ty = y + NODEH / 2 + (lines.length === 1 ? 4.5 : -2.5);
     out += `<g class="node${dim ? ' dim' : ''}" data-id="${n.id}" tabindex="0" role="button" aria-label="${esc(n.name)}: ${esc(statusLabel(n))}">
-      <rect x="${x}" y="${y}" width="${NODEW}" height="${NODEH}" rx="${n.quantum ? 19 : 7}" fill="${fill}" stroke="${s === 'todo' ? css('--s-todo') : c}" ${selected === n.id ? `stroke-width="3"` : ''}/>
+      <rect x="${x}" y="${y}" width="${NODEW}" height="${NODEH}" rx="${n.quantum ? 19 : 7}" fill="${fill}" stroke="${s === 'todo' ? css('--s-todo') : c}" ${sel === n.id ? `stroke-width="3"` : ''}/>
       ${lines.map((t, i) => `<text x="${x + NODEW / 2}" y="${ty + i * 14}" font-size="${fs}" font-weight="${n.quantum ? 600 : 500}" fill="${tc}" text-anchor="middle">${esc(t)}</text>`).join('')}
     </g>`;
   }
   svg.innerHTML = out;
 }
-
-function statusLabel(n) {
-  if (n.quantum) return mode === 'bank' ? (bank[n.id] === 'done' ? 'Quantum, explored' : 'Quantum, not yet explored') : 'Quantum';
-  const s = status(n);
-  return mode === 'pl4nck' ? { done: 'Kit available', wip: 'Next in the library', todo: 'Later' }[s] : data.statuses[s];
-}
-
-function renderPanel() {
-  const p = $('panel');
-  if (!selected) {
-    p.innerHTML = `<h2>${view === 'paths' ? 'Paths to quantum' : 'How to read it'}</h2>
-      <p>${view === 'paths' ? 'Only the models and methods that lead to a quantum algorithm are highlighted. Each one is a no-regret step: it pays off whether or not quantum delivers.' : 'Left to right: from foundations to more advanced models, then the quantum algorithms that build on them. Solid lines: builds on. Dashed blue lines: quantum counterpart.'}</p>
-      <p class="rel">${mode === 'bank' ? 'Select a model to set its status for your institution. Statuses stay in this browser; nothing is sent.' : 'Select a model to see what it builds on and where it leads.'}</p>`;
-    return;
-  }
-  const n = byId[selected], s = status(n);
-  const from = edges.filter((e) => e.to === n.id).map((e) => byId[e.from].name);
-  const to = edges.filter((e) => e.from === n.id).map((e) => byId[e.to].name);
-  const choices = n.quantum ? [['done', 'Explored'], ['todo', 'Not yet explored']] : [['done', 'Implemented'], ['wip', 'In progress'], ['todo', 'Not yet explored']];
-  p.innerHTML = `<h2>${esc(n.name)}</h2>
-    <span class="st"><i style="background:${color(s)}"></i>${esc(statusLabel(n))}</span>
-    <p>${esc(n.note)}</p>
-    ${mode === 'bank' ? `<div class="choose" role="group" aria-label="Status for my institution">${choices.map(([k, t]) => `<button type="button" data-set="${k}" aria-pressed="${(bank[n.id] || 'todo') === k}">${esc(t)}</button>`).join('')}</div>` : ''}
-    ${from.length ? `<p class="rel"><b>Builds on</b> ${esc(from.join(', '))}</p>` : ''}
-    ${to.length ? `<p class="rel"><b>Leads to</b> ${esc(to.join(', '))}</p>` : ''}
-    ${n.library ? `<p><a href="/library#${esc(n.library)}">Open in the library</a></p>` : ''}`;
-}
-
 $('svg').addEventListener('click', (e) => {
   const g = e.target.closest('.node'); if (!g) return;
   selected = selected === g.dataset.id ? null : g.dataset.id; render2d(); renderPanel();
@@ -292,14 +511,9 @@ $('svg').addEventListener('keydown', (e) => {
   selected = g.dataset.id; render2d(); renderPanel();
   document.querySelector(`.node[data-id="${selected}"]`)?.focus();
 });
-$('panel').addEventListener('click', (e) => {
-  const b = e.target.closest('[data-set]'); if (!b || !selected) return;
-  bank[selected] = b.dataset.set; saveBank(); renderAll();
-});
 $('reset').addEventListener('click', () => { bank = {}; saveBank(); renderAll(); });
 $('zin').addEventListener('click', () => { scale = Math.min(2, (scale || 1) * 1.2); render2d(); });
 $('zout').addEventListener('click', () => { scale = Math.max(0.4, (scale || 1) / 1.2); render2d(); });
-
 $('export').addEventListener('click', () => {
   const svg = $('svg').cloneNode(true);
   const vb = svg.getAttribute('viewBox').split(' ').map(Number);
@@ -316,7 +530,7 @@ $('export').addEventListener('click', () => {
   img.src = url;
 });
 
-// ---------- 3D ----------
+// ---------- 3D: one cloud per family ----------
 let three = null;
 async function init3d() {
   let THREE, OrbitControls;
@@ -324,100 +538,128 @@ async function init3d() {
     THREE = await import('three');
     ({ OrbitControls } = await import('three/addons/controls/OrbitControls.js'));
   } catch {
-    $('stage').insertAdjacentHTML('beforeend', '<div class="fallback">The 3D view could not load. <br>Use the 2D roadmap above.</div>');
+    $('stage').insertAdjacentHTML('beforeend', '<div class="fallback">The 3D view could not load. <br>Use the Families view above.</div>');
     return;
   }
   const canvas = $('gl'), stage = $('stage');
   let renderer;
   try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); }
-  catch { stage.insertAdjacentHTML('beforeend', '<div class="fallback">Your browser cannot show 3D here. <br>Use the 2D roadmap above.</div>'); return; }
+  catch { stage.insertAdjacentHTML('beforeend', '<div class="fallback">Your browser cannot show 3D here. <br>Use the Families view above.</div>'); return; }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 400);
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 800);
   const controls = new OrbitControls(camera, canvas);
-  controls.enableDamping = true; controls.dampingFactor = 0.08; controls.minDistance = 14; controls.maxDistance = 120;
-  controls.autoRotate = !reduce; controls.autoRotateSpeed = 0.45;
+  controls.enableDamping = true; controls.dampingFactor = 0.08; controls.minDistance = 20; controls.maxDistance = 420;
+  controls.autoRotate = !reduce; controls.autoRotateSpeed = 0.4;
   controls.addEventListener('start', () => { controls.autoRotate = false; });
 
-  const SX = 6, SZ = 3.1, QY = 9;
-  const cx = (maxDepth + 1) * SX / 2, cz = (totalRows - 1) * SZ / 2;
-  const p3 = (id) => new THREE.Vector3(pos[id].col * SX - cx, byId[id].quantum ? QY : 0, pos[id].row * SZ - cz);
-  controls.target.set(0, 2.5, cz * 0.25);
-  camera.position.set(-cx * 0.45, cz * 0.95 + 11, cz * 1.4 + 11);
-  { // narrow screens: step back so the whole map fits
-    const a = stage.clientWidth / stage.clientHeight;
-    if (a < 1.4) camera.position.sub(controls.target).multiplyScalar(Math.min(2.2, 1.4 / a)).add(controls.target);
+  // cluster centres from the wide bubble layout; nodes on a sunflower spiral inside each cluster
+  const portrait = stage.clientWidth / stage.clientHeight < 1, K = portrait ? 0.2 : 0.15, QY = 14, L = portrait ? POS.narrow : POS.wide;
+  const centre = {}, p3 = {};
+  for (const c of data.clouds) {
+    const [x, y] = L.at[c.id];
+    centre[c.id] = new THREE.Vector3((x - L.W / 2) * K, c.id === 'quantum' ? QY : 0, (y - L.H / 2) * K);
+    const ids = data.nodes.filter((n) => n.cloud === c.id).map((n) => n.id);
+    // keep groups together: order by group, and the curated nodes first
+    ids.sort((a, b) => (byId[b].core ? 1 : 0) - (byId[a].core ? 1 : 0));
+    const R = radius(ids.length, portrait) * K * 0.92, step = R / Math.sqrt(ids.length + 0.5);
+    ids.forEach((id, i) => {
+      const r = step * Math.sqrt(i + 0.5), a = i * 2.39996;
+      const h = Math.sin(i * 12.9898) * 43758.5453; const jitter = (h - Math.floor(h));
+      p3[id] = centre[c.id].clone().add(new THREE.Vector3(r * Math.cos(a), 0.4 + jitter * 2.2 + (byId[id].core ? 1.2 : 0), r * Math.sin(a)));
+    });
   }
-  controls.maxDistance = 160;
+  controls.target.set(0, 2, portrait ? -6 : 2);
+  if (portrait) camera.position.set(0, 175, 120);
+  else {
+    camera.position.set(-6, 88, 100);
+    const a = stage.clientWidth / stage.clientHeight;
+    if (a < 1.6) camera.position.sub(controls.target).multiplyScalar(Math.min(1.8, 1.6 / a)).add(controls.target);
+  }
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.75));
-  const dl = new THREE.DirectionalLight(0xffffff, 0.9); dl.position.set(10, 30, 20); scene.add(dl);
+  const dl = new THREE.DirectionalLight(0xffffff, 0.9); dl.position.set(20, 60, 40); scene.add(dl);
+  const floor = new THREE.GridHelper(200, 30, 0x2a3d5e, 0x1c2c48); floor.position.y = -0.6; scene.add(floor);
+  // soft discs under each cloud
+  for (const c of data.clouds) {
+    const R = radius(data.nodes.filter((n) => n.cloud === c.id).length, portrait) * K * 1.05;
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(R, 48), new THREE.MeshBasicMaterial({ color: c.id === 'quantum' ? 0x4f6ef7 : 0x5b7bb5, transparent: true, opacity: c.id === 'quantum' ? 0.14 : 0.07, side: THREE.DoubleSide, depthWrite: false }));
+    disc.rotation.x = -Math.PI / 2; disc.position.copy(centre[c.id]); disc.position.y -= 0.5; scene.add(disc);
+  }
 
-  // floor grid and quantum layer
-  const floor = new THREE.GridHelper(Math.max(cx, cz) * 2.6, 26, 0x2a3d5e, 0x1c2c48); floor.position.y = -0.6; scene.add(floor);
-  const qPlane = new THREE.Mesh(new THREE.PlaneGeometry(SX * 1.6, totalRows * SZ + 4), new THREE.MeshBasicMaterial({ color: 0x4f6ef7, transparent: true, opacity: 0.08, side: THREE.DoubleSide }));
-  qPlane.rotation.x = -Math.PI / 2; qPlane.position.set((maxDepth + 1) * SX - cx, QY - 0.5, 0); scene.add(qPlane);
-
-  const meshes = {}; const geo = new THREE.SphereGeometry(0.62, 28, 18); const qgeo = new THREE.OctahedronGeometry(0.85, 0);
+  const meshes = {};
+  const geo = new THREE.SphereGeometry(0.62, 20, 14), small = new THREE.SphereGeometry(0.42, 14, 10), qgeo = new THREE.OctahedronGeometry(1.0, 0);
   for (const n of data.nodes) {
-    const m = new THREE.Mesh(n.quantum ? qgeo : geo, new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0.15 }));
-    m.position.copy(p3(n.id)); m.userData.id = n.id; scene.add(m); meshes[n.id] = m;
+    const m = new THREE.Mesh(n.quantum ? qgeo : n.core ? geo : small, new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0.15 }));
+    m.position.copy(p3[n.id]); m.userData.id = n.id; scene.add(m); meshes[n.id] = m;
   }
-  const edgeObjs = [];
+  // links: one merged geometry for ordinary links, dashed lines for quantum ones
+  const pts = [];
   for (const e of edges) {
-    const a = p3(e.from), b = p3(e.to);
-    const mid = a.clone().lerp(b, 0.5); if (e.type === 'quantum') mid.y += 2.2;
-    const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
-    const g = new THREE.BufferGeometry().setFromPoints(curve.getPoints(24));
-    const mat = e.type === 'quantum'
-      ? new THREE.LineDashedMaterial({ color: 0x8ea2ff, dashSize: 0.5, gapSize: 0.35, transparent: true, opacity: 0.95 })
-      : new THREE.LineBasicMaterial({ color: 0x7f8ba1, transparent: true, opacity: 0.55 });
-    const line = new THREE.Line(g, mat); if (e.type === 'quantum') line.computeLineDistances();
-    scene.add(line); edgeObjs.push(line);
+    if (e.type === 'quantum') continue;
+    const a = p3[e.from], b = p3[e.to], mid = a.clone().lerp(b, 0.5); mid.y += Math.min(10, a.distanceTo(b) * 0.12);
+    const cp = new THREE.QuadraticBezierCurve3(a, mid, b).getPoints(10);
+    for (let i = 0; i < cp.length - 1; i++) pts.push(cp[i], cp[i + 1]);
+  }
+  scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0x7f8ba1, transparent: true, opacity: 0.16, depthWrite: false })));
+  for (const e of edges) {
+    if (e.type !== 'quantum') continue;
+    const a = p3[e.from], b = p3[e.to], mid = a.clone().lerp(b, 0.5); mid.y += 6;
+    const g = new THREE.BufferGeometry().setFromPoints(new THREE.QuadraticBezierCurve3(a, mid, b).getPoints(30));
+    const line = new THREE.Line(g, new THREE.LineDashedMaterial({ color: 0x8ea2ff, dashSize: 0.9, gapSize: 0.6, transparent: true, opacity: 0.9 }));
+    line.computeLineDistances(); scene.add(line);
   }
 
-  // HTML labels projected each frame
+  // HTML labels: family names always; items when there is room, most important first
   const labels = $('labels');
   const lab = {};
   for (const n of data.nodes) { const s = document.createElement('span'); s.textContent = n.name; if (n.quantum) s.className = 'q'; labels.append(s); lab[n.id] = s; }
-  const layerLab = document.createElement('span'); layerLab.className = 'layer'; layerLab.textContent = 'Quantum layer'; labels.append(layerLab);
-  const layerPos = new THREE.Vector3((maxDepth + 1) * SX - cx - SX * 0.8, QY - 0.5, -cz - 3.2);
+  const clab = {};
+  for (const c of data.clouds) { const s = document.createElement('span'); s.className = 'cl'; s.textContent = c.name; labels.append(s); clab[c.id] = s; }
+  const cpos = {};
+  for (const c of data.clouds) { const R = radius(data.nodes.filter((n) => n.cloud === c.id).length, portrait) * K; cpos[c.id] = centre[c.id].clone().add(new THREE.Vector3(0, c.id === 'quantum' ? 6 : 4.5, -R - 2.5)); }
 
   function paint() {
     for (const n of data.nodes) {
       const s = status(n); const c = new THREE.Color(color(s));
       const mat = meshes[n.id].material; mat.color = c; mat.emissive = s === 'todo' ? new THREE.Color(0x000000) : c.clone().multiplyScalar(0.35);
-      mat.transparent = s === 'todo'; mat.opacity = s === 'todo' ? 0.55 : 1;
+      mat.transparent = s === 'todo'; mat.opacity = s === 'todo' ? 0.5 : 1;
     }
   }
   function size() {
     const w = stage.clientWidth, h = stage.clientHeight;
     renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
   }
+  const rank = (n) => n.id === hover ? -1 : n.quantum ? 0 : n.core && status(n) === 'done' ? 1 : n.core ? 2 : status(n) === 'done' ? 3 : 4;
+  let hover = null;
   const v = new THREE.Vector3();
-  // labels: most important first (quantum, kits, next, rest; nearer first), skip any that would overlap
-  const rank = { quantum: 0, done: 1, wip: 2, todo: 3 }; let hover = null;
   function placeLabels() {
     const w = stage.clientWidth, h = stage.clientHeight;
+    const taken = [];
+    for (const c of data.clouds) {
+      v.copy(cpos[c.id]).project(camera); const el = clab[c.id];
+      if (v.z > 1) { el.style.opacity = 0; continue; }
+      const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; el.style.left = x + 'px'; el.style.top = y + 'px';
+      const wd = el._w || (el._w = el.offsetWidth), r = { l: x - wd / 2 - 4, r: x + wd / 2 + 4, t: y - 12, b: y + 12 };
+      const free = !taken.some((o) => r.l < o.r && r.r > o.l && r.t < o.b && r.b > o.t);
+      el.style.opacity = free ? 1 : 0; if (free) taken.push(r);
+    }
     const cand = [];
     for (const n of data.nodes) {
-      v.copy(meshes[n.id].position).project(camera);
+      v.copy(p3[n.id]).project(camera);
       const el = lab[n.id];
       if (v.z > 1) { el.style.opacity = 0; continue; }
       const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h;
       el.style.left = x + 'px'; el.style.top = y + 'px';
-      cand.push({ n, el, x, y, z: v.z, wd: el._w || (el._w = el.offsetWidth) || n.name.length * 6.4 });
+      cand.push({ n, el, x, y, z: v.z, wd: el._w || (el._w = el.offsetWidth) || n.name.length * 6 });
     }
-    cand.sort((a, b) => (hover === b.n.id) - (hover === a.n.id) || rank[status(a.n)] - rank[status(b.n)] || a.z - b.z);
-    v.copy(layerPos).project(camera);
-    const lx = (v.x + 1) / 2 * w, ly = (1 - v.y) / 2 * h;
-    layerLab.style.left = lx + 'px'; layerLab.style.top = ly + 'px'; layerLab.style.opacity = v.z > 1 ? 0 : 1;
-    const taken = v.z > 1 ? [] : [{ l: lx - 4, r: lx + (layerLab._w || (layerLab._w = layerLab.offsetWidth)) + 4, t: ly - 12, b: ly + 12 }];
+    cand.sort((a, b) => rank(a.n) - rank(b.n) || a.z - b.z);
+    let shown = 0;
     for (const c of cand) {
-      const r = { l: c.x - c.wd / 2 - 4, r: c.x + c.wd / 2 + 4, t: c.y - 26, b: c.y - 8 };
-      const free = !taken.some((o) => r.l < o.r && r.r > o.l && r.t < o.b && r.b > o.t);
-      c.el.style.opacity = free ? (c.n.quantum || hover === c.n.id ? 1 : 0.92) : 0;
-      if (free) taken.push(r);
+      const r = { l: c.x - c.wd / 2 - 3, r: c.x + c.wd / 2 + 3, t: c.y - 24, b: c.y - 8 };
+      const free = (shown < 60 || c.n.id === hover) && !taken.some((o) => r.l < o.r && r.r > o.l && r.t < o.b && r.b > o.t);
+      c.el.style.opacity = free ? (c.n.quantum || c.n.id === hover ? 1 : 0.9) : 0;
+      if (free) { taken.push(r); shown++; }
     }
   }
   let running = true;
@@ -426,19 +668,17 @@ async function init3d() {
     controls.update(); renderer.render(scene, camera); placeLabels();
     requestAnimationFrame(loop);
   }
-  // click a node in 3D: open it in the 2D roadmap
   const ray = new THREE.Raycaster(), mouse = new THREE.Vector2(); let down = null;
-  canvas.addEventListener('pointermove', (e) => {
+  const pick = (e) => {
     const r = canvas.getBoundingClientRect(); mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     ray.setFromCamera(mouse, camera); const hit = ray.intersectObjects(Object.values(meshes))[0];
-    hover = hit ? hit.object.userData.id : null; canvas.style.cursor = hover ? 'pointer' : '';
-  });
+    return hit ? hit.object.userData.id : null;
+  };
+  canvas.addEventListener('pointermove', (e) => { hover = pick(e); canvas.style.cursor = hover ? 'pointer' : ''; });
   canvas.addEventListener('pointerdown', (e) => { down = [e.clientX, e.clientY]; });
   canvas.addEventListener('pointerup', (e) => {
     if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
-    const r = canvas.getBoundingClientRect(); mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
-    ray.setFromCamera(mouse, camera); const hit = ray.intersectObjects(Object.values(meshes))[0];
-    if (hit) { selected = hit.object.userData.id; setView('roadmap'); }
+    const id = pick(e); if (id) { setView('families'); select(id, true); }
   });
   new ResizeObserver(size).observe(stage); size(); paint(); loop();
   three = { paint, start() { if (!running) { running = true; loop(); } }, stop() { running = false; } };
@@ -448,18 +688,27 @@ async function init3d() {
 function setView(v) {
   view = v;
   document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
-  $('v3d').hidden = v !== '3d'; $('v2d').hidden = v === '3d';
+  $('v3d').hidden = v !== '3d'; $('vfam').hidden = v !== 'families'; $('v2d').hidden = !(v === 'roadmap' || v === 'paths');
+  $('foot').hidden = v === '3d';
   if (three) (v === '3d' ? three.start() : three.stop());
-  $('hint2d').textContent = v === 'paths' ? 'Highlighted: every model and method on a path to a quantum algorithm.' : 'Select a model for details. Use + and − to zoom; scroll to move around.';
+  $('hint2d').textContent = v === 'paths' ? 'Highlighted: every model and method on a path to a quantum algorithm.' : 'The curated roadmap. Select a model for details; use + and − to zoom.';
+  if ((v === 'roadmap' || v === 'paths') && selected && !byId[selected].core) selected = null;
   renderAll();
 }
-function renderAll() { renderLegend(); if (view !== '3d') { render2d(); renderPanel(); } if (three) three.paint(); }
+function renderAll() {
+  renderLegend();
+  if (view === 'families') renderFamilies();
+  else if (view !== '3d') { render2d(); renderPanel(); }
+  if (three) three.paint();
+}
 document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
 document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => {
   mode = b.dataset.mode; document.querySelectorAll('[data-mode]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); renderAll();
 }));
-$('to2d').addEventListener('click', () => setView('roadmap'));
+$('to2d').addEventListener('click', () => setView('families'));
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', renderAll);
+let lastNarrow = null;
+new ResizeObserver(() => { const n = $('vfam').clientWidth < 640; if (view === 'families' && n !== lastNarrow) { lastNarrow = n; renderBubbles(); } }).observe(document.body);
 
 renderAll();
 init3d();
