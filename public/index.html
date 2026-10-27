@@ -14,23 +14,36 @@
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site.css">
 <style>
-/* Hero band: the trading floor at night. Tokens are re-pointed so the shared bar reads on dark. */
-.band{
+/* Hero: full-screen animation that stays in place and fades while the intro text scrolls over it.
+   Tokens are re-pointed so the shared bar and buttons read on dark. */
+.stagewrap{
   --paper:#0f1e33;--sheet:#17294a;--ink:#e9eef6;--muted:#9fb0ca;--rule:#2a3d5e;--accent:#9aa8ff;--amber:#e3b25d;
-  background:radial-gradient(120% 90% at 85% 40%,#1a2f57 0%,#0f1e33 55%,#0b1628 100%);color:var(--ink);
+  position:relative;background:radial-gradient(120% 90% at 75% 45%,#1a2f57 0%,#0f1e33 55%,#0b1628 100%);color:var(--ink);
 }
-.band .wrap{padding-bottom:56px}
-.band .bar{margin-bottom:40px}
-.hero{display:grid;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);gap:48px;align-items:center}
-.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(36px,4.6vw,58px);line-height:1.06;letter-spacing:-.02em;margin:0 0 18px;max-width:16ch}
-.hero .tagline{font-family:var(--serif);font-size:clamp(20px,2vw,24px);line-height:1.3;margin:0 0 22px;max-width:30ch;color:var(--ink);opacity:.92}
-.hero .lead{font-size:18px;line-height:1.6;color:var(--muted);max-width:46ch;margin:0 0 30px}
+.stick{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;z-index:0}
+.stick canvas{position:absolute;inset:0;width:100%;height:100%;display:block;will-change:opacity,transform}
+.stick .wrap{position:relative;height:100%;display:flex;flex-direction:column;padding-bottom:0}
+.stick .bar{margin-bottom:0}
+.headline{margin-top:auto;margin-bottom:clamp(64px,12vh,120px);max-width:560px;will-change:opacity,transform}
+.headline h1{font-family:var(--serif);font-weight:400;font-size:clamp(40px,5.4vw,72px);line-height:1.04;letter-spacing:-.02em;margin:0 0 18px;max-width:14ch}
+.headline .tagline{font-family:var(--serif);font-size:clamp(19px,1.9vw,24px);line-height:1.32;margin:0;max-width:30ch;opacity:.92}
+.cue{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;color:var(--muted);text-decoration:none}
+.cue svg{animation:nudge 2.4s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+.intro{position:relative;z-index:1;min-height:100vh;min-height:100svh;display:flex;align-items:center}
+.intro .wrap{padding-top:40px;padding-bottom:80px;width:100%}
+.intro .lead{font-family:var(--serif);font-size:clamp(22px,2.3vw,30px);line-height:1.42;color:var(--ink);max-width:34ch;margin:0 0 34px}
 .ctas{display:flex;flex-wrap:wrap;gap:12px}
-.band .btn{background:var(--ink);color:#0f1e33}
-.band .btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px #3b5179}
+.stagewrap .btn{background:var(--ink);color:#0f1e33}
+.stagewrap .btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px #3b5179}
 .btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule)}
-.stage{position:relative}
-.stage canvas{display:block;width:100%;height:420px}
+@media (max-width:900px){
+  .headline{margin-bottom:84px}
+}
+@media (prefers-reduced-motion:reduce){
+  .cue svg{animation:none}
+  .intro{background:#0f1e33;min-height:0}
+}
 
 /* Below the band */
 .page section{margin:72px 0 0}
@@ -73,8 +86,6 @@
 .foot span{flex:1 1 320px}
 
 @media (max-width:900px){
-  .hero{grid-template-columns:1fr;gap:28px}
-  .stage canvas{height:320px}
   .facts,.steps{grid-template-columns:1fr}
   .steps li{padding:0 0 22px 38px}
   .steps li::after{left:11px;right:auto;top:30px;bottom:4px;width:2px;height:auto}
@@ -89,35 +100,37 @@
 </style>
 </head>
 <body>
-<div class="band">
-  <div class="wrap">
-    <div class="bar">
-      <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><span class="name">Pl4nck</span></a>
-      <nav class="tabs" aria-label="Sections">
-        <a href="/launch">Launch Pl4nck</a>
-        <a href="/library">Library</a>
-        <a href="/technology">Technology mapping</a>
-        <a href="/resources">Resources</a>
-        <a href="/about">About</a>
-      </nav>
-      <span class="proto">Research prototype</span>
-    </div>
-
-    <div class="hero">
-      <div>
+<div class="stagewrap">
+  <div class="stick">
+    <canvas id="fan" role="img" aria-label="Monte Carlo price paths fanning out over one year; their final prices are collected into the amplitudes of a four-qubit register."></canvas>
+    <div class="wrap">
+      <div class="bar">
+        <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><span class="name">Pl4nck</span></a>
+        <nav class="tabs" aria-label="Sections">
+          <a href="/launch">Launch Pl4nck</a>
+          <a href="/library">Library</a>
+          <a href="/technology">Technology mapping</a>
+          <a href="/resources">Resources</a>
+          <a href="/about">About</a>
+        </nav>
+        <span class="proto">Research prototype</span>
+      </div>
+      <div class="headline" id="headline">
         <h1>The quantum brain for financial markets.</h1>
         <p class="tagline">The models you develop today are the benchmarks quantum will have to beat tomorrow.</p>
-        <p class="lead">Quantum computing will reach pricing and risk, but only once error-corrected machines arrive, most likely in the 2030s. Pl4nck helps quant teams spend the wait well: honest verdicts, no-regret roadmaps and validated model kits that pay off whether quantum delivers or not.</p>
-        <div class="ctas">
-          <a class="btn" href="/launch">Assess a use case</a>
-          <a class="btn quiet" href="/library">Browse the library</a>
-        </div>
       </div>
-      <figure class="stage" style="margin:0">
-        <canvas id="fan" role="img" aria-label="Monte Carlo price paths fanning out over one year; their final prices are collected into the amplitudes of a four-qubit register."></canvas>
-      </figure>
     </div>
+    <a class="cue" id="cue" href="#intro">Scroll<svg width="14" height="9" viewBox="0 0 14 9" aria-hidden="true"><path d="M1 1l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></a>
   </div>
+  <section class="intro" id="intro">
+    <div class="wrap">
+      <p class="lead">Quantum computing will reach pricing and risk, but only once error-corrected machines arrive, most likely in the 2030s. Pl4nck helps quant teams spend the wait well: honest verdicts, no-regret roadmaps and validated model kits that pay off whether quantum delivers or not.</p>
+      <div class="ctas">
+        <a class="btn" href="/launch">Assess a use case</a>
+        <a class="btn quiet" href="/library">Browse the library</a>
+      </div>
+    </div>
+  </section>
 </div>
 
 <div class="wrap">
@@ -189,7 +202,7 @@ const BLUE = '154,168,255', AMBER = '227,178,93', TEXT = '159,176,202';
 const STEPS = 90, BATCH = 36, BINS = 16;
 const S0 = 100, SIGMA = 0.25, MU = 0.03;
 const LO = 50, HI = 190;                     // price window shown on the vertical axis
-let W = 0, H = 0, split = 0, dpr = 1;
+let W = 0, H = 0, split = 0, dpr = 1, X0 = 0, RX1 = 0, YT = 0, YB = 0;
 let seed = 7;
 const rand = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
 const gauss = () => { let u = 0; while (!u) u = rand(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rand()); };
@@ -209,7 +222,7 @@ function newBatch() {
   }
   step = 0; fade = 1; hold = 0;
 }
-const y = (s) => H - 28 - ((Math.min(Math.max(s, LO), HI) - LO) / (HI - LO)) * (H - 56);
+const y = (s) => YB - ((Math.min(Math.max(s, LO), HI) - LO) / (HI - LO)) * (YB - YT);
 const binOf = (s) => Math.min(BINS - 1, Math.max(0, Math.floor(((s - LO) / (HI - LO)) * BINS)));
 
 function resize() {
@@ -218,22 +231,35 @@ function resize() {
   W = r.width; H = r.height;
   canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  split = W * (W < 520 ? 0.56 : 0.64);
+  const cb = canvas.getBoundingClientRect();
+  const barBottom = document.querySelector('.stick .bar').getBoundingClientRect().bottom - cb.top;
+  const headTop = document.getElementById('headline').getBoundingClientRect().top - cb.top;
+  if (W >= 1200) {
+    // Wide screens: text bottom-left, paths start right of it and run to the register on the right.
+    const wrapLeft = Math.max(20, (W - 1040) / 2 + 20);
+    X0 = Math.max(W * 0.42, wrapLeft + 590); split = Math.min(W * 0.8, W - 300); RX1 = Math.min(W - 24, split + 300);
+    YT = Math.max(H * 0.16, barBottom + 48); YB = H * 0.84;
+  } else {
+    // Tablets and phones: animation between the bar and the headline.
+    const wrapLeft = Math.max(16, (W - 1040) / 2 + 20);
+    X0 = wrapLeft; RX1 = W - 16; split = X0 + (RX1 - X0) * (W < 600 ? 0.6 : 0.68);
+    YT = barBottom + 44; YB = Math.max(YT + 140, headTop - 48);
+  }
   draw();
 }
 
 function draw() {
   ctx.clearRect(0, 0, W, H);
-  const x = (k) => 8 + (k / STEPS) * (split - 16);
+  const x = (k) => X0 + (k / STEPS) * (split - X0);
   // axis hints
   ctx.strokeStyle = `rgba(${TEXT},0.18)`; ctx.lineWidth = 1;
   ctx.setLineDash([2, 4]);
-  ctx.beginPath(); ctx.moveTo(8, y(S0)); ctx.lineTo(split - 8, y(S0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(X0, y(S0)); ctx.lineTo(split, y(S0)); ctx.stroke();
   ctx.setLineDash([]);
   ctx.fillStyle = `rgba(${TEXT},0.7)`; ctx.font = '12px "Instrument Sans", system-ui, sans-serif';
-  ctx.fillText('spot 100', 10, y(S0) - 6);
-  ctx.fillText('today', 8, H - 8);
-  ctx.textAlign = 'right'; ctx.fillText('1 year', split - 8, H - 8); ctx.textAlign = 'left';
+  ctx.fillText('spot 100', X0 + 2, y(S0) - 6);
+  ctx.fillText('today', X0, YB + 22);
+  ctx.textAlign = 'right'; ctx.fillText('1 year', split, YB + 22); ctx.textAlign = 'left';
 
   // earlier batches, faint: the fan builds up
   ghosts.forEach((g, i) => {
@@ -253,12 +279,12 @@ function draw() {
   }
 
   // register: 16 basis states, bar length = amplitude sqrt(p)
-  const left = split + 26, right = W - 10, binH = (H - 56) / BINS;
+  const left = split + 26, right = RX1, binH = (YB - YT) / BINS;
   const maxAmp = Math.max(...shown, 1e-9);
   ctx.strokeStyle = `rgba(${AMBER},0.35)`;
-  ctx.beginPath(); ctx.moveTo(left - 10, 28); ctx.lineTo(left - 10, H - 28); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(left - 10, YT); ctx.lineTo(left - 10, YB); ctx.stroke();
   for (let b = 0; b < BINS; b++) {
-    const yc = H - 28 - (b + 0.5) * binH;
+    const yc = YB - (b + 0.5) * binH;
     const len = (shown[b] / maxAmp) * (right - left - 44);
     ctx.fillStyle = `rgba(${AMBER},0.85)`;
     ctx.fillRect(left, yc - binH * 0.32, Math.max(len, 1), binH * 0.64);
@@ -268,7 +294,7 @@ function draw() {
     }
   }
   ctx.fillStyle = `rgba(${AMBER},0.95)`; ctx.font = '12px "Instrument Sans", system-ui, sans-serif';
-  ctx.fillText(W < 520 ? '4 qubits' : '4 qubits, amplitude √p', left - 10, 16);
+  ctx.fillText(W < 520 ? '4 qubits' : '4 qubits, amplitude √p', left - 10, YT - 12);
 }
 
 function collect() {
@@ -312,7 +338,23 @@ for (let b = 0; b < BINS; b++) shown[b] = Math.sqrt(counts[b] / total);
 newBatch();
 window.addEventListener('resize', resize);
 resize();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);
 if (reduce) { staticFrame(); return; }
+
+// As the intro scrolls up, the animation fades and recedes, and the headline lifts away.
+const headline = document.getElementById('headline'), cue = document.getElementById('cue');
+let ticking = false;
+function onScroll() {
+  ticking = false;
+  const p = Math.min(1, Math.max(0, window.scrollY / window.innerHeight));
+  canvas.style.opacity = String(Math.max(0, 1 - p * 1.25));
+  canvas.style.transform = `scale(${1 + p * 0.06})`;
+  headline.style.opacity = String(Math.max(0, 1 - p * 2.2));
+  headline.style.transform = `translateY(${-p * 70}px)`;
+  cue.style.opacity = String(Math.max(0, 1 - p * 6));
+}
+window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+onScroll();
 const io = new IntersectionObserver(([e]) => {
   const vis = e.isIntersecting && !document.hidden;
   if (vis && !running) { running = true; requestAnimationFrame(frame); }
