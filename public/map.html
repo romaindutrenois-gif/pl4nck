@@ -36,6 +36,7 @@
 .stage3d .cta2d{position:absolute;right:16px;bottom:16px;background:#e9eef6;color:#0f1e33}
 .stage3d .note3d{position:absolute;left:16px;top:14px;margin:0;font-size:12.5px;color:#9fb0ca;max-width:50ch;padding:6px 10px;border-radius:8px;background:rgba(11,22,40,.72)}
 @media (max-width:640px){.stage3d .note3d{right:16px;max-width:none}}
+.stage3d .note3d{transition:opacity .4s}.stage3d .note3d.gone{opacity:0;pointer-events:none}
 .stage3d .fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;color:#9fb0ca}
 
 /* families view */
@@ -45,6 +46,11 @@
 .bub:focus-visible circle.disc{stroke:var(--accent);stroke-width:3}
 .famtools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;font-size:13.5px;color:var(--muted)}
 .famtools button{border:1px solid var(--rule);background:var(--paper);border-radius:var(--r-sm);padding:4px 9px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
+#pick3d .ck{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--rule);background:var(--paper);border-radius:999px;padding:4px 10px;font:inherit;font-size:13px;cursor:pointer;color:var(--muted)}
+#pick3d .ck i{width:10px;height:10px;border-radius:3px;box-shadow:inset 0 0 0 1.5px var(--muted)}
+#pick3d .ck[aria-pressed=true]{color:var(--ink);border-color:var(--ink)}
+#pick3d .ck[aria-pressed=true] i{background:var(--ink);box-shadow:none}
+#pick3d .ck.q[aria-pressed=true] i{background:var(--s-quantum)}
 .famlayout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
 .boxes{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-items:start}
 .box{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-md);padding:12px 14px 14px}
@@ -146,6 +152,7 @@ svg text{font-family:var(--sans)}
     </div>
 
     <section id="v3d">
+      <div class="famtools" id="pick3d" role="group" aria-label="Families shown in 3D"></div>
       <div class="stage3d" id="stage">
         <canvas id="gl" aria-label="Three-dimensional map: one cloud per family (conventions, curves, volatility, models, methods, engines, instruments, risk), with the quantum algorithms floating above."></canvas>
         <div class="labels" id="labels" aria-hidden="true"></div>
@@ -581,10 +588,11 @@ async function init3d() {
   const dl = new THREE.DirectionalLight(0xffffff, 0.9); dl.position.set(20, 60, 40); scene.add(dl);
   const floor = new THREE.GridHelper(200, 30, 0x2a3d5e, 0x1c2c48); floor.position.y = -0.6; scene.add(floor);
   // soft discs under each cloud
+  const discs = {};
   for (const c of data.clouds) {
     const R = radius(data.nodes.filter((n) => n.cloud === c.id).length, portrait) * K * 1.05;
     const disc = new THREE.Mesh(new THREE.CircleGeometry(R, 48), new THREE.MeshBasicMaterial({ color: c.id === 'quantum' ? 0x4f6ef7 : 0x5b7bb5, transparent: true, opacity: c.id === 'quantum' ? 0.14 : 0.07, side: THREE.DoubleSide, depthWrite: false }));
-    disc.rotation.x = -Math.PI / 2; disc.position.copy(centre[c.id]); disc.position.y -= 0.5; scene.add(disc);
+    disc.rotation.x = -Math.PI / 2; disc.position.copy(centre[c.id]); disc.position.y -= 0.5; scene.add(disc); discs[c.id] = disc;
   }
 
   const meshes = {};
@@ -593,21 +601,27 @@ async function init3d() {
     const m = new THREE.Mesh(n.quantum ? qgeo : n.core ? geo : small, new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0.15 }));
     m.position.copy(p3[n.id]); m.userData.id = n.id; scene.add(m); meshes[n.id] = m;
   }
-  // links: one merged geometry for ordinary links, dashed lines for quantum ones
-  const pts = [];
-  for (const e of edges) {
-    if (e.type === 'quantum') continue;
-    const a = p3[e.from], b = p3[e.to], mid = a.clone().lerp(b, 0.5); mid.y += Math.min(10, a.distanceTo(b) * 0.12);
-    const cp = new THREE.QuadraticBezierCurve3(a, mid, b).getPoints(10);
-    for (let i = 0; i < cp.length - 1; i++) pts.push(cp[i], cp[i + 1]);
-  }
-  scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0x7f8ba1, transparent: true, opacity: 0.16, depthWrite: false })));
-  for (const e of edges) {
-    if (e.type !== 'quantum') continue;
-    const a = p3[e.from], b = p3[e.to], mid = a.clone().lerp(b, 0.5); mid.y += 6;
-    const g = new THREE.BufferGeometry().setFromPoints(new THREE.QuadraticBezierCurve3(a, mid, b).getPoints(30));
-    const line = new THREE.Line(g, new THREE.LineDashedMaterial({ color: 0x8ea2ff, dashSize: 0.9, gapSize: 0.6, transparent: true, opacity: 0.9 }));
-    line.computeLineDistances(); scene.add(line);
+  // links: one merged geometry for ordinary links, dashed lines for quantum ones; rebuilt when families are shown or hidden
+  const linkMat = new THREE.LineBasicMaterial({ color: 0x7f8ba1, transparent: true, opacity: 0.16, depthWrite: false });
+  const qMat = new THREE.LineDashedMaterial({ color: 0x8ea2ff, dashSize: 0.9, gapSize: 0.6, transparent: true, opacity: 0.9 });
+  const linkGroup = new THREE.Group(); scene.add(linkGroup);
+  const shownNode = (id) => openClouds.has(byId[id].cloud);
+  function buildLinks() {
+    linkGroup.children.forEach((o) => o.geometry.dispose()); linkGroup.clear();
+    const pts = [];
+    for (const e of edges) {
+      if (!shownNode(e.from) || !shownNode(e.to)) continue;
+      const a = p3[e.from], b = p3[e.to], mid = a.clone().lerp(b, 0.5);
+      if (e.type === 'quantum') {
+        mid.y += 6;
+        const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(new THREE.QuadraticBezierCurve3(a, mid, b).getPoints(30)), qMat);
+        line.computeLineDistances(); linkGroup.add(line); continue;
+      }
+      mid.y += Math.min(10, a.distanceTo(b) * 0.12);
+      const cp = new THREE.QuadraticBezierCurve3(a, mid, b).getPoints(10);
+      for (let i = 0; i < cp.length - 1; i++) pts.push(cp[i], cp[i + 1]);
+    }
+    if (pts.length) linkGroup.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), linkMat));
   }
 
   // HTML labels: family names always; items when there is room, most important first
@@ -638,7 +652,7 @@ async function init3d() {
     const taken = [];
     for (const c of data.clouds) {
       v.copy(cpos[c.id]).project(camera); const el = clab[c.id];
-      if (v.z > 1) { el.style.opacity = 0; continue; }
+      if (v.z > 1 || !openClouds.has(c.id)) { el.style.opacity = 0; continue; }
       const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; el.style.left = x + 'px'; el.style.top = y + 'px';
       const wd = el._w || (el._w = el.offsetWidth), r = { l: x - wd / 2 - 4, r: x + wd / 2 + 4, t: y - 12, b: y + 12 };
       const free = !taken.some((o) => r.l < o.r && r.r > o.l && r.t < o.b && r.b > o.t);
@@ -648,7 +662,7 @@ async function init3d() {
     for (const n of data.nodes) {
       v.copy(p3[n.id]).project(camera);
       const el = lab[n.id];
-      if (v.z > 1) { el.style.opacity = 0; continue; }
+      if (v.z > 1 || !meshes[n.id].visible) { el.style.opacity = 0; continue; }
       const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h;
       el.style.left = x + 'px'; el.style.top = y + 'px';
       cand.push({ n, el, x, y, z: v.z, wd: el._w || (el._w = el.offsetWidth) || n.name.length * 6 });
@@ -662,16 +676,83 @@ async function init3d() {
       if (free) { taken.push(r); shown++; }
     }
   }
+  // show or hide families, then glide the camera to frame what is left
+  let goal = null;
+  const home = { target: controls.target.clone(), dist: camera.position.distanceTo(controls.target) };
+  // Showing a subset regroups the visible clouds side by side (pipeline order), quantum above them,
+  // then the camera glides to frame them. Showing everything restores the full layout.
+  const R3 = {}, loc = {}, base = {}, cur = {}, cposOff = {};
+  for (const c of data.clouds) {
+    R3[c.id] = radius(data.nodes.filter((n) => n.cloud === c.id).length, portrait) * K;
+    base[c.id] = centre[c.id].clone(); cur[c.id] = centre[c.id].clone(); cposOff[c.id] = cpos[c.id].clone().sub(centre[c.id]);
+  }
+  for (const n of data.nodes) loc[n.id] = p3[n.id].clone().sub(centre[n.cloud]);
+  let anim = null;
+  function targets(shown) {
+    if (shown.length === data.clouds.length || !shown.length) return Object.fromEntries(data.clouds.map((c) => [c.id, base[c.id].clone()]));
+    const out = {}, flat = shown.filter((c) => c.id !== 'quantum');
+    const gap = 7; let span = flat.reduce((a, c) => a + 2 * R3[c.id], 0) + gap * Math.max(0, flat.length - 1);
+    let x = -span / 2;
+    flat.forEach((c, i) => {
+      const along = x + R3[c.id]; x += 2 * R3[c.id] + gap;
+      const wobble = flat.length > 2 ? (i % 2 ? 1 : -1) * Math.min(6, R3[c.id] * 0.4) : 0;
+      out[c.id] = portrait ? new THREE.Vector3(wobble, 0, along) : new THREE.Vector3(along, 0, wobble);
+    });
+    const maxR = Math.max(0, ...flat.map((c) => R3[c.id]));
+    if (shown.some((c) => c.id === 'quantum')) out.quantum = new THREE.Vector3(0, QY, !flat.length ? 0 : portrait ? -span / 2 - R3.quantum - 10 : -maxR - R3.quantum - 8);
+    return out;
+  }
+  function filter(glide) {
+    for (const n of data.nodes) meshes[n.id].visible = openClouds.has(n.cloud);
+    for (const c of data.clouds) discs[c.id].visible = openClouds.has(c.id);
+    const shown = data.clouds.filter((c) => openClouds.has(c.id));
+    const to = targets(shown);
+    for (const c of data.clouds) if (!to[c.id]) to[c.id] = cur[c.id].clone();
+    anim = { from: Object.fromEntries(data.clouds.map((c) => [c.id, cur[c.id].clone()])), to, t0: performance.now(), dur: reduce || !glide ? 0 : 700 };
+    step(performance.now());
+    if (!glide) return;
+    if (!shown.length || shown.length === data.clouds.length) { goal = { target: home.target.clone(), dist: home.dist }; return; }
+    const flat = shown.filter((c) => c.id !== 'quantum'), t = new THREE.Vector3();
+    (flat.length ? flat : shown).forEach((c) => t.add(to[c.id])); t.divideScalar((flat.length ? flat : shown).length);
+    if (flat.length && to.quantum && openClouds.has('quantum')) t.lerp(to.quantum, 0.3);
+    t.y = Math.min(t.y, 4);
+    $('stage').querySelector('.note3d')?.classList.add('gone');
+    let spread = 0;
+    for (const c of shown) spread = Math.max(spread, to[c.id].distanceTo(t) + R3[c.id]);
+    goal = { target: t, dist: Math.min(home.dist, Math.max(26, spread * (portrait ? 2.9 : 2.7))) };
+  }
+  function step(now) {
+    if (!anim) return;
+    const k = anim.dur ? Math.min(1, (now - anim.t0) / anim.dur) : 1, e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    for (const c of data.clouds) {
+      cur[c.id].lerpVectors(anim.from[c.id], anim.to[c.id], e);
+      discs[c.id].position.set(cur[c.id].x, cur[c.id].y - 0.5, cur[c.id].z);
+      cpos[c.id].copy(cur[c.id]).add(cposOff[c.id]);
+    }
+    for (const n of data.nodes) { p3[n.id].copy(cur[n.cloud]).add(loc[n.id]); meshes[n.id].position.copy(p3[n.id]); }
+    buildLinks();
+    if (k >= 1) anim = null;
+  }
+  controls.addEventListener('start', () => { goal = null; $('stage').querySelector('.note3d')?.classList.add('gone'); });
+  const off = new THREE.Vector3();
   let running = true;
   function loop() {
     if (!running) return;
+    if (goal) {
+      off.copy(camera.position).sub(controls.target);
+      controls.target.lerp(goal.target, 0.08);
+      const len = off.length() + (goal.dist - off.length()) * 0.08;
+      camera.position.copy(controls.target).add(off.setLength(len));
+      if (controls.target.distanceTo(goal.target) < 0.05 && Math.abs(len - goal.dist) < 0.05) goal = null;
+    }
+    step(performance.now());
     controls.update(); renderer.render(scene, camera); placeLabels();
     requestAnimationFrame(loop);
   }
   const ray = new THREE.Raycaster(), mouse = new THREE.Vector2(); let down = null;
   const pick = (e) => {
     const r = canvas.getBoundingClientRect(); mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
-    ray.setFromCamera(mouse, camera); const hit = ray.intersectObjects(Object.values(meshes))[0];
+    ray.setFromCamera(mouse, camera); const hit = ray.intersectObjects(Object.values(meshes).filter((m) => m.visible))[0];
     return hit ? hit.object.userData.id : null;
   };
   canvas.addEventListener('pointermove', (e) => { hover = pick(e); canvas.style.cursor = hover ? 'pointer' : ''; });
@@ -680,9 +761,23 @@ async function init3d() {
     if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
     const id = pick(e); if (id) { setView('families'); select(id, true); }
   });
-  new ResizeObserver(size).observe(stage); size(); paint(); loop();
-  three = { paint, start() { if (!running) { running = true; loop(); } }, stop() { running = false; } };
+  new ResizeObserver(size).observe(stage); size(); paint(); filter(); goal = null; loop();
+  three = { paint, filter, start() { if (!running) { running = true; loop(); } }, stop() { running = false; } };
 }
+
+// ---------- 3D family picker (shares its state with the Families view) ----------
+function renderPick3d() {
+  $('pick3d').innerHTML = `<span>Show:</span>` + data.clouds.map((c) => `<button type="button" class="ck${c.id === 'quantum' ? ' q' : ''}" data-ck="${c.id}" aria-pressed="${openClouds.has(c.id)}"><i></i>${esc(c.name)}</button>`).join('')
+    + `<button type="button" data-ck="*">All</button><button type="button" data-ck="-">None</button>`;
+}
+$('pick3d').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-ck]'); if (!b) return;
+  const k = b.dataset.ck;
+  if (k === '*') data.clouds.forEach((c) => openClouds.add(c.id));
+  else if (k === '-') openClouds.clear();
+  else openClouds.has(k) ? openClouds.delete(k) : openClouds.add(k);
+  renderPick3d(); if (three) three.filter(true);
+});
 
 // ---------- Views and modes ----------
 function setView(v) {
@@ -691,12 +786,14 @@ function setView(v) {
   $('v3d').hidden = v !== '3d'; $('vfam').hidden = v !== 'families'; $('v2d').hidden = !(v === 'roadmap' || v === 'paths');
   $('foot').hidden = v === '3d';
   if (three) (v === '3d' ? three.start() : three.stop());
+  if (three && v === '3d') three.filter(true);
   $('hint2d').textContent = v === 'paths' ? 'Highlighted: every model and method on a path to a quantum algorithm.' : 'The curated roadmap. Select a model for details; use + and − to zoom.';
   if ((v === 'roadmap' || v === 'paths') && selected && !byId[selected].core) selected = null;
   renderAll();
 }
 function renderAll() {
   renderLegend();
+  if (view === '3d') { renderPick3d(); if (three) three.filter(); }
   if (view === 'families') renderFamilies();
   else if (view !== '3d') { render2d(); renderPanel(); }
   if (three) three.paint();
