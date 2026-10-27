@@ -22,24 +22,24 @@
 }
 .stick{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;z-index:0}
 .stick canvas{position:absolute;inset:0;width:100%;height:100%;display:block;will-change:opacity,transform}
-.stick .wrap{position:relative;height:100%;display:flex;flex-direction:column;padding-bottom:0}
-.stick .bar{margin-bottom:0}
-.headline{margin-top:auto;margin-bottom:clamp(64px,12vh,120px);max-width:560px;will-change:opacity,transform}
-.headline h1{font-family:var(--serif);font-weight:400;font-size:clamp(40px,5.4vw,72px);line-height:1.04;letter-spacing:-.02em;margin:0 0 18px;max-width:14ch}
-.headline .tagline{font-family:var(--serif);font-size:clamp(19px,1.9vw,24px);line-height:1.32;margin:0;max-width:30ch;opacity:.92}
+/* The menu scrolls away with the page; the animation stays pinned behind it. */
+.top{position:absolute;top:0;left:0;right:0;z-index:2}
+.top .wrap{padding-bottom:0}
+.top .bar{margin-bottom:0}
+.intro h1{font-family:var(--serif);font-weight:400;font-size:clamp(40px,5.4vw,72px);line-height:1.04;letter-spacing:-.02em;margin:0 0 18px;max-width:14ch}
+.intro .tagline{font-family:var(--serif);font-size:clamp(19px,1.9vw,24px);line-height:1.32;margin:0 0 30px;max-width:30ch;opacity:.92}
 .cue{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;color:var(--muted);text-decoration:none}
 .cue svg{animation:nudge 2.4s ease-in-out infinite}
 @keyframes nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
 .intro{position:relative;z-index:1;min-height:100vh;min-height:100svh;display:flex;align-items:center}
-.intro .wrap{padding-top:40px;padding-bottom:80px;width:100%}
-.intro .lead{font-family:var(--serif);font-size:clamp(22px,2.3vw,30px);line-height:1.42;color:var(--ink);max-width:34ch;margin:0 0 34px}
+.intro .wrap{padding-top:28vh;padding-bottom:80px;width:100%}
+.intro .lead{font-size:18px;line-height:1.6;color:var(--muted);max-width:52ch;margin:0 0 30px}
 .ctas{display:flex;flex-wrap:wrap;gap:12px}
 .stagewrap .btn{background:var(--ink);color:#0f1e33}
 .stagewrap .btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px #3b5179}
 .btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule)}
 @media (max-width:900px){
-  .headline{margin-bottom:84px}
-}
+  }
 @media (prefers-reduced-motion:reduce){
   .cue svg{animation:none}
   .intro{background:#0f1e33;min-height:0}
@@ -101,8 +101,7 @@
 </head>
 <body>
 <div class="stagewrap">
-  <div class="stick">
-    <canvas id="fan" role="img" aria-label="Monte Carlo price paths fanning out over one year; their final prices are collected into the amplitudes of a four-qubit register."></canvas>
+  <header class="top">
     <div class="wrap">
       <div class="bar">
         <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><span class="name">Pl4nck</span></a>
@@ -115,15 +114,16 @@
         </nav>
         <span class="proto">Research prototype</span>
       </div>
-      <div class="headline" id="headline">
-        <h1>The quantum brain for financial markets.</h1>
-        <p class="tagline">The models you develop today are the benchmarks quantum will have to beat tomorrow.</p>
-      </div>
     </div>
+  </header>
+  <div class="stick">
+    <canvas id="fan" role="img" aria-label="Monte Carlo price paths fanning out over one year; their final prices are collected into the amplitudes of a four-qubit register."></canvas>
     <a class="cue" id="cue" href="#intro">Scroll<svg width="14" height="9" viewBox="0 0 14 9" aria-hidden="true"><path d="M1 1l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></a>
   </div>
   <section class="intro" id="intro">
     <div class="wrap">
+      <h1>The quantum brain for financial markets.</h1>
+      <p class="tagline">The models you develop today are the benchmarks quantum will have to beat tomorrow.</p>
       <p class="lead">Quantum computing will reach pricing and risk, but only once error-corrected machines arrive, most likely in the 2030s. Pl4nck helps quant teams spend the wait well: honest verdicts, no-regret roadmaps and validated model kits that pay off whether quantum delivers or not.</p>
       <div class="ctas">
         <a class="btn" href="/launch">Assess a use case</a>
@@ -232,19 +232,12 @@ function resize() {
   canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const cb = canvas.getBoundingClientRect();
-  const barBottom = document.querySelector('.stick .bar').getBoundingClientRect().bottom - cb.top;
-  const headTop = document.getElementById('headline').getBoundingClientRect().top - cb.top;
-  if (W >= 1200) {
-    // Wide screens: text bottom-left, paths start right of it and run to the register on the right.
-    const wrapLeft = Math.max(20, (W - 1040) / 2 + 20);
-    X0 = Math.max(W * 0.42, wrapLeft + 590); split = Math.min(W * 0.8, W - 300); RX1 = Math.min(W - 24, split + 300);
-    YT = Math.max(H * 0.16, barBottom + 48); YB = H * 0.84;
-  } else {
-    // Tablets and phones: animation between the bar and the headline.
-    const wrapLeft = Math.max(16, (W - 1040) / 2 + 20);
-    X0 = wrapLeft; RX1 = W - 16; split = X0 + (RX1 - X0) * (W < 600 ? 0.6 : 0.68);
-    YT = barBottom + 44; YB = Math.max(YT + 140, headTop - 48);
-  }
+  const barBottom = document.querySelector('.top .bar').getBoundingClientRect().bottom - cb.top;
+  // First screen is the animation alone: paths across most of the width, the register on the right.
+  const wrapLeft = Math.max(16, (W - 1040) / 2 + 20);
+  X0 = wrapLeft; RX1 = Math.min(W - 16, W - wrapLeft + 40);
+  split = X0 + (RX1 - X0) * (W < 600 ? 0.6 : 0.7);
+  YT = barBottom + (W < 600 ? 56 : 70); YB = H - (W < 600 ? 110 : 120);
   draw();
 }
 
@@ -341,16 +334,16 @@ resize();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);
 if (reduce) { staticFrame(); return; }
 
-// As the intro scrolls up, the animation fades and recedes, and the headline lifts away.
-const headline = document.getElementById('headline'), cue = document.getElementById('cue');
+// The animation fades and recedes before the intro text reaches it: the two never share the screen.
+const cue = document.getElementById('cue'), introTitle = document.querySelector('.intro h1');
 let ticking = false;
 function onScroll() {
   ticking = false;
   const p = Math.min(1, Math.max(0, window.scrollY / window.innerHeight));
-  canvas.style.opacity = String(Math.max(0, 1 - p * 1.25));
+  // Fully faded by the time the intro title reaches the bottom of the screen.
+  const t = introTitle.getBoundingClientRect().top, vh = window.innerHeight;
+  canvas.style.opacity = String(Math.min(1, Math.max(0, (t - vh) / (vh * 0.25))));
   canvas.style.transform = `scale(${1 + p * 0.06})`;
-  headline.style.opacity = String(Math.max(0, 1 - p * 2.2));
-  headline.style.transform = `translateY(${-p * 70}px)`;
   cue.style.opacity = String(Math.max(0, 1 - p * 6));
 }
 window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
