@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Pl4nck</title>
+<title>Pl4nck · The quantum brain for financial markets</title>
 <meta name="description" content="Quantum computing will reach pricing and risk, but not before error-corrected machines arrive. Pl4nck helps quant teams spend the wait well: honest verdicts, no-regret roadmaps and validated model kits.">
 <script>
   // Old library links pointed at /?model=<id>: send them to the tool.
@@ -22,7 +22,8 @@
 .band .wrap{padding-bottom:56px}
 .band .bar{margin-bottom:40px}
 .hero{display:grid;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);gap:48px;align-items:center}
-.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(36px,4.6vw,58px);line-height:1.06;letter-spacing:-.02em;margin:0 0 22px;max-width:15ch}
+.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(36px,4.6vw,58px);line-height:1.06;letter-spacing:-.02em;margin:0 0 18px;max-width:16ch}
+.hero .tagline{font-family:var(--serif);font-size:clamp(20px,2vw,24px);line-height:1.3;margin:0 0 22px;max-width:30ch;color:var(--ink);opacity:.92}
 .hero .lead{font-size:18px;line-height:1.6;color:var(--muted);max-width:46ch;margin:0 0 30px}
 .ctas{display:flex;flex-wrap:wrap;gap:12px}
 .band .btn{background:var(--ink);color:#0f1e33}
@@ -30,9 +31,6 @@
 .btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule)}
 .stage{position:relative}
 .stage canvas{display:block;width:100%;height:420px}
-.stage figcaption{font-size:13.5px;line-height:1.5;color:var(--muted);margin-top:12px;max-width:60ch}
-.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:8px}
-.legend i{display:inline-block;width:18px;height:2px;vertical-align:middle;margin-right:7px}
 
 /* Below the band */
 .page section{margin:72px 0 0}
@@ -107,7 +105,8 @@
 
     <div class="hero">
       <div>
-        <h1>The models you develop today are the benchmarks quantum will have to beat tomorrow.</h1>
+        <h1>The quantum brain for financial markets.</h1>
+        <p class="tagline">The models you develop today are the benchmarks quantum will have to beat tomorrow.</p>
         <p class="lead">Quantum computing will reach pricing and risk, but only once error-corrected machines arrive, most likely in the 2030s. Pl4nck helps quant teams spend the wait well: honest verdicts, no-regret roadmaps and validated model kits that pay off whether quantum delivers or not.</p>
         <div class="ctas">
           <a class="btn" href="/launch">Assess a use case</a>
@@ -116,8 +115,6 @@
       </div>
       <figure class="stage" style="margin:0">
         <canvas id="fan" role="img" aria-label="Monte Carlo price paths fanning out over one year; their final prices are collected into the amplitudes of a four-qubit register."></canvas>
-        <div class="legend"><span><i style="background:#9aa8ff"></i>Monte Carlo paths, as priced today</span><span><i style="background:#e3b25d"></i>The same distribution as qubit amplitudes</span></div>
-        <figcaption>On the left, one year of an equity simulated by Monte Carlo. On the right, its final distribution loaded onto 4 qubits: 16 states whose amplitudes are the square roots of the probabilities. Loading the distribution is the first step of quantum amplitude estimation, the algorithm behind quantum Monte Carlo.</figcaption>
       </figure>
     </div>
   </div>
