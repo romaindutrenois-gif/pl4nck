@@ -27,15 +27,22 @@
 .hlabels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .hlabels span{position:absolute;transform:translate(-50%,-50%);font-family:var(--serif);font-size:clamp(14px,1.35vw,18px);color:#c9d4e6;white-space:nowrap;text-shadow:0 1px 4px #0b1628;opacity:0;transition:opacity .8s}
 .hlabels span.q{color:#b9c6ff}
-.herocap{position:absolute;left:max(16px,calc((100vw - 1040px)/2 + 20px));bottom:64px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;opacity:0;transform:translateY(8px);transition:opacity 1s,transform 1s}
+.herocap{position:absolute;left:0;right:0;bottom:64px;padding:0 max(16px,calc((100vw - 1040px)/2 + 20px));display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:12px 24px;
+  opacity:0;transform:translateY(8px);transition:opacity 1s,transform 1s;pointer-events:none}
 .herocap.on{opacity:1;transform:none}
-.herocap p{margin:0;font-size:15px;color:var(--muted)}
-.herocap p b{color:var(--ink);font-weight:600}
-.herocap .claim{font-family:var(--serif);font-size:clamp(22px,2.2vw,30px);line-height:1.15;color:var(--ink)}
-.herocap .btn{padding:9px 16px;font-size:14px}
-.herokey{display:flex;gap:12px;font-size:12.5px;color:var(--muted);margin:0}
-.herokey i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
-@media (max-width:640px){.herocap{bottom:58px;right:16px}.herokey{display:none}}
+.herocap>*{pointer-events:auto}
+.herocap p{margin:0;color:var(--muted)}
+.herocap .claim{grid-column:2;text-align:center;font-family:var(--serif);font-size:clamp(26px,2.8vw,40px);line-height:1.1;color:var(--ink);letter-spacing:-.01em}
+.heroside{grid-column:3;justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.heroside .btn{padding:7px 13px;font-size:13px}
+.herokey{display:flex;gap:10px;font-size:11.5px;color:var(--muted);margin:0}
+.herokey i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
+@media (max-width:820px){
+  .herocap{grid-template-columns:1fr;justify-items:center;bottom:74px}
+  .herocap .claim{grid-column:1}
+  .heroside{grid-column:1;justify-self:center;align-items:center}
+  .herokey{display:none}
+}
 /* The menu scrolls away with the page; the animation stays pinned behind it. */
 .top{position:absolute;top:0;left:0;right:0;z-index:2}
 .top .wrap{padding-bottom:0}
@@ -134,8 +141,10 @@
       <div class="hlabels" id="hlabels" aria-hidden="true"></div>
       <div class="herocap" id="herocap">
         <p class="claim">Prepare for the quantum era.</p>
-        <a class="btn" href="/map">Explore the 3D model map</a>
-        <p class="herokey"><span><i style="background:#5cc796"></i>Kit available</span><span><i style="background:#f0ad4e"></i>Next</span><span><i style="background:#8ea2ff"></i>Quantum</span></p>
+        <div class="heroside">
+          <a class="btn" href="/map">Explore the 3D model map</a>
+          <p class="herokey"><span><i style="background:#5cc796"></i>Kit available</span><span><i style="background:#f0ad4e"></i>Next</span><span><i style="background:#8ea2ff"></i>Quantum</span></p>
+        </div>
       </div>
     </div>
     <a class="cue" id="cue" href="#intro">Scroll<svg width="14" height="9" viewBox="0 0 14 9" aria-hidden="true"><path d="M1 1l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></a>
