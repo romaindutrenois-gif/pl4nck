@@ -67,14 +67,17 @@
     <nav class="tabs" aria-label="Sections">
       <a href="/launch">Launch Pl4nck</a>
       <span class="dd"><a href="/library">Library</a><span class="menu"><a href="/library">Model library</a><a href="/map">3D model map</a></span></span>
-      <a href="/technology" aria-current="page">Technology mapping</a>
-      <a href="/resources">Resources</a>
+      <span class="dd"><button type="button" class="ddbtn cur" aria-expanded="false">Landscape</button><span class="menu"><a href="/technology" aria-current="page">Technology mapping</a><a href="/resources">Resources</a></span></span>
       <a href="/about">About</a>
     </nav>
     <span class="proto">Research prototype</span>
   </div>
 
   <main class="page">
+    <nav class="subtabs" aria-label="Landscape sections">
+      <a href="/technology" aria-current="page">Technology mapping</a>
+      <a href="/resources">Resources</a>
+    </nav>
     <h1>Technology mapping</h1>
     <p class="lead">Where quantum computing stands for finance: by use case, by algorithm family, by hardware and by player. Built for quants who want a dense, honest picture before reading vendor announcements.</p>
 
@@ -229,5 +232,6 @@ fetch('/mapping.json', { cache: 'no-cache' })
   .catch(() => { $('err').hidden = false; });
 })();
 </script>
+<script src="/nav.js" defer></script>
 </body>
 </html>

@@ -38,14 +38,17 @@
     <nav class="tabs" aria-label="Sections">
       <a href="/launch">Launch Pl4nck</a>
       <span class="dd"><a href="/library">Library</a><span class="menu"><a href="/library">Model library</a><a href="/map">3D model map</a></span></span>
-      <a href="/technology">Technology mapping</a>
-      <a href="/resources" aria-current="page">Resources</a>
+      <span class="dd"><button type="button" class="ddbtn cur" aria-expanded="false">Landscape</button><span class="menu"><a href="/technology">Technology mapping</a><a href="/resources" aria-current="page">Resources</a></span></span>
       <a href="/about">About</a>
     </nav>
     <span class="proto">Research prototype</span>
   </div>
 
   <main class="page">
+    <nav class="subtabs" aria-label="Landscape sections">
+      <a href="/technology">Technology mapping</a>
+      <a href="/resources" aria-current="page">Resources</a>
+    </nav>
     <h1>Resources</h1>
     <p class="lead">Where to learn, what to read and which tools to use, chosen for quants. Every link is checked when the list is reviewed; last review <span id="reviewed">recently</span>.</p>
     <div class="layout">
@@ -81,5 +84,6 @@ fetch('/resources.json', { cache: 'no-cache' })
   .catch(() => { $('err').hidden = false; });
 })();
 </script>
+<script src="/nav.js" defer></script>
 </body>
 </html>

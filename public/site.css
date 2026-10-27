@@ -40,7 +40,13 @@ a{color:var(--accent)}
 .dd:hover .menu,.dd:focus-within .menu{opacity:1;visibility:visible;transform:none}
 .tabs .dd .menu a{white-space:nowrap;padding:8px 10px;font-weight:400}
 .tabs .dd .menu a[aria-current=page]{box-shadow:none;border-radius:var(--r-sm);background:var(--sheet);font-weight:600}
-@media (hover:none){.dd .menu{display:none}}
+.tabs .ddbtn{appearance:none;border:0;background:none;font:inherit;font-size:14.5px;color:var(--muted);padding:6px 10px;border-radius:var(--r-sm);cursor:pointer}
+.tabs .ddbtn:hover{color:var(--ink);background:var(--sheet)}
+.tabs .ddbtn::after{content:"";display:inline-block;width:0;height:0;margin-left:6px;border:4px solid transparent;border-top-color:currentColor;border-bottom:0;vertical-align:2px;opacity:.7}
+.tabs .ddbtn.cur{color:var(--ink);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent);border-radius:0}
+.dd.open .menu{opacity:1;visibility:visible;transform:none}
+@media (hover:none){.dd:not(.open) .menu{display:none}}
+@media (max-width:640px){.dd .menu{left:auto;right:0;min-width:180px}}
 /* sub-sections of a tab */
 .subtabs{display:inline-flex;flex-wrap:wrap;gap:4px;padding:4px;margin:-24px 0 26px;border:1px solid var(--rule);border-radius:999px;background:var(--sheet)}
 .subtabs a{color:var(--muted);text-decoration:none;font-size:14px;padding:6px 14px;border-radius:999px}

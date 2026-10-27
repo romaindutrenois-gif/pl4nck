@@ -125,8 +125,7 @@ svg text{font-family:var(--sans)}
     <nav class="tabs" aria-label="Sections">
       <a href="/launch">Launch Pl4nck</a>
       <span class="dd"><a href="/library" aria-current="page">Library</a><span class="menu"><a href="/library">Model library</a><a href="/map" aria-current="page">3D model map</a></span></span>
-      <a href="/technology">Technology mapping</a>
-      <a href="/resources">Resources</a>
+      <span class="dd"><button type="button" class="ddbtn" aria-expanded="false">Landscape</button><span class="menu"><a href="/technology">Technology mapping</a><a href="/resources">Resources</a></span></span>
       <a href="/about">About</a>
     </nav>
     <span class="proto">Research prototype</span>
@@ -813,5 +812,6 @@ new ResizeObserver(() => { const n = $('vfam').clientWidth < 640; if (view === '
 renderAll();
 init3d();
 </script>
+<script src="/nav.js" defer></script>
 </body>
 </html>
