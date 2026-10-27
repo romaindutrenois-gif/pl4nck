@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <style>
 /* Hero: full-screen animation that stays in place and fades while the intro text scrolls over it.
    Tokens are re-pointed so the shared bar and buttons read on dark. */
@@ -21,7 +22,19 @@
   position:relative;background:radial-gradient(120% 90% at 75% 45%,#1a2f57 0%,#0f1e33 55%,#0b1628 100%);color:var(--ink);
 }
 .stick{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;z-index:0}
-.stick canvas{position:absolute;inset:0;width:100%;height:100%;display:block;will-change:opacity,transform}
+.hero{position:absolute;inset:0;will-change:opacity,transform}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hlabels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.hlabels span{position:absolute;transform:translate(-50%,-50%);font-family:var(--serif);font-size:clamp(14px,1.35vw,18px);color:#c9d4e6;white-space:nowrap;text-shadow:0 1px 4px #0b1628;opacity:0;transition:opacity .8s}
+.hlabels span.q{color:#b9c6ff}
+.herocap{position:absolute;left:max(16px,calc((100vw - 1040px)/2 + 20px));bottom:64px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;opacity:0;transform:translateY(8px);transition:opacity 1s,transform 1s}
+.herocap.on{opacity:1;transform:none}
+.herocap p{margin:0;font-size:15px;color:var(--muted)}
+.herocap p b{color:var(--ink);font-weight:600}
+.herocap .btn{padding:9px 16px;font-size:14px}
+.herokey{display:flex;gap:12px;font-size:12.5px;color:var(--muted);margin:0}
+.herokey i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
+@media (max-width:640px){.herocap{bottom:58px;right:16px}.herokey{display:none}}
 /* The menu scrolls away with the page; the animation stays pinned behind it. */
 .top{position:absolute;top:0;left:0;right:0;z-index:2}
 .top .wrap{padding-bottom:0}
@@ -113,7 +126,15 @@
     </div>
   </header>
   <div class="stick">
-    <canvas id="fan" role="img" aria-label="Monte Carlo price paths fanning out over one year; their final prices are collected into the amplitudes of a four-qubit register."></canvas>
+    <div class="hero" id="hero">
+      <canvas id="hero3d" role="img" aria-label="The Pl4nck model map assembling in 3D: 260 models, methods, curves, engines and instruments gather into nine families, links form between them, and the quantum algorithms rise above the models they build on."></canvas>
+      <div class="hlabels" id="hlabels" aria-hidden="true"></div>
+      <div class="herocap" id="herocap">
+        <p><b>260</b> models, methods and engines · <b>9</b> families · one map</p>
+        <a class="btn" href="/map">Explore the 3D model map</a>
+        <p class="herokey"><span><i style="background:#5cc796"></i>Kit available</span><span><i style="background:#f0ad4e"></i>Next</span><span><i style="background:#8ea2ff"></i>Quantum</span></p>
+      </div>
+    </div>
     <a class="cue" id="cue" href="#intro">Scroll<svg width="14" height="9" viewBox="0 0 14 9" aria-hidden="true"><path d="M1 1l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></a>
   </div>
   <section class="intro" id="intro">
@@ -190,184 +211,6 @@
   </main>
 </div>
 
-<script>
-(() => {
-'use strict';
-
-// ---------- Hero: Monte Carlo paths feeding a 4-qubit register ----------
-const canvas = document.getElementById('fan');
-const ctx = canvas.getContext('2d');
-const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const BLUE = '154,168,255', AMBER = '227,178,93', TEXT = '159,176,202';
-const STEPS = 90, BATCH = 36, BINS = 16;
-const S0 = 100, SIGMA = 0.25, MU = 0.03;
-const LO = 50, HI = 190;                     // price window shown on the vertical axis
-let W = 0, H = 0, split = 0, dpr = 1, X0 = 0, RX1 = 0, YT = 0, YB = 0;
-let seed = 7;
-const rand = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
-const gauss = () => { let u = 0; while (!u) u = rand(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rand()); };
-
-const counts = new Float64Array(BINS);
-const shown = new Float64Array(BINS);        // displayed amplitudes, eased toward target
-let total = 0, batch = [], ghosts = [], step = 0, fade = 1, hold = 0, running = false, last = 0;
-
-function newBatch() {
-  if (batch.length) { ghosts.unshift(batch); ghosts = ghosts.slice(0, 3); }
-  batch = [];
-  const dt = 1 / STEPS;
-  for (let i = 0; i < BATCH; i++) {
-    const p = [S0];
-    for (let k = 1; k <= STEPS; k++) p.push(p[k - 1] * Math.exp((MU - SIGMA * SIGMA / 2) * dt + SIGMA * Math.sqrt(dt) * gauss()));
-    batch.push(p);
-  }
-  step = 0; fade = 1; hold = 0;
-}
-const y = (s) => YB - ((Math.min(Math.max(s, LO), HI) - LO) / (HI - LO)) * (YB - YT);
-const binOf = (s) => Math.min(BINS - 1, Math.max(0, Math.floor(((s - LO) / (HI - LO)) * BINS)));
-
-function resize() {
-  dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const r = canvas.getBoundingClientRect();
-  W = r.width; H = r.height;
-  canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  // Menu height, independent of the scroll position (the menu scrolls away, the canvas stays pinned).
-  const barBottom = document.querySelector('.top').offsetHeight;
-  // First screen is the animation alone: paths across most of the width, the register on the right.
-  const wrapLeft = Math.max(16, (W - 1040) / 2 + 20);
-  X0 = wrapLeft; RX1 = Math.min(W - 16, W - wrapLeft + 40);
-  split = X0 + (RX1 - X0) * (W < 600 ? 0.6 : 0.7);
-  YT = barBottom + (W < 600 ? 56 : 70); YB = H - (W < 600 ? 110 : 120);
-  draw();
-}
-
-function draw() {
-  ctx.clearRect(0, 0, W, H);
-  const x = (k) => X0 + (k / STEPS) * (split - X0);
-  // axis hints
-  ctx.strokeStyle = `rgba(${TEXT},0.18)`; ctx.lineWidth = 1;
-  ctx.setLineDash([2, 4]);
-  ctx.beginPath(); ctx.moveTo(X0, y(S0)); ctx.lineTo(split, y(S0)); ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle = `rgba(${TEXT},0.7)`; ctx.font = '12px "Instrument Sans", system-ui, sans-serif';
-  ctx.fillText('spot 100', X0 + 2, y(S0) - 6);
-  ctx.fillText('today', X0, YB + 22);
-  ctx.textAlign = 'right'; ctx.fillText('1 year', split, YB + 22); ctx.textAlign = 'left';
-
-  // earlier batches, faint: the fan builds up
-  ghosts.forEach((g, i) => {
-    ctx.strokeStyle = `rgba(${BLUE},${0.09 / (i + 1)})`; ctx.lineWidth = 1;
-    for (const p of g) { ctx.beginPath(); ctx.moveTo(x(0), y(p[0])); for (let k = 1; k <= STEPS; k++) ctx.lineTo(x(k), y(p[k])); ctx.stroke(); }
-  });
-  // current batch
-  for (const p of batch) {
-    ctx.strokeStyle = `rgba(${BLUE},${0.55 * fade})`; ctx.lineWidth = 1.2;
-    ctx.beginPath(); ctx.moveTo(x(0), y(p[0]));
-    for (let k = 1; k <= step; k++) ctx.lineTo(x(k), y(p[k]));
-    ctx.stroke();
-    if (step === STEPS) {
-      ctx.fillStyle = `rgba(${BLUE},${0.9 * fade})`;
-      ctx.beginPath(); ctx.arc(x(STEPS), y(p[STEPS]), 2, 0, 7); ctx.fill();
-    }
-  }
-
-  // register: 16 basis states, bar length = amplitude sqrt(p)
-  const left = split + 26, right = RX1, binH = (YB - YT) / BINS;
-  const maxAmp = Math.max(...shown, 1e-9);
-  ctx.strokeStyle = `rgba(${AMBER},0.35)`;
-  ctx.beginPath(); ctx.moveTo(left - 10, YT); ctx.lineTo(left - 10, YB); ctx.stroke();
-  for (let b = 0; b < BINS; b++) {
-    const yc = YB - (b + 0.5) * binH;
-    const len = (shown[b] / maxAmp) * (right - left - 44);
-    ctx.fillStyle = `rgba(${AMBER},0.85)`;
-    ctx.fillRect(left, yc - binH * 0.32, Math.max(len, 1), binH * 0.64);
-    if (b % 3 === 0 || b === BINS - 1) {
-      ctx.fillStyle = `rgba(${TEXT},0.75)`; ctx.font = '11px ui-monospace, Menlo, Consolas, monospace';
-      ctx.textAlign = 'right'; ctx.fillText('|' + b.toString(2).padStart(4, '0') + '⟩', right, yc + 4); ctx.textAlign = 'left';
-    }
-  }
-  ctx.fillStyle = `rgba(${AMBER},0.95)`; ctx.font = '12px "Instrument Sans", system-ui, sans-serif';
-  ctx.fillText(W < 520 ? '4 qubits' : '4 qubits, amplitude √p', left - 10, YT - 12);
-}
-
-function collect() {
-  for (const p of batch) { counts[binOf(p[STEPS])]++; total++; }
-}
-function ease() {
-  let moving = false;
-  for (let b = 0; b < BINS; b++) {
-    const target = total ? Math.sqrt(counts[b] / total) : 0;
-    const d = target - shown[b];
-    if (Math.abs(d) > 1e-4) moving = true;
-    shown[b] += d * 0.08;
-  }
-  return moving;
-}
-
-function frame(t) {
-  if (!running) return;
-  if (t - last > 28) {
-    last = t;
-    if (step < STEPS) { step = Math.min(STEPS, step + 1); if (step === STEPS) collect(); }
-    else if (hold < 30) hold++;
-    else { fade -= 0.04; if (fade <= 0) newBatch(); }
-    ease();
-    draw();
-  }
-  requestAnimationFrame(frame);
-}
-
-function staticFrame() {
-  // Reduced motion: show converged state at once.
-  for (let i = 0; i < 40; i++) { newBatch(); collect(); }
-  newBatch(); step = STEPS; collect();
-  for (let b = 0; b < BINS; b++) shown[b] = Math.sqrt(counts[b] / total);
-  draw();
-}
-
-// Start from a partly built register so the picture reads at once.
-for (let i = 0; i < 6; i++) { newBatch(); collect(); }
-for (let b = 0; b < BINS; b++) shown[b] = Math.sqrt(counts[b] / total);
-newBatch();
-// Phones resize the viewport when the address bar shows or hides during scrolling:
-// redraw only for real size changes, so the picture does not jump.
-let lastW = 0, lastH = 0;
-function maybeResize() {
-  const w = window.innerWidth, h = window.innerHeight;
-  if (w !== lastW || Math.abs(h - lastH) > 140) { lastW = w; lastH = h; resize(); }
-}
-window.addEventListener('resize', maybeResize);
-maybeResize();
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);
-if (reduce) { staticFrame(); return; }
-
-// The animation fades and recedes before the intro text reaches it: the two never share the screen.
-const cue = document.getElementById('cue'), introTitle = document.querySelector('.intro h1');
-let ticking = false;
-function onScroll() {
-  ticking = false;
-  const p = Math.min(1, Math.max(0, window.scrollY / window.innerHeight));
-  // Fully faded by the time the intro title reaches the bottom of the screen.
-  const t = introTitle.getBoundingClientRect().top, vh = window.innerHeight;
-  canvas.style.opacity = String(Math.min(1, Math.max(0, (t - vh) / (vh * 0.25))));
-  canvas.style.transform = `scale(${1 + p * 0.06})`;
-  cue.style.opacity = String(Math.max(0, 1 - p * 6));
-  if (!running && !document.hidden && window.scrollY < window.innerHeight * 1.5) { running = true; requestAnimationFrame(frame); }
-}
-window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
-onScroll();
-const io = new IntersectionObserver((entries) => {
-  const e = entries[entries.length - 1];
-  const vis = e.isIntersecting && !document.hidden;
-  if (vis && !running) { running = true; requestAnimationFrame(frame); }
-  else if (!vis) running = false;
-});
-io.observe(canvas);
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) running = false;
-  else if (!running) { running = true; requestAnimationFrame(frame); }
-});
-})();
-</script>
+<script type="module" src="/hero.js"></script>
 </body>
 </html>
