@@ -61,7 +61,6 @@
 .road .qb strong{font-family:var(--serif);font-weight:500;font-size:24px;color:var(--ink)}
 .road .need .qb strong{color:var(--amber)}
 .road .fin{font-size:14.5px;line-height:1.55;padding-top:12px;border-top:1px solid var(--rule)}
-.callout.threat{border-left-color:var(--red)}
 .steps{list-style:none;padding:0;margin:26px 0 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;counter-reset:s}
 .steps li{position:relative;padding:34px 22px 0 0;margin:0;max-width:none;counter-increment:s}
 .steps li::before{content:counter(s);position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--paper);font-size:13px;font-weight:600;display:grid;place-items:center}
@@ -156,8 +155,7 @@
           <span class="fin">Advantage on derivatives pricing: autocalls and TARFs, each priced in about a second.</span>
         </li>
       </ol>
-      <div class="callout threat"><p><b>The threat arrives before the benefit.</b> Breaking RSA-2048 is estimated to need fewer than a million noisy qubits, far fewer than pricing at scale. Post-quantum migration of your systems comes first, whatever your modelling plans.</p></div>
-      <p class="fine">Sources: IBM roadmap (Starling, about 200 logical qubits in 2029; Blue Jay, about 2,000 from 2033); Quantinuum (Apollo, fault-tolerant in 2029); Chakrabarti et al., Quantum 5, 463 (2021); Gidney, arXiv:2505.15917 (2025). Roadmaps are ambitions, not commitments. Details in the <a href="/technology">technology mapping</a>, reviewed every month.</p>
+      <p class="fine">Sources: IBM roadmap (Starling, about 200 logical qubits in 2029; Blue Jay, about 2,000 from 2033); Quantinuum (Apollo, fault-tolerant in 2029); Chakrabarti et al., Quantum 5, 463 (2021). Roadmaps are ambitions, not commitments. Details in the <a href="/technology">technology mapping</a>, reviewed every month.</p>
     </section>
 
     <section aria-labelledby="h-wait">
