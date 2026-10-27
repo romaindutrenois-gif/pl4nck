@@ -12,6 +12,7 @@
 <style>
 .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .card.link{color:inherit;text-decoration:none;display:block}
+.card .go{font-size:14.5px;font-weight:600;margin:10px 0 0}
 .card.link:hover{border-color:var(--ink)}
 .btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule)}
 .grid2 .card p{font-size:14.5px}
@@ -54,13 +55,12 @@
     <h1>About Pl4nck</h1>
     <p class="lead">Pl4nck helps quants in banks and asset managers prepare their models for what comes next: an honest view of where quantum computing stands, a no-regret roadmap, and validated model kits they can use today. It was built by a practising quant with a background in model validation, structured products and regulatory frameworks.</p>
 
-    <h2>Three ways to use it</h2>
+    <h2>What it does</h2>
     <div class="grid3">
-      <a class="card link" href="/launch"><span class="num">Launch Pl4nck</span><h3>Assess a use case</h3><p>Four short questions, then an honest verdict: where quantum computing stands for your use case, when it could matter, which hardware fits, and a no-regret roadmap from your current model. Follow-up questions and a starter kit for your next step.</p></a>
-      <a class="card link" href="/library"><span class="num">Library</span><h3>Get a validated kit</h3><p>Pick a model and download its validation kit: Python prototype, tests with pre-registered criteria, independent QuantLib reference values, a conventions module, and model documentation in Word and LaTeX. Quantum circuit kits are in preparation.</p></a>
-      <a class="card link" href="/technology"><span class="num">Technology mapping</span><h3>Read the landscape</h3><p>Quantum computing for finance by use case, algorithm family, hardware and player, with honest horizons. Reviewed every month.</p></a>
+      <div class="card"><span class="num">Roadmap</span><h3>Assess, build and advance your R&amp;D roadmap</h3><p>Four short questions, then an honest verdict: where quantum computing stands for your use case, when it could matter, which hardware fits, and a no-regret roadmap from your current model. The 3D model map covers every model, engine, curve and instrument in QuantLib, so your team can mark where it stands.</p><p class="go"><a href="/launch">Launch Pl4nck</a> · <a href="/map">3D model map</a></p></div>
+      <div class="card"><span class="num">Models</span><h3>Accelerate model development and validation</h3><p>Pick a model and download its validation kit: Python prototype, tests with pre-registered criteria, independent QuantLib reference values, a conventions module, and model documentation in Word and LaTeX.</p><p class="go"><a href="/library">Model library</a></p></div>
+      <div class="card"><span class="num">Quantum</span><h3>Explore quantum technology, hardware and circuits</h3><p>Quantum computing for finance by use case, algorithm family, hardware and player, with honest horizons, reviewed every month; courses, key papers, software and hardware access. Quantum circuit kits are in preparation.</p><p class="go"><a href="/technology">Technology mapping</a> · <a href="/resources">Resources</a></p></div>
     </div>
-    <p>To go further on your own, <a href="/resources">Resources</a> lists courses, key papers, software, hardware access and the model-risk frameworks.</p>
 
     <h2>The no-regret principle</h2>
     <p>For most finance workloads, a real quantum advantage needs error-corrected machines that are not expected before the 2030s. Waiting is still not neutral. The prerequisites are the same either way: clean data, classical benchmarks, variance reduction, reproducible runs and validated documentation. Any quantum algorithm will be measured against them, and they pay off on their own.</p>

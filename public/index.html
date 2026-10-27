@@ -86,8 +86,11 @@
 .steps h3{font-family:var(--serif);font-weight:500;font-size:21px;margin:0 0 6px}
 .steps p{margin:0;font-size:15px;color:var(--muted)}
 .ways{display:grid;gap:0;margin-top:18px;border-top:1px solid var(--rule)}
-.ways a{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:24px;padding:20px 0;border-bottom:1px solid var(--rule);color:inherit;text-decoration:none}
-.ways a:hover .w{color:var(--accent)}
+.ways .way{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:24px;padding:22px 0;border-bottom:1px solid var(--rule)}
+.ways .go{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:10px!important}
+.ways .go a{color:var(--accent);font-weight:600;font-size:15px;text-decoration:none}
+.ways .go a::after{content:" →"}
+.ways .go a:hover{text-decoration:underline}
 .ways .w{font-family:var(--serif);font-size:26px;line-height:1.2}
 .ways p{margin:0;color:var(--muted);font-size:15.5px}
 .foot{margin:64px 0 0;padding-top:20px;border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;color:var(--muted)}
@@ -103,7 +106,7 @@
   .steps li{padding:0 0 22px 38px}
   .steps li::after{left:11px;right:auto;top:30px;bottom:4px;width:2px;height:auto}
   .steps li:nth-child(2)::after{border-top:0;border-left:2px dashed var(--amber);width:0;height:auto}
-  .ways a{grid-template-columns:1fr;gap:6px}
+  .ways .way{grid-template-columns:1fr;gap:6px}
 }
 @media (max-width:560px){
       }
@@ -192,13 +195,11 @@
     </section>
 
     <section aria-labelledby="h-ways">
-      <h2 id="h-ways">Start where you are</h2>
+      <h2 id="h-ways">What Pl4nck does</h2>
       <div class="ways">
-        <a href="/launch"><span class="w">Assess a use case</span><p>Four short questions on your role, use case and current model. You get an honest verdict, the hardware that fits, and a roadmap from where you stand.</p></a>
-        <a href="/library"><span class="w">Download a validated kit</span><p>Prototype, tests against QuantLib reference values, conventions module and model documentation in Word and LaTeX. Runs on your machine; nothing is uploaded.</p></a>
-        <a href="/map"><span class="w">See the model map</span><p>Every pricing and risk model on one map, from foundations to the quantum algorithms that build on them. Mark what your institution already runs; it stays in your browser.</p></a>
-        <a href="/technology"><span class="w">Read the landscape</span><p>Quantum computing for finance by use case, algorithm, hardware and player, with horizons stated plainly.</p></a>
-        <a href="/resources"><span class="w">Learn on your own</span><p>Courses, the key papers on quantum finance, open-source software, cloud access to real hardware, and the model-risk frameworks.</p></a>
+        <div class="way"><span class="w">Assess, build and advance your R&amp;D roadmap</span><div><p>An honest verdict on where quantum stands for your use case, a no-regret roadmap from your current model, and a map of every model and engine to mark where your team stands. Nothing is uploaded.</p><p class="go"><a href="/launch">Assess a use case</a><a href="/map">Open the 3D model map</a></p></div></div>
+        <div class="way"><span class="w">Accelerate model development and validation</span><div><p>Validated kits: Python prototype, tests with pre-registered criteria, independent QuantLib reference values, conventions module and model documentation in Word and LaTeX. Runs on your machine.</p><p class="go"><a href="/library">Browse the model library</a></p></div></div>
+        <div class="way"><span class="w">Explore quantum technology, hardware and circuits</span><div><p>Quantum computing for finance by use case, algorithm, hardware and player, with horizons stated plainly; courses, key papers, software and cloud access to real hardware. Circuit kits are in preparation.</p><p class="go"><a href="/technology">Technology mapping</a><a href="/resources">Resources</a></p></div></div>
       </div>
     </section>
 
