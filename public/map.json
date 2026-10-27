@@ -1,0 +1,78 @@
+{
+  "reviewed": "2026-10-27",
+  "lanes": [
+    {"id": "infra", "name": "Infrastructure"},
+    {"id": "mc", "name": "Monte Carlo methods"},
+    {"id": "eq", "name": "Equity and FX"},
+    {"id": "rates", "name": "Rates"},
+    {"id": "credit", "name": "Credit"},
+    {"id": "risk", "name": "Market risk"},
+    {"id": "port", "name": "Portfolio and scenarios"},
+    {"id": "xva", "name": "Counterparty risk"}
+  ],
+  "statuses": {
+    "done": "Implemented",
+    "wip": "In progress",
+    "todo": "Not yet explored",
+    "quantum": "Quantum"
+  },
+  "nodes": [
+    {"id": "conv", "name": "Conventions and calendars", "lane": "infra", "coverage": "done", "library": "conventions", "note": "Day counts, holiday calendars, adjustments and schedules."},
+    {"id": "curve", "name": "Yield curve bootstrap", "lane": "infra", "coverage": "todo", "note": "Discount and forward curves from deposits, futures and swaps."},
+    {"id": "volsurf", "name": "Implied volatility surface", "lane": "infra", "coverage": "todo", "note": "Arbitrage-free interpolation of listed option quotes (for example SVI)."},
+
+    {"id": "mcengine", "name": "Monte Carlo engine", "lane": "mc", "coverage": "done", "library": "black_scholes", "note": "Path simulation with a standard error on every price."},
+    {"id": "vr", "name": "Variance reduction", "lane": "mc", "coverage": "done", "library": "black_scholes", "note": "Antithetics and control variates: the same accuracy with far fewer paths."},
+    {"id": "qmc", "name": "Quasi-Monte Carlo", "lane": "mc", "coverage": "todo", "note": "Sobol sequences with a Brownian bridge."},
+    {"id": "aad", "name": "AAD Greeks", "lane": "mc", "coverage": "todo", "note": "All first-order sensitivities for a small multiple of one pricing."},
+    {"id": "gpu", "name": "GPU Monte Carlo", "lane": "mc", "coverage": "todo", "note": "The classical speed benchmark any quantum pricer must beat."},
+
+    {"id": "bs", "name": "Black-Scholes", "lane": "eq", "coverage": "done", "library": "black_scholes", "note": "Lognormal spot, constant volatility: the reference model."},
+    {"id": "lv", "name": "Local volatility", "lane": "eq", "coverage": "wip", "library": "local_vol", "note": "Fits the vanilla surface exactly (Dupire)."},
+    {"id": "heston", "name": "Heston", "lane": "eq", "coverage": "done", "library": "heston", "note": "Stochastic variance with spot-vol correlation."},
+    {"id": "bates", "name": "Bates", "lane": "eq", "coverage": "todo", "library": "bates", "note": "Heston with jumps, for short-dated skew."},
+    {"id": "slv", "name": "Stochastic local volatility", "lane": "eq", "coverage": "todo", "library": "heston_slv", "note": "Leverage function on top of Heston."},
+    {"id": "merton", "name": "Merton jump diffusion", "lane": "eq", "coverage": "todo", "library": "merton_jumps", "note": "Black-Scholes with lognormal jumps."},
+
+    {"id": "shortrate", "name": "Vasicek, CIR", "lane": "rates", "coverage": "todo", "library": "short_rate_classics", "note": "Classic short-rate models."},
+    {"id": "black", "name": "Black and Bachelier", "lane": "rates", "coverage": "wip", "library": "black_bachelier", "note": "Market quoting models for caps and swaptions."},
+    {"id": "hw", "name": "Hull-White", "lane": "rates", "coverage": "done", "library": "hull_white", "note": "Gaussian short rate fitted to today's curve."},
+    {"id": "sabr", "name": "SABR", "lane": "rates", "coverage": "wip", "library": "sabr", "note": "Stochastic-volatility smile for rates."},
+    {"id": "g2", "name": "G2++", "lane": "rates", "coverage": "todo", "library": "g2", "note": "Two-factor Gaussian rates for decorrelation."},
+    {"id": "lmm", "name": "Forward market model", "lane": "rates", "coverage": "todo", "library": "lmm", "note": "Joint dynamics of forward rates."},
+
+    {"id": "cds", "name": "Hazard rates and CDS", "lane": "credit", "coverage": "wip", "library": "cds_hazard", "note": "Default intensities bootstrapped from CDS quotes."},
+    {"id": "copula", "name": "Gaussian copula", "lane": "credit", "coverage": "todo", "library": "gaussian_copula", "note": "One-factor portfolio loss model."},
+    {"id": "cpm", "name": "Credit portfolio Monte Carlo", "lane": "credit", "coverage": "todo", "note": "Loss distribution and economic capital."},
+
+    {"id": "hvar", "name": "Historical VaR and ES", "lane": "risk", "coverage": "todo", "library": "var_historical", "note": "Full revaluation on historical scenarios."},
+    {"id": "garch", "name": "GARCH", "lane": "risk", "coverage": "todo", "library": "garch", "note": "Volatility clustering."},
+    {"id": "mcvar", "name": "Monte Carlo VaR", "lane": "risk", "coverage": "todo", "library": "var_mc", "note": "Simulated risk factors, full or proxy revaluation."},
+
+    {"id": "mv", "name": "Mean-variance", "lane": "port", "coverage": "todo", "note": "Convex portfolio optimisation, solved well classically."},
+    {"id": "card", "name": "Portfolio with discrete constraints", "lane": "port", "coverage": "todo", "note": "Cardinality and lot sizes: a mixed-integer problem."},
+    {"id": "gen", "name": "Classical scenario generators", "lane": "port", "coverage": "todo", "note": "Copulas, then VAE, GAN or diffusion models."},
+
+    {"id": "pfe", "name": "Exposure and PFE", "lane": "xva", "coverage": "wip", "note": "Expected and potential future exposure profiles."},
+
+    {"id": "qae_price", "name": "Amplitude estimation: pricing", "lane": "mc", "quantum": true, "library": "qae_european", "note": "Quadratic Monte Carlo speed-up; needs fault-tolerant hardware."},
+    {"id": "qae_credit", "name": "Amplitude estimation: credit risk", "lane": "credit", "quantum": true, "note": "Economic capital by amplitude estimation."},
+    {"id": "qae_var", "name": "Amplitude estimation: VaR and CVaR", "lane": "risk", "quantum": true, "note": "Tail risk measures by amplitude estimation."},
+    {"id": "qaoa", "name": "QAOA portfolio", "lane": "port", "quantum": true, "library": "qaoa_portfolio", "note": "Discrete portfolio selection as a QUBO."},
+    {"id": "born", "name": "Born machine", "lane": "port", "quantum": true, "library": "born_machine", "note": "Quantum generative model for return distributions."}
+  ],
+  "edges": [
+    ["conv", "curve"], ["conv", "bs"], ["curve", "hw"], ["curve", "black"], ["curve", "cds"],
+    ["volsurf", "lv"], ["volsurf", "sabr"],
+    ["bs", "mcengine"], ["mcengine", "vr"], ["vr", "qmc"], ["mcengine", "aad"], ["vr", "gpu"],
+    ["bs", "lv"], ["bs", "heston"], ["bs", "merton"], ["heston", "bates"], ["heston", "slv"], ["lv", "slv"],
+    ["shortrate", "hw"], ["black", "sabr"], ["black", "lmm"], ["hw", "g2"], ["hw", "lmm"],
+    ["cds", "copula"], ["copula", "cpm"], ["mcengine", "cpm"],
+    ["hvar", "mcvar"], ["garch", "mcvar"], ["mcengine", "mcvar"],
+    ["mv", "card"], ["garch", "gen"], ["hvar", "gen"],
+    ["hw", "pfe"], ["mcengine", "pfe"],
+    ["vr", "qae_price", "quantum"], ["qmc", "qae_price", "quantum"], ["heston", "qae_price", "quantum"],
+    ["cpm", "qae_credit", "quantum"], ["mcvar", "qae_var", "quantum"], ["pfe", "qae_var", "quantum"],
+    ["card", "qaoa", "quantum"], ["gen", "born", "quantum"]
+  ]
+}

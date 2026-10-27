@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Model map · Pl4nck</title>
+<meta name="description" content="A map of pricing and risk models and the quantum algorithms that build on them: what is implemented, in progress, not yet explored, and quantum.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<style>
+:root{--s-done:#2f9e6b;--s-wip:#d68a1d;--s-todo:#8a96ab;--s-quantum:#4f6ef7}
+@media (prefers-color-scheme:dark){:root{--s-done:#5cc796;--s-wip:#f0ad4e;--s-todo:#7f8ba1;--s-quantum:#8ea2ff}}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 14px}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:var(--r-sm);overflow:hidden;background:var(--sheet)}
+.seg button{appearance:none;border:0;background:none;padding:7px 12px;font:inherit;font-size:14px;color:var(--muted);cursor:pointer}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;color:var(--muted)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.btn.small{padding:7px 12px;font-size:14px}
+.btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule)}
+.hint{font-size:13.5px;color:var(--muted);margin:0 0 10px}
+
+/* 3D stage */
+.stage3d{position:relative;height:min(72vh,640px);min-height:420px;border-radius:var(--r-md);overflow:hidden;
+  background:radial-gradient(120% 90% at 60% 30%,#1a2f57 0%,#0f1e33 55%,#0b1628 100%);color:#e9eef6}
+.stage3d canvas{display:block;width:100%;height:100%;cursor:grab}
+.stage3d canvas:active{cursor:grabbing}
+.labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.labels span{position:absolute;transform:translate(-50%,-160%);font-size:11.5px;white-space:nowrap;color:#dfe6f3;text-shadow:0 1px 3px #0b1628,0 0 2px #0b1628;transition:opacity .2s}
+.labels span.q{color:#b9c6ff;font-weight:600}
+.labels span.layer{font-family:var(--serif);font-size:15px;color:#9fb0ca;transform:translate(0,-50%)}
+.stage3d .cta2d{position:absolute;right:16px;bottom:16px;background:#e9eef6;color:#0f1e33}
+.stage3d .note3d{position:absolute;left:16px;top:14px;margin:0;font-size:12.5px;color:#9fb0ca;max-width:46ch;padding:6px 10px;border-radius:8px;background:rgba(11,22,40,.72)}
+@media (max-width:640px){.stage3d .note3d{right:16px;max-width:none}}
+.stage3d .fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;color:#9fb0ca}
+
+/* 2D view */
+.view2d{border:1px solid var(--rule);border-radius:var(--r-md);background:var(--sheet);position:relative}
+.scroll{overflow:auto;border-radius:var(--r-md)}
+.zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:6px;z-index:2}
+.zoom button{width:32px;height:32px;border-radius:var(--r-sm);border:1px solid var(--rule);background:var(--paper);color:var(--ink);font-size:18px;cursor:pointer;line-height:1}
+svg text{font-family:var(--sans)}
+.node{cursor:pointer}
+.node rect{stroke-width:1.5}
+.node:focus-visible rect{stroke:var(--accent);stroke-width:3}
+.node.dim{opacity:.18}
+.edge.dim{opacity:.08}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-md);padding:16px 18px;max-width:760px}
+.panel h2{font-size:22px;margin:0 0 6px}
+.panel p{font-size:14.5px;margin:0 0 10px}
+.panel .st{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;margin-bottom:10px}
+.panel .st i{width:10px;height:10px;border-radius:50%}
+.panel .choose{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.panel .choose button{border:1px solid var(--rule);background:var(--paper);border-radius:var(--r-sm);padding:5px 9px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
+.panel .choose button[aria-pressed=true]{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+.panel .rel{font-size:13.5px;color:var(--muted)}
+.panel .rel b{color:var(--ink);font-weight:600}
+.summary{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;color:var(--muted);margin:10px 0 0}
+.summary b{color:var(--ink)}
+@media (max-width:900px){
+  .stage3d{height:62vh}
+}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar">
+    <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><span class="name">Pl4nck</span></a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="/launch">Launch Pl4nck</a>
+      <a href="/library" aria-current="page">Library</a>
+      <a href="/technology">Technology mapping</a>
+      <a href="/resources">Resources</a>
+      <a href="/about">About</a>
+    </nav>
+    <span class="proto">Research prototype</span>
+  </div>
+
+  <main class="page">
+    <p class="fine"><a href="/library">Library</a> / Model map</p>
+    <h1>Model map</h1>
+    <p class="lead">Pricing and risk models, the methods that connect them, and the quantum algorithms that build on them. See at a glance what is implemented, what is in progress and what is left, then mark your own institution's progress.</p>
+
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="View">
+        <button type="button" data-view="3d" aria-pressed="true">3D overview</button>
+        <button type="button" data-view="roadmap" aria-pressed="false">2D roadmap</button>
+        <button type="button" data-view="paths" aria-pressed="false">Paths to quantum</button>
+      </div>
+      <div class="seg" role="group" aria-label="Whose status">
+        <button type="button" data-mode="pl4nck" aria-pressed="true">Pl4nck library</button>
+        <button type="button" data-mode="bank" aria-pressed="false">My institution</button>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <section id="v3d">
+      <div class="stage3d" id="stage">
+        <canvas id="gl" aria-label="Three-dimensional model map: classical models on the floor, quantum algorithms on a layer above, linked to the models they build on."></canvas>
+        <div class="labels" id="labels" aria-hidden="true"></div>
+        <p class="note3d">Drag to rotate, scroll or pinch to zoom. Classical models sit on the floor; the quantum layer floats above the models it builds on.</p>
+        <button class="btn small cta2d" type="button" id="to2d">Explore in 2D</button>
+      </div>
+    </section>
+
+    <section id="v2d" hidden>
+      <p class="hint" id="hint2d"></p>
+      <div class="layout">
+        <div class="view2d">
+          <div class="zoom"><button type="button" id="zin" aria-label="Zoom in">+</button><button type="button" id="zout" aria-label="Zoom out">−</button></div>
+          <div class="scroll" id="scroll"><svg id="svg" role="img" aria-label="Model map"></svg></div>
+        </div>
+        <aside class="panel" id="panel" aria-live="polite"></aside>
+      </div>
+      <div class="toolbar" style="margin-top:14px">
+        <button class="btn small quiet" type="button" id="export">Export as image</button>
+        <button class="btn small quiet" type="button" id="reset" hidden>Reset my statuses</button>
+        <span class="summary" id="summary"></span>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const STORE = 'pl4nck-map-status-v1';
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const data = await (await fetch('/map.json', { cache: 'no-cache' })).json();
+const byId = Object.fromEntries(data.nodes.map((n) => [n.id, n]));
+const edges = data.edges.map(([from, to, type]) => ({ from, to, type: type || 'builds' }));
+let mode = 'pl4nck', view = '3d', selected = null;
+
+let bank = {};
+try { bank = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { bank = {}; }
+const saveBank = () => { try { localStorage.setItem(STORE, JSON.stringify(bank)); } catch {} };
+
+// Status shown for a node in the current mode. Quantum nodes stay blue; in "My institution"
+// mode they are drawn hollow until marked as explored.
+function status(n) {
+  if (n.quantum) return 'quantum';
+  return mode === 'pl4nck' ? n.coverage : (bank[n.id] || 'todo');
+}
+const explored = (n) => mode === 'pl4nck' ? n.coverage === 'done' || n.quantum && false : bank[n.id] === 'done';
+const color = (s) => css('--s-' + s);
+
+// ---------- Layout: columns by depth along "builds on" links, rows by lane ----------
+const preds = {}; edges.forEach((e) => (preds[e.to] = preds[e.to] || []).push(e.from));
+const depth = {};
+function d(id) {
+  if (depth[id] != null) return depth[id];
+  const p = (preds[id] || []).filter((x) => !byId[x].quantum);
+  depth[id] = p.length ? 1 + Math.max(...p.map(d)) : 0;
+  return depth[id];
+}
+data.nodes.forEach((n) => { if (!n.quantum) d(n.id); });
+const maxDepth = Math.max(...Object.values(depth));
+data.nodes.forEach((n) => { if (n.quantum) depth[n.id] = maxDepth + 1; });
+
+const slots = {};          // lane -> depth -> [ids]
+data.nodes.forEach((n) => { ((slots[n.lane] = slots[n.lane] || {})[depth[n.id]] = slots[n.lane][depth[n.id]] || []).push(n.id); });
+const laneRows = {}; let row = 0;
+data.lanes.forEach((l) => {
+  const h = Math.max(1, ...Object.values(slots[l.id] || {}).map((a) => a.length));
+  laneRows[l.id] = { start: row, height: h }; row += h;
+});
+const totalRows = row;
+const pos = {};            // id -> {col, row}
+data.nodes.forEach((n) => {
+  const list = slots[n.lane][depth[n.id]];
+  pos[n.id] = { col: depth[n.id], row: laneRows[n.lane].start + list.indexOf(n.id) + (laneRows[n.lane].height - list.length) / 2 };
+});
+
+// ---------- Legend and summary ----------
+function renderLegend() {
+  const items = mode === 'pl4nck'
+    ? [['done', 'Kit available'], ['wip', 'Next'], ['todo', 'Later'], ['quantum', 'Quantum']]
+    : [['done', data.statuses.done], ['wip', data.statuses.wip], ['todo', data.statuses.todo], ['quantum', 'Quantum']];
+  $('legend').innerHTML = items.map(([s, t]) => `<span><i style="background:${color(s)}"></i>${esc(t)}</span>`).join('');
+  const classical = data.nodes.filter((n) => !n.quantum);
+  const count = (s) => classical.filter((n) => status(n) === s).length;
+  $('summary').innerHTML = `<span><b>${count('done')}</b> ${mode === 'pl4nck' ? 'with a kit' : 'implemented'}</span><span><b>${count('wip')}</b> ${mode === 'pl4nck' ? 'next' : 'in progress'}</span><span><b>${count('todo')}</b> ${mode === 'pl4nck' ? 'later' : 'not yet explored'}</span><span><b>${data.nodes.length - classical.length}</b> quantum</span>`;
+  $('reset').hidden = mode !== 'bank';
+}
+
+// ---------- 2D (SVG) ----------
+const COLW = 172, ROWH = 54, LANEW = 140, PADT = 40, NODEW = 150, NODEH = 38;
+let scale = null; // null = fit to width
+const nx = (id) => LANEW + pos[id].col * COLW + 12;
+const ny = (id) => PADT + pos[id].row * ROWH + (ROWH - NODEH) / 2;
+const ancestors = (id, acc = new Set()) => { (preds[id] || []).forEach((p) => { if (!acc.has(p)) { acc.add(p); ancestors(p, acc); } }); return acc; };
+const onQuantumPath = new Set(data.nodes.filter((n) => n.quantum).flatMap((n) => [n.id, ...ancestors(n.id)]));
+
+function wrapAll(t, max) {
+  const words = t.split(' '); const lines = ['']; for (const w of words) { if ((lines[lines.length - 1] + ' ' + w).trim().length > max && lines[lines.length - 1]) lines.push(w); else lines[lines.length - 1] = (lines[lines.length - 1] + ' ' + w).trim(); }
+  return lines;
+}
+// two lines at most: tighten the font for the few long names rather than cut them
+function wrapText(t) {
+  const a = wrapAll(t, 19); if (a.length <= 2) return { lines: a, fs: 12.5 };
+  return { lines: wrapAll(t, 23).slice(0, 2), fs: 11.2 };
+}
+
+function render2d() {
+  const W = LANEW + (maxDepth + 2) * COLW + 20, H = PADT + totalRows * ROWH + 20;
+  const ink = css('--ink'), muted = css('--muted'), rule = css('--rule'), paper = css('--paper'), sheet = css('--sheet');
+  const svg = $('svg');
+  if (scale == null) scale = Math.max(0.72, Math.min(1, ($('scroll').clientWidth - 2) / W));
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('width', W * scale); svg.setAttribute('height', H * scale);
+  let out = `<rect x="0" y="0" width="${W}" height="${H}" fill="${sheet}"/>`;
+  // lanes
+  data.lanes.forEach((l, i) => {
+    const r = laneRows[l.id], y = PADT + r.start * ROWH;
+    if (i) out += `<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="${rule}"/>`;
+    const ll = wrapAll(l.name, 15).slice(0, 2), ly = y + r.height * ROWH / 2 + (ll.length === 1 ? 5 : -3);
+    out += ll.map((t, k) => `<text x="14" y="${ly + k * 16}" font-size="13" font-weight="600" fill="${muted}">${esc(t)}</text>`).join('');
+  });
+  // column header
+  const qx = LANEW + (maxDepth + 1) * COLW;
+  out += `<rect x="${qx}" y="0" width="${COLW + 20}" height="${H}" fill="${css('--s-quantum')}" opacity="0.07"/>`;
+  out += `<text x="${LANEW + 12}" y="24" font-size="12.5" fill="${muted}">Foundations</text><text x="${qx - 12}" y="24" font-size="12.5" fill="${muted}" text-anchor="end">More advanced</text><text x="${qx + 12}" y="24" font-size="12.5" font-weight="600" fill="${css('--s-quantum')}">Quantum</text>`;
+  // edges
+  for (const e of edges) {
+    const x1 = nx(e.from) + NODEW, y1 = ny(e.from) + NODEH / 2, x2 = nx(e.to), y2 = ny(e.to) + NODEH / 2;
+    const back = x2 <= x1; const mx = back ? Math.max(x1, x2) + 40 : (x1 + x2) / 2;
+    const dPath = back ? `M${x1},${y1} C${mx},${y1} ${x2 - 40},${y2} ${x2},${y2}` : `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
+    const q = e.type === 'quantum';
+    const dim = view === 'paths' && !(onQuantumPath.has(e.from) && onQuantumPath.has(e.to)) || selected && e.from !== selected && e.to !== selected && view !== 'paths';
+    out += `<path class="edge${dim ? ' dim' : ''}" d="${dPath}" fill="none" stroke="${q ? css('--s-quantum') : muted}" stroke-width="${q ? 1.8 : 1.2}" ${q ? 'stroke-dasharray="5 4"' : ''} opacity="${q ? 0.9 : 0.55}"/>`;
+  }
+  // nodes
+  for (const n of data.nodes) {
+    const s = status(n), c = color(s), x = nx(n.id), y = ny(n.id);
+    const hollow = n.quantum && mode === 'bank' && bank[n.id] !== 'done';
+    const fill = s === 'todo' ? paper : hollow ? paper : c;
+    const tc = s === 'todo' || hollow ? ink : '#fff';
+    const dim = view === 'paths' && !onQuantumPath.has(n.id);
+    const { lines, fs } = wrapText(n.name);
+    const ty = y + NODEH / 2 + (lines.length === 1 ? 4.5 : -2.5);
+    out += `<g class="node${dim ? ' dim' : ''}" data-id="${n.id}" tabindex="0" role="button" aria-label="${esc(n.name)}: ${esc(statusLabel(n))}">
+      <rect x="${x}" y="${y}" width="${NODEW}" height="${NODEH}" rx="${n.quantum ? 19 : 7}" fill="${fill}" stroke="${s === 'todo' ? css('--s-todo') : c}" ${selected === n.id ? `stroke-width="3"` : ''}/>
+      ${lines.map((t, i) => `<text x="${x + NODEW / 2}" y="${ty + i * 14}" font-size="${fs}" font-weight="${n.quantum ? 600 : 500}" fill="${tc}" text-anchor="middle">${esc(t)}</text>`).join('')}
+    </g>`;
+  }
+  svg.innerHTML = out;
+}
+
+function statusLabel(n) {
+  if (n.quantum) return mode === 'bank' ? (bank[n.id] === 'done' ? 'Quantum, explored' : 'Quantum, not yet explored') : 'Quantum';
+  const s = status(n);
+  return mode === 'pl4nck' ? { done: 'Kit available', wip: 'Next in the library', todo: 'Later' }[s] : data.statuses[s];
+}
+
+function renderPanel() {
+  const p = $('panel');
+  if (!selected) {
+    p.innerHTML = `<h2>${view === 'paths' ? 'Paths to quantum' : 'How to read it'}</h2>
+      <p>${view === 'paths' ? 'Only the models and methods that lead to a quantum algorithm are highlighted. Each one is a no-regret step: it pays off whether or not quantum delivers.' : 'Left to right: from foundations to more advanced models, then the quantum algorithms that build on them. Solid lines: builds on. Dashed blue lines: quantum counterpart.'}</p>
+      <p class="rel">${mode === 'bank' ? 'Select a model to set its status for your institution. Statuses stay in this browser; nothing is sent.' : 'Select a model to see what it builds on and where it leads.'}</p>`;
+    return;
+  }
+  const n = byId[selected], s = status(n);
+  const from = edges.filter((e) => e.to === n.id).map((e) => byId[e.from].name);
+  const to = edges.filter((e) => e.from === n.id).map((e) => byId[e.to].name);
+  const choices = n.quantum ? [['done', 'Explored'], ['todo', 'Not yet explored']] : [['done', 'Implemented'], ['wip', 'In progress'], ['todo', 'Not yet explored']];
+  p.innerHTML = `<h2>${esc(n.name)}</h2>
+    <span class="st"><i style="background:${color(s)}"></i>${esc(statusLabel(n))}</span>
+    <p>${esc(n.note)}</p>
+    ${mode === 'bank' ? `<div class="choose" role="group" aria-label="Status for my institution">${choices.map(([k, t]) => `<button type="button" data-set="${k}" aria-pressed="${(bank[n.id] || 'todo') === k}">${esc(t)}</button>`).join('')}</div>` : ''}
+    ${from.length ? `<p class="rel"><b>Builds on</b> ${esc(from.join(', '))}</p>` : ''}
+    ${to.length ? `<p class="rel"><b>Leads to</b> ${esc(to.join(', '))}</p>` : ''}
+    ${n.library ? `<p><a href="/library#${esc(n.library)}">Open in the library</a></p>` : ''}`;
+}
+
+$('svg').addEventListener('click', (e) => {
+  const g = e.target.closest('.node'); if (!g) return;
+  selected = selected === g.dataset.id ? null : g.dataset.id; render2d(); renderPanel();
+});
+$('svg').addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const g = e.target.closest('.node'); if (!g) return; e.preventDefault();
+  selected = g.dataset.id; render2d(); renderPanel();
+  document.querySelector(`.node[data-id="${selected}"]`)?.focus();
+});
+$('panel').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-set]'); if (!b || !selected) return;
+  bank[selected] = b.dataset.set; saveBank(); renderAll();
+});
+$('reset').addEventListener('click', () => { bank = {}; saveBank(); renderAll(); });
+$('zin').addEventListener('click', () => { scale = Math.min(2, (scale || 1) * 1.2); render2d(); });
+$('zout').addEventListener('click', () => { scale = Math.max(0.4, (scale || 1) / 1.2); render2d(); });
+
+$('export').addEventListener('click', () => {
+  const svg = $('svg').cloneNode(true);
+  const vb = svg.getAttribute('viewBox').split(' ').map(Number);
+  svg.setAttribute('width', vb[2] * 2); svg.setAttribute('height', vb[3] * 2);
+  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  svg.insertAdjacentHTML('afterbegin', `<style>text{font-family:Arial,Helvetica,sans-serif}</style>`);
+  const url = URL.createObjectURL(new Blob([svg.outerHTML], { type: 'image/svg+xml' }));
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas'); c.width = vb[2] * 2; c.height = vb[3] * 2;
+    c.getContext('2d').drawImage(img, 0, 0); URL.revokeObjectURL(url);
+    c.toBlob((b) => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `pl4nck-model-map-${mode}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); });
+  };
+  img.src = url;
+});
+
+// ---------- 3D ----------
+let three = null;
+async function init3d() {
+  let THREE, OrbitControls;
+  try {
+    THREE = await import('three');
+    ({ OrbitControls } = await import('three/addons/controls/OrbitControls.js'));
+  } catch {
+    $('stage').insertAdjacentHTML('beforeend', '<div class="fallback">The 3D view could not load. <br>Use the 2D roadmap above.</div>');
+    return;
+  }
+  const canvas = $('gl'), stage = $('stage');
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); }
+  catch { stage.insertAdjacentHTML('beforeend', '<div class="fallback">Your browser cannot show 3D here. <br>Use the 2D roadmap above.</div>'); return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 400);
+  const controls = new OrbitControls(camera, canvas);
+  controls.enableDamping = true; controls.dampingFactor = 0.08; controls.minDistance = 14; controls.maxDistance = 120;
+  controls.autoRotate = !reduce; controls.autoRotateSpeed = 0.45;
+  controls.addEventListener('start', () => { controls.autoRotate = false; });
+
+  const SX = 6, SZ = 3.1, QY = 9;
+  const cx = (maxDepth + 1) * SX / 2, cz = (totalRows - 1) * SZ / 2;
+  const p3 = (id) => new THREE.Vector3(pos[id].col * SX - cx, byId[id].quantum ? QY : 0, pos[id].row * SZ - cz);
+  controls.target.set(0, 2.5, cz * 0.25);
+  camera.position.set(-cx * 0.45, cz * 0.95 + 11, cz * 1.4 + 11);
+  { // narrow screens: step back so the whole map fits
+    const a = stage.clientWidth / stage.clientHeight;
+    if (a < 1.4) camera.position.sub(controls.target).multiplyScalar(Math.min(2.2, 1.4 / a)).add(controls.target);
+  }
+  controls.maxDistance = 160;
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+  const dl = new THREE.DirectionalLight(0xffffff, 0.9); dl.position.set(10, 30, 20); scene.add(dl);
+
+  // floor grid and quantum layer
+  const floor = new THREE.GridHelper(Math.max(cx, cz) * 2.6, 26, 0x2a3d5e, 0x1c2c48); floor.position.y = -0.6; scene.add(floor);
+  const qPlane = new THREE.Mesh(new THREE.PlaneGeometry(SX * 1.6, totalRows * SZ + 4), new THREE.MeshBasicMaterial({ color: 0x4f6ef7, transparent: true, opacity: 0.08, side: THREE.DoubleSide }));
+  qPlane.rotation.x = -Math.PI / 2; qPlane.position.set((maxDepth + 1) * SX - cx, QY - 0.5, 0); scene.add(qPlane);
+
+  const meshes = {}; const geo = new THREE.SphereGeometry(0.62, 28, 18); const qgeo = new THREE.OctahedronGeometry(0.85, 0);
+  for (const n of data.nodes) {
+    const m = new THREE.Mesh(n.quantum ? qgeo : geo, new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0.15 }));
+    m.position.copy(p3(n.id)); m.userData.id = n.id; scene.add(m); meshes[n.id] = m;
+  }
+  const edgeObjs = [];
+  for (const e of edges) {
+    const a = p3(e.from), b = p3(e.to);
+    const mid = a.clone().lerp(b, 0.5); if (e.type === 'quantum') mid.y += 2.2;
+    const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
+    const g = new THREE.BufferGeometry().setFromPoints(curve.getPoints(24));
+    const mat = e.type === 'quantum'
+      ? new THREE.LineDashedMaterial({ color: 0x8ea2ff, dashSize: 0.5, gapSize: 0.35, transparent: true, opacity: 0.95 })
+      : new THREE.LineBasicMaterial({ color: 0x7f8ba1, transparent: true, opacity: 0.55 });
+    const line = new THREE.Line(g, mat); if (e.type === 'quantum') line.computeLineDistances();
+    scene.add(line); edgeObjs.push(line);
+  }
+
+  // HTML labels projected each frame
+  const labels = $('labels');
+  const lab = {};
+  for (const n of data.nodes) { const s = document.createElement('span'); s.textContent = n.name; if (n.quantum) s.className = 'q'; labels.append(s); lab[n.id] = s; }
+  const layerLab = document.createElement('span'); layerLab.className = 'layer'; layerLab.textContent = 'Quantum layer'; labels.append(layerLab);
+  const layerPos = new THREE.Vector3((maxDepth + 1) * SX - cx - SX * 0.8, QY - 0.5, -cz - 3.2);
+
+  function paint() {
+    for (const n of data.nodes) {
+      const s = status(n); const c = new THREE.Color(color(s));
+      const mat = meshes[n.id].material; mat.color = c; mat.emissive = s === 'todo' ? new THREE.Color(0x000000) : c.clone().multiplyScalar(0.35);
+      mat.transparent = s === 'todo'; mat.opacity = s === 'todo' ? 0.55 : 1;
+    }
+  }
+  function size() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  const v = new THREE.Vector3();
+  // labels: most important first (quantum, kits, next, rest; nearer first), skip any that would overlap
+  const rank = { quantum: 0, done: 1, wip: 2, todo: 3 }; let hover = null;
+  function placeLabels() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    const cand = [];
+    for (const n of data.nodes) {
+      v.copy(meshes[n.id].position).project(camera);
+      const el = lab[n.id];
+      if (v.z > 1) { el.style.opacity = 0; continue; }
+      const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h;
+      el.style.left = x + 'px'; el.style.top = y + 'px';
+      cand.push({ n, el, x, y, z: v.z, wd: el._w || (el._w = el.offsetWidth) || n.name.length * 6.4 });
+    }
+    cand.sort((a, b) => (hover === b.n.id) - (hover === a.n.id) || rank[status(a.n)] - rank[status(b.n)] || a.z - b.z);
+    v.copy(layerPos).project(camera);
+    const lx = (v.x + 1) / 2 * w, ly = (1 - v.y) / 2 * h;
+    layerLab.style.left = lx + 'px'; layerLab.style.top = ly + 'px'; layerLab.style.opacity = v.z > 1 ? 0 : 1;
+    const taken = v.z > 1 ? [] : [{ l: lx - 4, r: lx + (layerLab._w || (layerLab._w = layerLab.offsetWidth)) + 4, t: ly - 12, b: ly + 12 }];
+    for (const c of cand) {
+      const r = { l: c.x - c.wd / 2 - 4, r: c.x + c.wd / 2 + 4, t: c.y - 26, b: c.y - 8 };
+      const free = !taken.some((o) => r.l < o.r && r.r > o.l && r.t < o.b && r.b > o.t);
+      c.el.style.opacity = free ? (c.n.quantum || hover === c.n.id ? 1 : 0.92) : 0;
+      if (free) taken.push(r);
+    }
+  }
+  let running = true;
+  function loop() {
+    if (!running) return;
+    controls.update(); renderer.render(scene, camera); placeLabels();
+    requestAnimationFrame(loop);
+  }
+  // click a node in 3D: open it in the 2D roadmap
+  const ray = new THREE.Raycaster(), mouse = new THREE.Vector2(); let down = null;
+  canvas.addEventListener('pointermove', (e) => {
+    const r = canvas.getBoundingClientRect(); mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(mouse, camera); const hit = ray.intersectObjects(Object.values(meshes))[0];
+    hover = hit ? hit.object.userData.id : null; canvas.style.cursor = hover ? 'pointer' : '';
+  });
+  canvas.addEventListener('pointerdown', (e) => { down = [e.clientX, e.clientY]; });
+  canvas.addEventListener('pointerup', (e) => {
+    if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
+    const r = canvas.getBoundingClientRect(); mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(mouse, camera); const hit = ray.intersectObjects(Object.values(meshes))[0];
+    if (hit) { selected = hit.object.userData.id; setView('roadmap'); }
+  });
+  new ResizeObserver(size).observe(stage); size(); paint(); loop();
+  three = { paint, start() { if (!running) { running = true; loop(); } }, stop() { running = false; } };
+}
+
+// ---------- Views and modes ----------
+function setView(v) {
+  view = v;
+  document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
+  $('v3d').hidden = v !== '3d'; $('v2d').hidden = v === '3d';
+  if (three) (v === '3d' ? three.start() : three.stop());
+  $('hint2d').textContent = v === 'paths' ? 'Highlighted: every model and method on a path to a quantum algorithm.' : 'Select a model for details. Use + and − to zoom; scroll to move around.';
+  renderAll();
+}
+function renderAll() { renderLegend(); if (view !== '3d') { render2d(); renderPanel(); } if (three) three.paint(); }
+document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
+document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => {
+  mode = b.dataset.mode; document.querySelectorAll('[data-mode]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); renderAll();
+}));
+$('to2d').addEventListener('click', () => setView('roadmap'));
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', renderAll);
+
+renderAll();
+init3d();
+</script>
+</body>
+</html>
