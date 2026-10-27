@@ -38,8 +38,6 @@
 .stagewrap .btn{background:var(--ink);color:#0f1e33}
 .stagewrap .btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px #3b5179}
 .btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule)}
-@media (max-width:900px){
-  }
 @media (prefers-reduced-motion:reduce){
   .cue svg{animation:none}
   .intro{background:#0f1e33;min-height:0}
@@ -48,26 +46,22 @@
 /* Below the band */
 .page section{margin:72px 0 0}
 .page h2{margin-top:0}
-.gap{overflow:hidden;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-md);padding:28px 28px 22px}
-.ruler{position:relative;height:86px;margin:34px 6px 8px}
-.ruler .axis{position:absolute;left:0;right:0;top:40px;height:2px;background:var(--rule)}
-.ruler .tick{position:absolute;top:54px;font-size:12px;color:var(--muted);transform:translateX(-50%)}
-.ruler .tick::before{content:"";position:absolute;left:50%;top:-14px;width:1px;height:8px;background:var(--rule)}
-.pin{position:absolute;top:0;transform:translateX(-50%);text-align:center;width:150px}
-.pin .dot{display:block;width:14px;height:14px;border-radius:50%;margin:0 auto 6px;position:relative;top:27px}
-.pin b{display:block;font-size:13.5px;margin-top:-34px;margin-bottom:24px;white-space:nowrap}
-.pin.now .dot{background:var(--accent)}
-.pin.road .dot{background:var(--sheet);border:2px solid var(--accent)}
-.pin.need .dot{background:var(--sheet);border:2px solid var(--amber);border-radius:2px;transform:rotate(45deg)}
-.pin.need b{color:var(--amber);text-align:right;transform:translateX(-30px)}
-.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin-top:20px}
-.facts p{margin:0;font-size:14.5px;color:var(--muted)}
-.facts strong{display:block;font-family:var(--serif);font-weight:500;font-size:22px;color:var(--ink);margin-bottom:4px}
-.sym{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:9px;vertical-align:2px}
-.sym.now{background:var(--accent)}
-.sym.road{box-shadow:inset 0 0 0 2px var(--accent)}
-.sym.need{box-shadow:inset 0 0 0 2px var(--amber);border-radius:1px;transform:rotate(45deg) scale(.85)}
-.facts .src{display:block;font-size:12.5px;margin-top:6px}
+.road{list-style:none;padding:0;margin:30px 0 22px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0}
+.road li{position:relative;margin:0;max-width:none;padding:30px 20px 0 0;display:grid;grid-template-rows:auto auto 1fr;gap:12px}
+.road li::before{content:"";position:absolute;left:0;top:0;width:14px;height:14px;border-radius:50%;background:var(--accent)}
+.road li::after{content:"";position:absolute;left:22px;right:10px;top:6px;border-top:2px dashed var(--rule)}
+.road li.now::after{border-top:2px solid var(--accent)}
+.road li.road1::before,.road li.road2::before{background:var(--paper);box-shadow:inset 0 0 0 2px var(--accent)}
+.road li.road2::after{border-top-color:var(--amber)}
+.road li.need::before{background:var(--paper);box-shadow:inset 0 0 0 2px var(--amber);border-radius:2px;transform:rotate(45deg)}
+.road li.need::after{display:none}
+.road .when{font-family:var(--serif);font-size:21px;line-height:1.2}
+.road .when small,.road .qb small{display:block;font-family:var(--sans);font-size:13px;color:var(--muted);margin-top:3px}
+.road .qb{font-size:15px;color:var(--muted);padding-top:12px;border-top:1px solid var(--rule)}
+.road .qb strong{font-family:var(--serif);font-weight:500;font-size:24px;color:var(--ink)}
+.road .need .qb strong{color:var(--amber)}
+.road .fin{font-size:14.5px;line-height:1.55;padding-top:12px;border-top:1px solid var(--rule)}
+.callout.threat{border-left-color:var(--red)}
 .steps{list-style:none;padding:0;margin:26px 0 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;counter-reset:s}
 .steps li{position:relative;padding:34px 22px 0 0;margin:0;max-width:none;counter-increment:s}
 .steps li::before{content:counter(s);position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--paper);font-size:13px;font-weight:600;display:grid;place-items:center}
@@ -86,17 +80,19 @@
 .foot span{flex:1 1 320px}
 
 @media (max-width:900px){
-  .facts,.steps{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
+  .road{grid-template-columns:1fr}
+  .road li{padding:0 0 26px 30px;gap:8px}
+  .road li::after{left:6px;right:auto;top:20px;bottom:0;border-top:0;border-left:2px dashed var(--rule)}
+  .road li.now::after{border-left:2px solid var(--accent)}
+  .road li.road2::after{border-left-color:var(--amber)}
   .steps li{padding:0 0 22px 38px}
   .steps li::after{left:11px;right:auto;top:30px;bottom:4px;width:2px;height:auto}
   .steps li:nth-child(2)::after{border-top:0;border-left:2px dashed var(--amber);width:0;height:auto}
   .ways a{grid-template-columns:1fr;gap:6px}
 }
 @media (max-width:560px){
-  .pin{width:16px}
-  .pin b{display:none}
-  .ruler{height:70px;margin-top:4px}
-}
+      }
 </style>
 </head>
 <body>
@@ -136,17 +132,32 @@
 <div class="wrap">
   <main class="page">
     <section aria-labelledby="h-gap">
-      <h2 id="h-gap">Where quantum stands for pricing</h2>
-      <p>Quantum amplitude estimation makes the Monte Carlo error fall as 1/N instead of 1/√N. The theory is sound. The machines are not there yet: a useful advantage on derivatives pricing needs about a hundred times more error-corrected qubits than exist today.</p>
-      <div class="gap">
-        <div class="ruler" id="ruler" aria-hidden="true"><div class="axis"></div></div>
-        <div class="facts">
-          <p><strong><span class="sym now"></span>Dozens</strong>logical qubits demonstrated so far, on trapped ions and neutral atoms.<span class="src">Quantinuum, QuEra, Atom Computing, 2024 to 2026</span></p>
-          <p><strong><span class="sym road"></span>About 200</strong>logical qubits targeted for 2029 by the leading roadmaps. Roadmaps are ambitions, not commitments.<span class="src">IBM Starling; Quantinuum Apollo</span></p>
-          <p><strong><span class="sym need"></span>About 7,500</strong>logical qubits for an advantage on autocalls and TARFs, running in about a second.<span class="src">Chakrabarti et al., Quantum 5, 463 (2021)</span></p>
-        </div>
-      </div>
-      <p class="fine">Logarithmic scale. Details and sources in the <a href="/technology">technology mapping</a>, reviewed every month.</p>
+      <h2 id="h-gap">The road to useful quantum finance</h2>
+      <p>Quantum amplitude estimation makes the Monte Carlo error fall as 1/N instead of 1/√N. The theory is sound; what is missing is error-corrected qubits, by about two orders of magnitude for derivatives pricing.</p>
+      <ol class="road">
+        <li class="now">
+          <span class="when">Today<small>2024 to 2026</small></span>
+          <span class="qb"><strong>Dozens</strong> logical qubits<small>Hundreds to a few thousand physical</small></span>
+          <span class="fin">Pilots on small instances: portfolio and collateral optimisation, toy option pricing on simulators. Quantum-inspired methods already run on classical hardware. No proven advantage.</span>
+        </li>
+        <li class="road1">
+          <span class="when">2029 to 2030<small>Vendor roadmaps</small></span>
+          <span class="qb"><strong>100 to 200</strong> logical qubits<small>Thousands to tens of thousands physical</small></span>
+          <span class="fin">First error-corrected runs of finance algorithms on reduced problems: amplitude estimation on simple payoffs, optimisation at larger sizes. Research value; an advantage is unlikely.</span>
+        </li>
+        <li class="road2">
+          <span class="when">Early 2030s<small>Vendor roadmaps</small></span>
+          <span class="qb"><strong>1,000 to 2,000</strong> logical qubits<small>Order of magnitude</small></span>
+          <span class="fin">Amplitude estimation at meaningful sizes for VaR and credit portfolio studies; the first serious comparisons with GPU Monte Carlo. Advantage case by case, still to be shown.</span>
+        </li>
+        <li class="need">
+          <span class="when">Mid-2030s and beyond<small>Resource estimates</small></span>
+          <span class="qb"><strong>About 7,500</strong> logical qubits<small>Physical count depends on error rates</small></span>
+          <span class="fin">Advantage on derivatives pricing: autocalls and TARFs, each priced in about a second.</span>
+        </li>
+      </ol>
+      <div class="callout threat"><p><b>The threat arrives before the benefit.</b> Breaking RSA-2048 is estimated to need fewer than a million noisy qubits, far fewer than pricing at scale. Post-quantum migration of your systems comes first, whatever your modelling plans.</p></div>
+      <p class="fine">Sources: IBM roadmap (Starling, about 200 logical qubits in 2029; Blue Jay, about 2,000 from 2033); Quantinuum (Apollo, fault-tolerant in 2029); Chakrabarti et al., Quantum 5, 463 (2021); Gidney, arXiv:2505.15917 (2025). Roadmaps are ambitions, not commitments. Details in the <a href="/technology">technology mapping</a>, reviewed every month.</p>
     </section>
 
     <section aria-labelledby="h-wait">
@@ -181,18 +192,6 @@
 <script>
 (() => {
 'use strict';
-
-// ---------- Gap ruler (log scale, 10 to 10,000 logical qubits) ----------
-const ruler = document.getElementById('ruler');
-const pos = (n) => ((Math.log10(n) - 1) / 3) * 100;
-for (const n of [10, 100, 1000, 10000]) {
-  const t = document.createElement('span'); t.className = 'tick'; t.style.left = pos(n) + '%';
-  t.textContent = n.toLocaleString('en-US'); ruler.append(t);
-}
-for (const [n, cls, label] of [[50, 'now', 'Today'], [200, 'road', '2029 roadmaps'], [7500, 'need', 'Pricing advantage']]) {
-  const m = document.createElement('div'); m.className = 'pin ' + cls; m.style.left = pos(n) + '%';
-  m.innerHTML = `<b>${label}</b><span class="dot"></span>`; ruler.append(m);
-}
 
 // ---------- Hero: Monte Carlo paths feeding a 4-qubit register ----------
 const canvas = document.getElementById('fan');
