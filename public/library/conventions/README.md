@@ -1,8 +1,8 @@
-# pl4nck_conventions
+# veqctor_conventions
 
 Market conventions for pricing and validation code, in pure Python: day counts,
 holiday calendars, business-day adjustment, date arithmetic and coupon schedules.
-Part of the [Pl4nck](https://github.com/romaindutrenois-gif/pl4nck) model library.
+Part of the [Veqctor](https://github.com/romaindutrenois-gif/pl4nck) model library.
 
 Conventions are the part of a model that everyone assumes and nobody tests, until
 cash flows land on the wrong day. This module makes them explicit and checks them.
@@ -18,7 +18,7 @@ cash flows land on the wrong day. This module makes them explicit and checks the
 
 ```python
 from datetime import date
-from pl4nck_conventions import year_fraction, get_calendar, adjust, advance, make_schedule
+from veqctor_conventions import year_fraction, get_calendar, adjust, advance, make_schedule
 
 target = get_calendar("TARGET")
 spot = advance(date(2026, 4, 2), 2, "D", target)            # T+2 over Easter: 2026-04-08

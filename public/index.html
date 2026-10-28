@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Pl4nck · The quantum brain for financial markets</title>
-<meta name="description" content="Quantum computing will reach pricing and risk, but not before error-corrected machines arrive. Pl4nck helps quant teams spend the wait well: honest verdicts, no-regret roadmaps and validated model kits.">
+<title>Veqctor · The quantum brain for financial markets</title>
+<meta name="description" content="Quantum computing will reach pricing and risk, but not before error-corrected machines arrive. Veqctor helps quant teams spend the wait well: honest verdicts, no-regret roadmaps and validated model kits.">
 <script>
   // Old library links pointed at /?model=<id>: send them to the tool.
   if (new URLSearchParams(location.search).has('model')) location.replace('/launch' + location.search);
@@ -18,7 +19,7 @@
 /* Hero: full-screen animation that stays in place and fades while the intro text scrolls over it.
    Tokens are re-pointed so the shared bar and buttons read on dark. */
 .stagewrap{
-  --paper:#0f1e33;--sheet:#17294a;--ink:#e9eef6;--muted:#9fb0ca;--rule:#2a3d5e;--accent:#9aa8ff;--amber:#e3b25d;
+  --paper:#0f1e33;--sheet:#17294a;--ink:#e9eef6;--q:#8ea2ff;--muted:#9fb0ca;--rule:#2a3d5e;--accent:#9aa8ff;--amber:#e3b25d;
   position:relative;background:radial-gradient(120% 90% at 75% 45%,#1a2f57 0%,#0f1e33 55%,#0b1628 100%);color:var(--ink);
 }
 .stick{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;z-index:0}
@@ -124,9 +125,9 @@
   <header class="top">
     <div class="wrap">
       <div class="bar">
-        <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><span class="name">Pl4nck</span></a>
+        <a class="brand" href="/"><span class="name">ve<span class="q">q</span>ctor</span></a>
         <nav class="tabs" aria-label="Sections">
-          <a href="/launch">Launch Pl4nck</a>
+          <a href="/launch">Launch Veqctor</a>
           <span class="dd"><a href="/library">Library</a><span class="menu"><a href="/library">Model library</a><a href="/map">3D model map</a></span></span>
           <span class="dd"><button type="button" class="ddbtn" aria-expanded="false">Landscape</button><span class="menu"><a href="/technology">Technology mapping</a><a href="/resources">Resources</a></span></span>
           <a href="/about">About</a>
@@ -137,7 +138,7 @@
   </header>
   <div class="stick">
     <div class="hero" id="hero">
-      <canvas id="hero3d" role="img" aria-label="The Pl4nck model map assembling in 3D: 260 models, methods, curves, engines and instruments gather into nine families, links form between them, and the quantum algorithms rise above the models they build on."></canvas>
+      <canvas id="hero3d" role="img" aria-label="The Veqctor model map assembling in 3D: 260 models, methods, curves, engines and instruments gather into nine families, links form between them, and the quantum algorithms rise above the models they build on."></canvas>
       <div class="hlabels" id="hlabels" aria-hidden="true"></div>
       <div class="herocap" id="herocap">
         <p class="claim">Prepare for the quantum era.</p>
@@ -154,7 +155,7 @@
       <h1>The quantum brain for financial markets.</h1>
       <p class="tagline">The models you develop today are the benchmarks quantum will have to beat tomorrow.</p>
       <p class="lead">Quantum computing will have a transformative impact on financial markets. The question is: will you be ready when the technology is?</p>
-      <p class="lead">Pl4nck helps quant teams spend the wait well: honest verdicts, no-regret roadmaps and SR 11-7 aligned kits for conventional models.</p>
+      <p class="lead">Veqctor helps quant teams spend the wait well: honest verdicts, no-regret roadmaps and SR 11-7 aligned kits for conventional models.</p>
       <div class="ctas">
         <a class="btn" href="/launch">Assess a use case</a>
         <a class="btn quiet" href="/library">Browse the library</a>
@@ -204,7 +205,7 @@
     </section>
 
     <section aria-labelledby="h-ways">
-      <h2 id="h-ways">What Pl4nck does</h2>
+      <h2 id="h-ways">What Veqctor does</h2>
       <div class="ways">
         <div class="way"><span class="w">Assess, build and advance your R&amp;D roadmap</span><div><p>An honest verdict on where quantum stands for your use case, a no-regret roadmap from your current model, and a map of every model and engine to mark where your team stands. Nothing is uploaded.</p><p class="go"><a href="/launch">Assess a use case</a><a href="/map">Open the 3D model map</a></p></div></div>
         <div class="way"><span class="w">Accelerate model development and validation</span><div><p>Validated kits for the models you run: prototype, tests, independent reference values and documentation ready for your validation team. Runs on your machine.</p><p class="go"><a href="/library">Browse the model library</a></p></div></div>
@@ -213,7 +214,7 @@
     </section>
 
     <footer class="foot">
-      <span>Pl4nck is a free research prototype, built by a practising quant for quant teams in banks and asset managers.</span>
+      <span>Veqctor is a free research prototype, built by a practising quant for quant teams in banks and asset managers.</span>
       <a href="/about">About</a>
       <a href="/about#contact">Contact</a>
       <a href="/privacy">Privacy</a>

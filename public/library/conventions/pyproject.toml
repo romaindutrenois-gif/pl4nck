@@ -3,7 +3,7 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pl4nck-conventions"
+name = "veqctor-conventions"
 version = "0.1.0"
 description = "Day counts, calendars, adjustments and schedules, tested against QuantLib"
 readme = "README.md"
@@ -14,4 +14,4 @@ dependencies = []
 test = ["pytest"]
 
 [tool.setuptools]
-packages = ["pl4nck_conventions"]
+packages = ["veqctor_conventions"]

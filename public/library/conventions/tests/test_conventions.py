@@ -1,4 +1,4 @@
-"""pl4nck_conventions checked against QuantLib reference values.
+"""veqctor_conventions checked against QuantLib reference values.
 
 The expected values in reference/conventions_quantlib.json were computed with
 QuantLib (version recorded in the file). QuantLib is NOT needed to run these
@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from pl4nck_conventions import adjust, advance, get_calendar, make_schedule, year_fraction
+from veqctor_conventions import adjust, advance, get_calendar, make_schedule, year_fraction
 
 REF = json.loads((Path(__file__).parent / "reference" / "conventions_quantlib.json").read_text())
 D = date.fromisoformat

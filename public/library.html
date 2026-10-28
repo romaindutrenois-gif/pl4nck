@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Model library · Pl4nck</title>
+<title>Model library · Veqctor</title>
 <meta name="description" content="Pricing and risk models with pre-registered validation tests, QuantLib reference values and a generated prototype and validation kit.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,9 +58,9 @@
 <body>
 <div class="wrap">
   <div class="bar">
-    <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><span class="name">Pl4nck</span></a>
+    <a class="brand" href="/"><span class="name">ve<span class="q">q</span>ctor</span></a>
     <nav class="tabs" aria-label="Sections">
-      <a href="/launch">Launch Pl4nck</a>
+      <a href="/launch">Launch Veqctor</a>
       <span class="dd"><a href="/library" aria-current="page">Library</a><span class="menu"><a href="/library" aria-current="page">Model library</a><a href="/map">3D model map</a></span></span>
       <span class="dd"><button type="button" class="ddbtn" aria-expanded="false">Landscape</button><span class="menu"><a href="/technology">Technology mapping</a><a href="/resources">Resources</a></span></span>
       <a href="/about">About</a>
@@ -127,7 +128,7 @@ function modelDetail(m) {
     return `<h2>${esc(m.name)}</h2>
       <div class="meta">${badge(m.status)}<span>${esc(m.assetClass)}</span></div>
       <p>${esc(m.summary)}</p>
-      ${m.assetClass === 'Quantum circuits' ? '<p class="fine">Circuit kits run on a local simulator first: Qiskit circuit, classical check, tests and a resource estimate (logical qubits, depth). Running on real hardware will use your own IBM Quantum or Amazon Braket account; Pl4nck never holds access keys.</p>'
+      ${m.assetClass === 'Quantum circuits' ? '<p class="fine">Circuit kits run on a local simulator first: Qiskit circuit, classical check, tests and a resource estimate (logical qubits, depth). Running on real hardware will use your own IBM Quantum or Amazon Braket account; Veqctor never holds access keys.</p>'
         : m.quantlib && m.quantlib.length ? `<p class="fine">QuantLib reference available: </p><div class="tags">${m.quantlib.map((c) => `<span class="tag">${esc(c)}</span>`).join('')}</div>` : '<p class="fine">No QuantLib reference in the Python bindings: references will come from closed forms.</p>'}
       <div class="callout"><p>This kit is not built yet. Want it sooner? Tell us through the <a href="/about#contact">contact address</a>.</p></div>`;
   }

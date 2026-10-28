@@ -4,7 +4,7 @@
     "id": "conventions",
     "name": "Conventions & infrastructure",
     "summary": "Day counts, holiday calendars, business-day adjustment, spot lags and coupon schedules, in pure Python and tested against QuantLib. Every kit from the library includes it.",
-    "download": "/library/pl4nck_conventions.zip",
+    "download": "/library/veqctor_conventions.zip",
     "covers": [
       "ACT/360, ACT/365F, ACT/ACT ISDA, 30/360, 30E/360, 30E/360 ISDA",
       "TARGET, France, UK and US settlement calendars, joint calendars",

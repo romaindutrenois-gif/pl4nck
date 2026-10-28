@@ -1,4 +1,4 @@
-"""Compute QuantLib reference values for pl4nck_conventions and check the module against them.
+"""Compute QuantLib reference values for veqctor_conventions and check the module against them.
 
 Run from the repo root:  pip install QuantLib && python3 tools/library/build_conventions_vectors.py
 Writes public/library/conventions/tests/reference/conventions_quantlib.json.
@@ -13,7 +13,7 @@ import QuantLib as ql
 
 ROOT = Path(__file__).resolve().parents[2] / "public" / "library" / "conventions"
 sys.path.insert(0, str(ROOT))
-import pl4nck_conventions as pc  # noqa: E402
+import veqctor_conventions as pc  # noqa: E402
 
 rng = random.Random(20261024)
 qd = lambda d: ql.Date(d.day, d.month, d.year)  # noqa: E731

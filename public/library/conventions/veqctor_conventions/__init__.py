@@ -1,10 +1,10 @@
-"""pl4nck_conventions: market conventions for pricing and validation code.
+"""veqctor_conventions: market conventions for pricing and validation code.
 
 Day counts, holiday calendars, business-day adjustment and coupon schedules,
-in pure Python and tested against QuantLib. Part of the Pl4nck model library.
+in pure Python and tested against QuantLib. Part of the Veqctor model library.
 
     from datetime import date
-    from pl4nck_conventions import year_fraction, get_calendar, adjust, make_schedule
+    from veqctor_conventions import year_fraction, get_calendar, adjust, make_schedule
 
     cal = get_calendar("TARGET")
     dates = make_schedule(date(2026, 3, 18), date(2031, 3, 18), 6, cal)

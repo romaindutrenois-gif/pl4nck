@@ -1,6 +1,6 @@
 ---
 title: "Test plan: Black-Scholes prototype"
-subtitle: "Pl4nck validation kit v1.0.0"
+subtitle: "Veqctor validation kit v1.0.0"
 ---
 
 Criteria were fixed before the code was written and are not loosened afterwards. Reference values
@@ -53,6 +53,6 @@ each criterion if it differs.
 
 # Conventions
 
-The conventions module (`src/pl4nck_conventions`) has its own 611 tests in `tests/conventions/`,
+The conventions module (`src/veqctor_conventions`) has its own 611 tests in `tests/conventions/`,
 against QuantLib reference values. When maturities come from dates, `year_fraction(trade_date,
 expiry, "ACT/365F")` reproduces the time convention of the reference values.

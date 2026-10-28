@@ -1,6 +1,6 @@
 ---
 title: "Model documentation: Black-Scholes"
-subtitle: "Pre-filled outline aligned with SR 11-7 and the ECB guide to internal models · Pl4nck validation kit v1.0.0"
+subtitle: "Pre-filled outline aligned with SR 11-7 and the ECB guide to internal models · Veqctor validation kit v1.0.0"
 ---
 
 Shaded paragraphs marked *To complete* are for your institution's context. Everything else
@@ -69,7 +69,7 @@ not approved.
   an independent pilot sample so that the estimator stays unbiased.
 - Inputs validated at every public function; degenerate cases ($\sigma = 0$, $T = 0$) return the
   analytic limit.
-- Conventions (day counts, calendars, schedules) from `pl4nck_conventions`, tested separately.
+- Conventions (day counts, calendars, schedules) from `veqctor_conventions`, tested separately.
 
 ::: complete
 Version control, code review and release process; production platform and its differences from

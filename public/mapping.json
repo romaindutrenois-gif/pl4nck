@@ -87,7 +87,7 @@
       "hardware": "Large fault-tolerant gate-based",
       "status": "Estimates keep falling: under a million noisy qubits for RSA-2048 (Gidney, 2025). Data harvested today can be decrypted later. NIST published post-quantum standards in 2024.",
       "horizon": "threat",
-      "noRegret": "Post-quantum cryptography migration: inventory, crypto-agility, priority to long-lived data. Out of Pl4nck's scope, but the one quantum topic that needs action now."
+      "noRegret": "Post-quantum cryptography migration: inventory, crypto-agility, priority to long-lived data. Out of Veqctor's scope, but the one quantum topic that needs action now."
     }
   ],
   "useCases": [

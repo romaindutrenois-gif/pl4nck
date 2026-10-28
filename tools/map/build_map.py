@@ -1,7 +1,7 @@
 # Build public/map.json for the model map.
 #
 # Inputs
-#   tools/map/core.json          curated layer: Pl4nck nodes, lanes, roadmap edges, quantum layer
+#   tools/map/core.json          curated layer: Veqctor nodes, lanes, roadmap edges, quantum layer
 #   tools/quantlib/inventory.json  Python-exposed QuantLib classes (tools/quantlib/inventory.py)
 #   tools/quantlib/links.json      QuantLib links from the C++ and SWIG sources (tools/quantlib/links.py)
 # Output

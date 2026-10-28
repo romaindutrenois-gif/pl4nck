@@ -1,4 +1,4 @@
-"""Reference values computed with QuantLib for the Pl4nck model library.
+"""Reference values computed with QuantLib for the Veqctor model library.
 
 Run from the repo root:  pip install QuantLib && python3 tools/library/build_model_vectors.py
 Writes public/library/models/<id>/reference_quantlib.json.

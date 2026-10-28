@@ -30,7 +30,7 @@ SKIP = {"__pycache__", ".pytest_cache", ".venv"}
 def assemble(kit_id: str, dest: Path) -> Path:
     kit = dest / f"{kit_id}_validation_kit"
     shutil.copytree(SRC / kit_id, kit, ignore=shutil.ignore_patterns(*SKIP, "*.pyc"))
-    shutil.copytree(CONV / "pl4nck_conventions", kit / "src" / "pl4nck_conventions", ignore=shutil.ignore_patterns(*SKIP, "*.pyc"))
+    shutil.copytree(CONV / "veqctor_conventions", kit / "src" / "veqctor_conventions", ignore=shutil.ignore_patterns(*SKIP, "*.pyc"))
     (kit / "tests" / "conventions" / "reference").mkdir(parents=True, exist_ok=True)
     shutil.copy(CONV / "tests" / "test_conventions.py", kit / "tests" / "conventions" / "test_conventions.py")
     shutil.copy(CONV / "tests" / "reference" / "conventions_quantlib.json", kit / "tests" / "conventions" / "reference")

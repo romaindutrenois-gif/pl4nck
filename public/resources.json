@@ -46,7 +46,7 @@
     {
       "id": "research",
       "name": "Research on quantum finance",
-      "intro": "The papers behind the verdicts and horizons in Pl4nck. Start with a review, then the pricing line.",
+      "intro": "The papers behind the verdicts and horizons in Veqctor. Start with a review, then the pricing line.",
       "items": [
         {
           "title": "Quantum computing for finance",
@@ -137,7 +137,7 @@
           "url": "https://www.quantlib.org/",
           "by": "Open source",
           "kind": "Classical library",
-          "note": "The reference open-source library for pricing and risk. Pl4nck's kits are tested against it."
+          "note": "The reference open-source library for pricing and risk. Veqctor's kits are tested against it."
         },
         {
           "title": "Implementing QuantLib",

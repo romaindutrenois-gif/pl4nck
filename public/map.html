@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>3D model map · Pl4nck</title>
+<title>3D model map · Veqctor</title>
 <meta name="description" content="A map of pricing and risk models, engines, curves, volatility and instruments, from QuantLib to the quantum algorithms that build on them: what is implemented, in progress, not yet explored, and quantum.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -121,9 +122,9 @@ svg text{font-family:var(--sans)}
 <body>
 <div class="wrap">
   <div class="bar">
-    <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><span class="name">Pl4nck</span></a>
+    <a class="brand" href="/"><span class="name">ve<span class="q">q</span>ctor</span></a>
     <nav class="tabs" aria-label="Sections">
-      <a href="/launch">Launch Pl4nck</a>
+      <a href="/launch">Launch Veqctor</a>
       <span class="dd"><a href="/library" aria-current="page">Library</a><span class="menu"><a href="/library">Model library</a><a href="/map" aria-current="page">3D model map</a></span></span>
       <span class="dd"><button type="button" class="ddbtn" aria-expanded="false">Landscape</button><span class="menu"><a href="/technology">Technology mapping</a><a href="/resources">Resources</a></span></span>
       <a href="/about">About</a>
@@ -147,7 +148,7 @@ svg text{font-family:var(--sans)}
         <button type="button" data-view="paths" aria-pressed="false">Paths to quantum</button>
       </div>
       <div class="seg" role="group" aria-label="Whose status">
-        <button type="button" data-mode="pl4nck" aria-pressed="true">Pl4nck library</button>
+        <button type="button" data-mode="veqctor" aria-pressed="true">Veqctor library</button>
         <button type="button" data-mode="bank" aria-pressed="false">My institution</button>
       </div>
       <div class="legend" id="legend"></div>
@@ -207,7 +208,7 @@ const edges = data.edges.map(([from, to, type]) => ({ from, to, type: type || 'b
 const coreNodes = data.nodes.filter((n) => n.core);
 const coreEdges = data.core_edges.map(([from, to, type]) => ({ from, to, type: type ? 'quantum' : 'builds' }));
 const nbr = {}; edges.forEach((e) => { (nbr[e.from] = nbr[e.from] || new Set()).add(e.to); (nbr[e.to] = nbr[e.to] || new Set()).add(e.from); });
-let mode = 'pl4nck', view = '3d', selected = null;
+let mode = 'veqctor', view = '3d', selected = null;
 
 let bank = {};
 try { bank = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { bank = {}; }
@@ -217,16 +218,16 @@ const saveBank = () => { try { localStorage.setItem(STORE, JSON.stringify(bank))
 // mode they are drawn hollow until marked as explored.
 function status(n) {
   if (n.quantum) return 'quantum';
-  return mode === 'pl4nck' ? n.coverage : (bank[n.id] || 'todo');
+  return mode === 'veqctor' ? n.coverage : (bank[n.id] || 'todo');
 }
 const isDone = (n) => n.quantum ? mode === 'bank' && bank[n.id] === 'done' : status(n) === 'done';
 const color = (s) => css('--s-' + s);
 function statusLabel(n) {
   if (n.quantum) return mode === 'bank' ? (bank[n.id] === 'done' ? 'Quantum, explored' : 'Quantum, not yet explored') : 'Quantum';
   const s = status(n);
-  return mode === 'pl4nck' ? { done: 'Kit available', wip: 'Next in the library', todo: 'Later' }[s] : data.statuses[s];
+  return mode === 'veqctor' ? { done: 'Kit available', wip: 'Next in the library', todo: 'Later' }[s] : data.statuses[s];
 }
-$('source').textContent = `Classes and links from QuantLib ${data.quantlib} (C++ and Python sources), folded to one item per concept; Pl4nck items added for risk, methods and quantum. Reviewed ${data.reviewed}.`;
+$('source').textContent = `Classes and links from QuantLib ${data.quantlib} (C++ and Python sources), folded to one item per concept; Veqctor items added for risk, methods and quantum. Reviewed ${data.reviewed}.`;
 
 // ---------- Roadmap layout (curated layer): columns by depth along "builds on", rows by lane ----------
 const preds = {}; coreEdges.forEach((e) => (preds[e.to] = preds[e.to] || []).push(e.from));
@@ -257,13 +258,13 @@ coreNodes.forEach((n) => {
 // ---------- Legend and summary ----------
 function scopeNodes() { return view === 'roadmap' || view === 'paths' ? coreNodes : data.nodes; }
 function renderLegend() {
-  const items = mode === 'pl4nck'
+  const items = mode === 'veqctor'
     ? [['done', 'Kit available'], ['wip', 'Next'], ['todo', 'Later'], ['quantum', 'Quantum']]
     : [['done', data.statuses.done], ['wip', data.statuses.wip], ['todo', data.statuses.todo], ['quantum', 'Quantum']];
   $('legend').innerHTML = items.map(([s, t]) => `<span><i style="background:${color(s)}"></i>${esc(t)}</span>`).join('');
   const all = scopeNodes(), classical = all.filter((n) => !n.quantum);
   const count = (s) => classical.filter((n) => status(n) === s).length;
-  $('summary').innerHTML = `<span><b>${count('done')}</b> ${mode === 'pl4nck' ? 'with a kit' : 'implemented'}</span><span><b>${count('wip')}</b> ${mode === 'pl4nck' ? 'next' : 'in progress'}</span><span><b>${count('todo')}</b> ${mode === 'pl4nck' ? 'later' : 'not yet explored'}</span><span><b>${all.length - classical.length}</b> quantum</span>`;
+  $('summary').innerHTML = `<span><b>${count('done')}</b> ${mode === 'veqctor' ? 'with a kit' : 'implemented'}</span><span><b>${count('wip')}</b> ${mode === 'veqctor' ? 'next' : 'in progress'}</span><span><b>${count('todo')}</b> ${mode === 'veqctor' ? 'later' : 'not yet explored'}</span><span><b>${all.length - classical.length}</b> quantum</span>`;
   $('reset').hidden = mode !== 'bank';
   $('export').hidden = !(view === 'roadmap' || view === 'paths');
 }
@@ -296,7 +297,7 @@ function panelHtml() {
     ${outB.length ? `<p class="rel"><b>Leads to</b>${rel(outB)}</p>` : ''}
     ${prices.length ? `<p class="rel"><b>Prices</b>${rel(prices)}</p>` : ''}
     ${pricedBy.length ? `<p class="rel"><b>Priced by ${pricedBy.length} engine${pricedBy.length > 1 ? 's' : ''}</b>${rel(pricedBy)}</p>` : ''}
-    ${ql.length ? `<details><summary>In QuantLib: ${ql.length} class${ql.length > 1 ? 'es' : ''}</summary><p>${ql.map((c) => `<code>${esc(c)}</code>`).join(', ')}</p></details>` : (n.core ? '<p class="rel">Not in QuantLib: added by Pl4nck.</p>' : '')}
+    ${ql.length ? `<details><summary>In QuantLib: ${ql.length} class${ql.length > 1 ? 'es' : ''}</summary><p>${ql.map((c) => `<code>${esc(c)}</code>`).join(', ')}</p></details>` : (n.core ? '<p class="rel">Not in QuantLib: added by Veqctor.</p>' : '')}
     ${n.library ? `<p><a href="/library#${esc(n.library)}">Open in the library</a></p>` : ''}`;
 }
 function renderPanel() {
@@ -424,7 +425,7 @@ function renderBoxes() {
     const done = list.filter(isDone).length, wip = list.filter((n) => !n.quantum && status(n) === 'wip').length;
     const groups = groupsOf[c.id];
     out += `<section class="box${c.id === 'engines' || c.id === 'instruments' ? ' wide' : ''}"><h3>${esc(c.name)}</h3>
-      <p class="cov"><b>${done}</b> of ${list.length} ${c.id === 'quantum' ? (mode === 'bank' ? 'explored' : 'quantum') : mode === 'pl4nck' ? 'with a kit' : 'implemented'}${wip ? ` · <b>${wip}</b> ${mode === 'pl4nck' ? 'next' : 'in progress'}` : ''}</p>`;
+      <p class="cov"><b>${done}</b> of ${list.length} ${c.id === 'quantum' ? (mode === 'bank' ? 'explored' : 'quantum') : mode === 'veqctor' ? 'with a kit' : 'implemented'}${wip ? ` · <b>${wip}</b> ${mode === 'veqctor' ? 'next' : 'in progress'}` : ''}</p>`;
     if (c.id === 'engines') {
       // engines: one fold per instrument family; opened families are listed below the folds
       const folded = groups.filter((g) => !expanded.has(g.key)), open = groups.filter((g) => expanded.has(g.key));
@@ -534,7 +535,7 @@ $('export').addEventListener('click', () => {
   img.onload = () => {
     const c = document.createElement('canvas'); c.width = vb[2] * 2; c.height = vb[3] * 2;
     c.getContext('2d').drawImage(img, 0, 0); URL.revokeObjectURL(url);
-    c.toBlob((b) => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `pl4nck-model-map-${mode}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); });
+    c.toBlob((b) => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `veqctor-model-map-${mode}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); });
   };
   img.src = url;
 });

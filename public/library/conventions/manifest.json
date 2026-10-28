@@ -1,12 +1,12 @@
 [
  "README.md",
- "pl4nck_conventions/__init__.py",
- "pl4nck_conventions/adjust.py",
- "pl4nck_conventions/calendars.py",
- "pl4nck_conventions/daycount.py",
- "pl4nck_conventions/schedule.py",
  "pyproject.toml",
  "tests/conftest.py",
  "tests/reference/conventions_quantlib.json",
- "tests/test_conventions.py"
+ "tests/test_conventions.py",
+ "veqctor_conventions/__init__.py",
+ "veqctor_conventions/adjust.py",
+ "veqctor_conventions/calendars.py",
+ "veqctor_conventions/daycount.py",
+ "veqctor_conventions/schedule.py"
 ]

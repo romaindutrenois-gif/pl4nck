@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "black-scholes-validation-kit"
 version = "1.0.0"
-description = "Black-Scholes prototype and validation kit from the Pl4nck model library"
+description = "Black-Scholes prototype and validation kit from the Veqctor model library"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["numpy", "scipy"]
