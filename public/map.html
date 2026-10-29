@@ -113,9 +113,32 @@ svg text{font-family:var(--sans)}
 .panel details{font-size:13px;color:var(--muted);margin:0 0 10px}
 .panel details summary{cursor:pointer;color:var(--ink)}
 .panel code{font-size:12px}
+.emxwrap{overflow:auto;border:1px solid var(--rule);border-radius:var(--r-md);background:var(--sheet);max-height:78vh}
+.emx{border-collapse:separate;border-spacing:0;font-size:13px}
+.emx th,.emx td{border-bottom:1px solid var(--rule);border-right:1px solid var(--rule);padding:6px;vertical-align:top}
+.emx thead th{position:sticky;top:0;background:var(--sheet);z-index:2;font-weight:600;font-size:12px;color:var(--ink);text-align:left;min-width:64px;max-width:96px;line-height:1.25;vertical-align:bottom}
+.emx thead th button{all:unset;cursor:pointer}
+.emx thead th button:hover{text-decoration:underline}
+.emx th.rowh{position:sticky;left:0;background:var(--sheet);z-index:1;text-align:left;font-weight:500;min-width:170px;max-width:210px}
+.emx thead th.rowh{z-index:3}
+.emx th.rowh button{all:unset;cursor:pointer}
+.emx th.rowh button:hover{text-decoration:underline}
+.emx tr.emgrp th{background:var(--paper);font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;text-align:left;padding:5px 0}
+.emx tr.emgrp th span{position:sticky;left:0;padding:0 8px}
+.emx td{min-width:64px}
+.emx td.multi{background:color-mix(in srgb,var(--s-done) 10%,transparent)}
+.emx td.none{background:repeating-linear-gradient(135deg,transparent 0 6px,color-mix(in srgb,var(--rule) 45%,transparent) 6px 7px)}
+.ep{display:inline-block;margin:1px;border:1.5px solid transparent;border-radius:5px;padding:1px 5px;font:inherit;font-size:11px;font-weight:700;letter-spacing:.02em;color:#fff;cursor:pointer;line-height:1.5}
+.ep.kit{box-shadow:0 0 0 2px var(--paper),0 0 0 3.5px var(--s-done)}
+.ep.sel{outline:2.5px solid var(--accent);outline-offset:1px}
+.m-closed{background:#5b6475}.m-approx{background:#8a6d3b}.m-integral{background:#7a5c99}.m-fourier{background:#2f7f86}.m-tree{background:#7c8a2e}.m-fd{background:#b0592b}.m-mc{background:#4f6ef7}
+.emxkey{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted);margin:0 0 10px;align-items:center}
+.emxkey .ep{cursor:default}
+.emxkey .sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:4px;border:1px solid var(--rule)}
 .summary{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;color:var(--muted);margin:10px 0 0}
 .summary b{color:var(--ink)}
 @media (max-width:900px){
+  .emxwrap{max-height:70vh}
   .stage3d{height:62vh}
   .famlayout{grid-template-columns:minmax(0,1fr)}
   .panel.side{display:none;position:fixed;left:8px;right:8px;bottom:8px;top:auto;max-height:50vh;z-index:5;box-shadow:0 -6px 24px rgba(0,0,0,.18);max-width:none}
@@ -151,6 +174,7 @@ svg text{font-family:var(--sans)}
         <button type="button" data-view="families" aria-pressed="false">Families</button>
         <button type="button" data-view="roadmap" aria-pressed="false">Roadmap</button>
         <button type="button" data-view="paths" aria-pressed="false">Paths to quantum</button>
+        <button type="button" data-view="engines" aria-pressed="false">Engines</button>
       </div>
       <div class="seg" role="group" aria-label="Whose status">
         <button type="button" data-mode="veqctor" aria-pressed="true">Veqctor library</button>
@@ -188,6 +212,16 @@ svg text{font-family:var(--sans)}
           <div class="scroll" id="scroll"><svg id="svg" role="img" aria-label="Model roadmap"></svg></div>
         </div>
         <aside class="panel" id="panel" aria-live="polite"></aside>
+      </div>
+    </section>
+
+    <section id="veng" hidden>
+      <div class="seg bizpick" role="group" aria-label="Business line" id="engpick"></div>
+      <p class="hint" id="enghint"></p>
+      <div class="emxkey" id="emxkey"></div>
+      <div class="famlayout">
+        <div class="emxwrap" id="emxwrap"></div>
+        <aside class="panel side" id="epanel" aria-live="polite"></aside>
       </div>
     </section>
 
@@ -395,7 +429,7 @@ function renderLayers() {
 }
 
 // ---------- Legend and summary ----------
-function scopeNodes() { return layersOn() ? layerNodes : view === 'roadmap' || view === 'paths' ? rNodes : data.nodes; }
+function scopeNodes() { return view === 'engines' ? engScope() : layersOn() ? layerNodes : view === 'roadmap' || view === 'paths' ? rNodes : data.nodes; }
 function renderLegend() {
   const items = mode === 'veqctor'
     ? [['done', 'Kit available'], ['wip', 'Next'], ['todo', 'Later'], ['quantum', 'Quantum']]
@@ -414,6 +448,7 @@ function panelHtml() {
     if (view === 'families') return `<h2>How to read it</h2>
       <p>${data.nodes.length} items in ${data.clouds.length} families. Each QuantLib class is folded into one item per concept: the variants are listed inside.</p>
       <p class="rel">Large groups are folded: click one to open it. ${mode === 'bank' ? 'Select an item to set its status for your institution; the bubbles count your coverage. Statuses stay in this browser; nothing is sent.' : 'Select an item to see what it builds on, what it prices and where it leads.'}</p>`;
+    if (view === 'engines') return `<h2>How to read it</h2><p>Each row is a product, each column a model. A cell lists the QuantLib engines that price that product under that model, one chip per engine, coloured by numerical method.</p><p class="rel">Read a row to see which models can price a product, a column to see what a model can price. Shaded cells have two methods or more: a closed form and a Monte Carlo engine for the same pair is a ready-made validation test. Empty rows and gaps are combinations QuantLib does not cover. Select a chip for the engine's details.</p>`;
     if (layersOn()) return `<h2>How to read it</h2><p>The same map, cut into business lines and stacked. Every item keeps its place on every sheet: left to right from foundations to more advanced models, quantum algorithms at the right end (blue).</p><p class="rel">The threads show what is shared. A conventions library, a curve bootstrap or a Monte Carlo engine serves every line at once: these are the no-regret investments. Open a sheet to work on it in detail.</p>`;
     return `<h2>${view === 'paths' ? 'Paths to quantum' : 'How to read it'}</h2>
       <p>${view === 'paths' ? 'Only the models and methods that lead to a quantum algorithm are highlighted. Each one is a no-regret step: it pays off whether or not quantum delivers.' : 'Left to right, from foundations to more advanced models, then the quantum algorithms that build on them. Solid lines: builds on. Dashed blue lines: quantum counterpart. Pick a business line above to see more of its models, curves and volatilities; the Families view shows everything.'}</p>
@@ -441,7 +476,7 @@ function panelHtml() {
     ${n.library ? `<p><a href="/library#${esc(n.library)}">Open in the library</a></p>` : ''}`;
 }
 function renderPanel() {
-  const el = view === 'families' ? $('fpanel') : $('panel');
+  const el = view === 'families' ? $('fpanel') : view === 'engines' ? $('epanel') : $('panel');
   el.innerHTML = panelHtml();
   el.classList.toggle('open', !!selected);
 }
@@ -944,6 +979,80 @@ $('pick3d').addEventListener('click', (e) => {
   renderPick3d(); if (three) three.filter(true);
 });
 
+// ---------- Engines: products x models, one chip per QuantLib engine, coloured by method ----------
+const METHODS = [['closed', 'Closed form', 'CF'], ['approx', 'Approximation', 'AP'], ['integral', 'Integration', 'NI'], ['fourier', 'Fourier', 'FT'], ['tree', 'Tree', 'TR'], ['fd', 'Finite differences', 'FD'], ['mc', 'Monte Carlo', 'MC']];
+const METHOD_NODE = { mcengine: 'mc', lsm: 'mc', trees: 'tree', fd: 'fd', fourier: 'fourier', approx: 'approx' };
+const IBIZ = { 'Equity and FX options': ['eqfx'], 'Multi-asset': ['eqfx'], FX: ['eqfx'], 'Commodities and energy': ['eqfx'], Rates: ['rates'], Bonds: ['rates'], Inflation: ['rates'], Credit: ['credit'] };
+const ENG_BIZ = data.businesses.filter((b) => ['rates', 'eqfx', 'credit'].includes(b.id));
+const CURVES_COL = { id: '_curves', name: 'Curves only (discounting)' };
+const engPreds = {}; edges.forEach((e) => { if (e.type === 'builds' && byId[e.to].engine) (engPreds[e.to] = engPreds[e.to] || []).push(e.from); });
+function engMethod(n) {
+  const m = (engPreds[n.id] || []).map((x) => METHOD_NODE[x]).find(Boolean);
+  if (m) return m;
+  if (/^MC/.test(n.name)) return 'mc';
+  if (/^(Binomial|Tree)/.test(n.name)) return 'tree';
+  if (/^Fd/.test(n.name)) return 'fd';
+  if (/Integral|Integration|Gaussian.*Quadrature/.test(n.name)) return 'integral';
+  if (/Approximation/.test(n.name)) return 'approx';
+  return 'closed';
+}
+function engModels(n) {
+  const p = engPreds[n.id] || [];
+  const ms = p.filter((x) => byId[x].cloud === 'models');
+  if (ms.length) return ms;
+  const vs = p.filter((x) => byId[x].cloud === 'vol');
+  if (vs.length) return vs;
+  return ['_curves'];
+}
+const ibiz = (i) => i.id === 'i_convertible' ? ['eqfx', 'credit'] : (IBIZ[i.group] || []);
+let ebiz = 'eqfx';
+try { const b = localStorage.getItem('veqctor-engines-business'); if (ENG_BIZ.some((x) => x.id === b)) ebiz = b; } catch {}
+function engScope() { return data.nodes.filter((n) => n.engine && n.prices && ibiz(byId[n.prices]).includes(ebiz)); }
+function renderEngines() {
+  $('engpick').innerHTML = ENG_BIZ.map((b) => `<button type="button" data-ebiz="${b.id}" aria-pressed="${ebiz === b.id}">${esc(b.name)}</button>`).join('');
+  const engs = engScope();
+  const rows = data.nodes.filter((n) => n.cloud === 'instruments' && ibiz(n).includes(ebiz));
+  const cellOf = {}; const colSet = new Set();
+  engs.forEach((e) => engModels(e).forEach((m) => { colSet.add(m); ((cellOf[e.prices + '|' + m] = cellOf[e.prices + '|' + m] || [])).push(e); }));
+  const rank = (id) => id === '_curves' ? 1e6 : (byId[id].cloud === 'models' ? 0 : 1000) + (byId[id].core ? 0 : 500) + data.nodes.indexOf(byId[id]);
+  const cols = [...colSet].sort((a, b) => rank(a) - rank(b));
+  const colName = (id) => id === '_curves' ? CURVES_COL.name : byId[id].name;
+  let multi = 0, pairs = 0, empty = 0;
+  let html = `<table class="emx"><thead><tr><th class="rowh">Product ↓ · model →</th>${cols.map((c) => `<th scope="col">${c === '_curves' ? esc(colName(c)) : `<button type="button" data-go="${c}">${esc(colName(c))}</button>`}</th>`).join('')}</tr></thead><tbody>`;
+  let lastGroup = null;
+  for (const i of rows) {
+    if (i.group !== lastGroup) { lastGroup = i.group; html += `<tr class="emgrp"><th colspan="${cols.length + 1}"><span>${esc(i.group)}</span></th></tr>`; }
+    const any = cols.some((c) => cellOf[i.id + '|' + c]);
+    if (!any) empty++;
+    html += `<tr><th class="rowh" scope="row"><button type="button" data-go="${i.id}">${esc(i.name)}</button></th>`;
+    for (const c of cols) {
+      const es = (cellOf[i.id + '|' + c] || []).sort((a, b) => METHODS.findIndex((m) => m[0] === engMethod(a)) - METHODS.findIndex((m) => m[0] === engMethod(b)));
+      const ms = new Set(es.map(engMethod));
+      if (es.length) pairs++;
+      if (ms.size > 1) multi++;
+      html += `<td class="${ms.size > 1 ? 'multi' : ''}">${es.map((e) => { const m = METHODS.find((x) => x[0] === engMethod(e)); return `<button type="button" class="ep m-${m[0]}${e.coverage === 'done' ? ' kit' : ''}${selected === e.id ? ' sel' : ''}" data-eng="${e.id}" title="${esc(e.name)} · ${esc(m[1])}" aria-label="${esc(e.name)}, ${esc(m[1])}">${m[2]}</button>`; }).join('')}</td>`;
+    }
+    html += `</tr>`;
+  }
+  html += `</tbody></table>`;
+  $('emxwrap').innerHTML = html;
+  const mc = engs.filter((e) => engMethod(e) === 'mc').length;
+  $('enghint').textContent = `${engs.length} QuantLib engines for ${rows.length} products and ${cols.length} models. ${pairs} product-model pairs are covered; ${multi} of them ${multi === 1 ? 'has' : 'have'} two methods or more (shaded), so one engine can check another.${empty ? ` ${empty} product${empty > 1 ? 's have' : ' has'} no dedicated engine.` : ''}${mc ? ` ${mc} Monte Carlo engine${mc > 1 ? 's' : ''} (blue): where quantum amplitude estimation could take over.` : ''}`;
+  $('emxkey').innerHTML = METHODS.map(([k, t, a]) => `<span><span class="ep m-${k}">${a}</span> ${esc(t)}</span>`).join('') + `<span><span class="ep m-closed kit">CF</span> Kit available</span><span><i class="sw" style="background:color-mix(in srgb,var(--s-done) 10%,transparent)"></i>Two methods or more</span>`;
+}
+$('engpick').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-ebiz]'); if (!b) return;
+  ebiz = b.dataset.ebiz; try { localStorage.setItem('veqctor-engines-business', ebiz); } catch {}
+  renderAll();
+});
+$('emxwrap').addEventListener('click', (e) => {
+  const c = e.target.closest('[data-eng]');
+  if (c) { selected = selected === c.dataset.eng ? null : c.dataset.eng; renderAll(); return; }
+  const g = e.target.closest('[data-go]');
+  if (g) { selected = g.dataset.go; renderAll(); }
+});
+$('epanel').addEventListener('click', onPanelClick);
+
 // ---------- Views and modes ----------
 function setHint() {
   if (layersOn()) { $('hint2d').textContent = 'One sheet per business line. Shared foundations (conventions, curves, Monte Carlo…) run as threads through every sheet; dashed threads are items shared by two or three lines. Click a sheet or a point to open that roadmap.'; return; }
@@ -953,18 +1062,20 @@ function setHint() {
 function setView(v) {
   view = v;
   document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
-  $('v3d').hidden = v !== '3d'; $('vfam').hidden = v !== 'families'; $('v2d').hidden = !(v === 'roadmap' || v === 'paths');
+  $('v3d').hidden = v !== '3d'; $('vfam').hidden = v !== 'families'; $('v2d').hidden = !(v === 'roadmap' || v === 'paths'); $('veng').hidden = v !== 'engines';
   $('foot').hidden = v === '3d';
   if (three) (v === '3d' ? three.start() : three.stop());
   if (three && v === '3d') three.filter(true);
   setHint(); renderBizPick();
   if ((v === 'roadmap' || v === 'paths') && selected && !rSet.has(selected)) selected = null;
+  if (v === 'engines' && selected && !byId[selected].engine) selected = null;
   renderAll();
 }
 function renderAll() {
   renderLegend();
   if (view === '3d') { renderPick3d(); if (three) three.filter(); }
   if (view === 'families') renderFamilies();
+  else if (view === 'engines') { renderEngines(); renderPanel(); }
   else if (view !== '3d') { render2d(); renderPanel(); }
   if (three) three.paint();
 }
