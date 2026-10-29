@@ -83,6 +83,7 @@
 .sheet{cursor:pointer}
 .sheet:hover polygon,.sheet:focus-visible polygon{stroke:var(--accent);stroke-width:2}
 .ldot{cursor:pointer}
+.ldot.hi{stroke:var(--accent);stroke-width:3}
 .view2d{border:1px solid var(--rule);border-radius:var(--r-md);background:var(--sheet);position:relative}
 .scroll{overflow:auto;border-radius:var(--r-md)}
 .zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:6px;z-index:2}
@@ -361,7 +362,7 @@ function renderLayers() {
     for (const n of ns) {
       const [x, y] = P(i, layerPos[n.id].u, layerPos[n.id].v), s = status(n);
       const fill = n.quantum ? qc : s === 'todo' ? paper : color(s);
-      out += `<circle class="ldot" data-id="${n.id}" data-sheet="${b.id}" cx="${x}" cy="${y}" r="${n.quantum ? 5.5 : 4.2}" fill="${fill}" stroke="${n.quantum ? qc : s === 'todo' ? css('--s-todo') : color(s)}" stroke-width="1.2"><title>${esc(n.name)}</title></circle>`;
+      out += `<circle class="ldot" data-id="${n.id}" data-sheet="${b.id}" cx="${x}" cy="${y}" r="${n.quantum ? 5.5 : 4.2}" fill="${fill}" stroke="${n.quantum ? qc : s === 'todo' ? css('--s-todo') : color(s)}" stroke-width="1.2"></circle>`;
     }
     const [lx, ly] = P(i, 0, 1);
     out += `<text x="${lx - 12}" y="${ly - 6}" font-size="14" font-weight="600" fill="${ink}" text-anchor="end">${esc(b.name)}</text><text x="${lx - 12}" y="${ly + 11}" font-size="12" fill="${muted}" text-anchor="end">${ns.length} items</text>`;
@@ -389,6 +390,7 @@ function renderLayers() {
     out += `<line x1="${l.x}" y1="${ty + 4}" x2="${l.x}" y2="${l.yTop}" stroke="${ink}" stroke-width="0.8" opacity="0.35" pointer-events="none"/>`;
     out += `<text x="${l.x}" y="${ty}" font-size="11.5" font-weight="600" fill="${ink}" text-anchor="middle" pointer-events="none">${esc(l.name)}</text>`;
   }
+  out += `<g id="lhover" pointer-events="none"></g>`;
   svg.innerHTML = out;
 }
 
@@ -648,6 +650,24 @@ function render2d() {
   }
   svg.innerHTML = out;
 }
+// Overview: name of the point under the pointer, and the same item lit on every sheet
+function layerHover(dot) {
+  const g = document.getElementById('lhover'); if (!g) return;
+  document.querySelectorAll('.ldot.hi').forEach((c) => c.classList.remove('hi'));
+  if (!dot) { g.innerHTML = ''; return; }
+  const n = byId[dot.dataset.id];
+  document.querySelectorAll(`.ldot[data-id="${CSS.escape(n.id)}"]`).forEach((c) => c.classList.add('hi'));
+  const where = !n.biz.length ? 'every business line' : n.biz.map((b) => data.businesses.find((x) => x.id === b).name).join(', ');
+  const x = +dot.getAttribute('cx'), y = +dot.getAttribute('cy');
+  const t1 = n.name, t2 = where, w = Math.max(t1.length * 7.4, t2.length * 6.3) + 20;
+  const left = x + 12 + w > +$('svg').getAttribute('viewBox').split(' ')[2] - 4;
+  const bx = left ? x - 12 - w : x + 12, by = y - 40;
+  g.innerHTML = `<rect x="${bx}" y="${by}" width="${w}" height="38" rx="6" fill="${css('--ink')}" opacity="0.94"/>
+    <text x="${bx + 10}" y="${by + 16}" font-size="13" font-weight="600" fill="${css('--paper')}">${esc(t1)}</text>
+    <text x="${bx + 10}" y="${by + 31}" font-size="11.5" fill="${css('--paper')}" opacity="0.8">${esc(t2)}</text>`;
+}
+$('svg').addEventListener('pointerover', (e) => { if (layersOn() && e.pointerType !== 'touch') layerHover(e.target.closest('.ldot')); });
+$('svg').addEventListener('pointerleave', () => { if (layersOn()) layerHover(null); });
 $('svg').addEventListener('click', (e) => {
   const dot = e.target.closest('.ldot');
   if (dot) { selected = dot.dataset.id; pickBiz(dot.dataset.sheet, true); return; }
