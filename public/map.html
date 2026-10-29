@@ -83,6 +83,14 @@
 .sheet{cursor:pointer}
 .sheet:hover polygon,.sheet:focus-visible polygon{stroke:var(--accent);stroke-width:2}
 .ldot{cursor:pointer}
+.hcard{position:absolute;z-index:4;width:300px;max-width:calc(100% - 16px);background:var(--paper);border:1px solid var(--rule);border-radius:var(--r-md);box-shadow:0 10px 30px rgba(0,0,0,.16);padding:12px 14px;pointer-events:none;font-size:13px;line-height:1.45}
+.hcard p{margin:0 0 6px;color:var(--muted)}
+.hcard b{color:var(--ink);font-weight:600}
+.hcard .hk{font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.hcard .hn{font-family:var(--serif);font-size:19px;line-height:1.2;color:var(--ink);margin-bottom:4px}
+.hcard .hs{display:flex;align-items:center;gap:6px;font-weight:600;color:var(--ink);font-size:12.5px}
+.hcard .hs i{width:9px;height:9px;border-radius:50%;flex:none}
+.hcard .hf{font-size:11.5px;margin:6px 0 0;color:var(--accent)}
 .ldot.hi{stroke:var(--accent);stroke-width:3}
 .view2d{border:1px solid var(--rule);border-radius:var(--r-md);background:var(--sheet);position:relative}
 .scroll{overflow:auto;border-radius:var(--r-md)}
@@ -210,6 +218,7 @@ svg text{font-family:var(--sans)}
         <div class="view2d">
           <div class="zoom"><button type="button" id="zin" aria-label="Zoom in">+</button><button type="button" id="zout" aria-label="Zoom out">−</button></div>
           <div class="scroll" id="scroll"><svg id="svg" role="img" aria-label="Model roadmap"></svg></div>
+          <div class="hcard" id="hcard" hidden></div>
         </div>
         <aside class="panel" id="panel" aria-live="polite"></aside>
       </div>
@@ -424,7 +433,6 @@ function renderLayers() {
     out += `<line x1="${l.x}" y1="${ty + 4}" x2="${l.x}" y2="${l.yTop}" stroke="${ink}" stroke-width="0.8" opacity="0.35" pointer-events="none"/>`;
     out += `<text x="${l.x}" y="${ty}" font-size="11.5" font-weight="600" fill="${ink}" text-anchor="middle" pointer-events="none">${esc(l.name)}</text>`;
   }
-  out += `<g id="lhover" pointer-events="none"></g>`;
   svg.innerHTML = out;
 }
 
@@ -686,23 +694,46 @@ function render2d() {
   svg.innerHTML = out;
 }
 // Overview: name of the point under the pointer, and the same item lit on every sheet
-function layerHover(dot) {
-  const g = document.getElementById('lhover'); if (!g) return;
-  document.querySelectorAll('.ldot.hi').forEach((c) => c.classList.remove('hi'));
-  if (!dot) { g.innerHTML = ''; return; }
-  const n = byId[dot.dataset.id];
-  document.querySelectorAll(`.ldot[data-id="${CSS.escape(n.id)}"]`).forEach((c) => c.classList.add('hi'));
-  const where = !n.biz.length ? 'every business line' : n.biz.map((b) => data.businesses.find((x) => x.id === b).name).join(', ');
-  const x = +dot.getAttribute('cx'), y = +dot.getAttribute('cy');
-  const t1 = n.name, t2 = where, w = Math.max(t1.length * 7.4, t2.length * 6.3) + 20;
-  const left = x + 12 + w > +$('svg').getAttribute('viewBox').split(' ')[2] - 4;
-  const bx = left ? x - 12 - w : x + 12, by = y - 40;
-  g.innerHTML = `<rect x="${bx}" y="${by}" width="${w}" height="38" rx="6" fill="${css('--ink')}" opacity="0.94"/>
-    <text x="${bx + 10}" y="${by + 16}" font-size="13" font-weight="600" fill="${css('--paper')}">${esc(t1)}</text>
-    <text x="${bx + 10}" y="${by + 31}" font-size="11.5" fill="${css('--paper')}" opacity="0.8">${esc(t2)}</text>`;
+// Hover card: the item's sheet (what it is, its status, what it builds on and leads to),
+// on the overview points and the 2D roadmap boxes. Clicking still opens the full panel.
+function hoverCardHtml(n) {
+  const names = (ids) => { const a = ids.map((id) => byId[id].name); return a.length > 6 ? esc(a.slice(0, 6).join(', ')) + ` and ${a.length - 6} more` : esc(a.join(', ')); };
+  const inB = edges.filter((e) => e.to === n.id && e.type !== 'prices' && !byId[e.from].engine).map((e) => e.from);
+  const outB = edges.filter((e) => e.from === n.id && e.type !== 'prices' && !byId[e.to].engine).map((e) => e.to);
+  const nEng = edges.filter((e) => e.from === n.id && e.type !== 'prices' && byId[e.to].engine).length;
+  const where = n.biz ? (!n.biz.length ? 'Every business line' : n.biz.map((b) => data.businesses.find((x) => x.id === b).name).join(', ')) : '';
+  const note = n.note && n.note.length > 180 ? n.note.slice(0, 177).replace(/\s+\S*$/, '') + '…' : n.note;
+  return `<p class="hk">${esc(cloudById[n.cloud].name)}${n.group ? ' · ' + esc(n.group) : ''}</p>
+    <p class="hn">${esc(n.name)}</p>
+    <p class="hs"><i style="background:${color(status(n))}"></i>${esc(statusLabel(n))}${where ? ' · ' + esc(where) : ''}</p>
+    ${note ? `<p>${esc(note)}</p>` : ''}
+    ${inB.length ? `<p><b>Builds on</b> ${names(inB)}</p>` : ''}
+    ${outB.length ? `<p><b>Leads to</b> ${names(outB)}</p>` : ''}
+    ${nEng ? `<p><b>Used by</b> ${nEng} QuantLib engine${nEng > 1 ? 's' : ''}</p>` : ''}
+    <p class="hf">Click to open</p>`;
 }
-$('svg').addEventListener('pointerover', (e) => { if (layersOn() && e.pointerType !== 'touch') layerHover(e.target.closest('.ldot')); });
-$('svg').addEventListener('pointerleave', () => { if (layersOn()) layerHover(null); });
+function showCard(el) {
+  const card = $('hcard');
+  document.querySelectorAll('.ldot.hi').forEach((c) => c.classList.remove('hi'));
+  if (!el) { card.hidden = true; return; }
+  const n = byId[el.dataset.id];
+  if (el.classList.contains('ldot')) document.querySelectorAll(`.ldot[data-id="${CSS.escape(n.id)}"]`).forEach((c) => c.classList.add('hi'));
+  card.innerHTML = hoverCardHtml(n); card.hidden = false;
+  const box = el.getBoundingClientRect(), host = $('hcard').parentElement.getBoundingClientRect();
+  const cw = card.offsetWidth, ch = card.offsetHeight;
+  let x = box.right - host.left + 12;
+  if (x + cw > host.width - 8) x = box.left - host.left - cw - 12;
+  x = Math.max(8, x);
+  // keep the card inside the window: below-right of the point if it fits, otherwise above it
+  let vy = box.top - 8;
+  if (vy + ch > innerHeight - 8) vy = Math.max(8, box.bottom - ch + 8);
+  if (vy + ch > innerHeight - 8) vy = innerHeight - ch - 8;
+  let y = Math.max(8 - host.top, vy - host.top);
+  card.style.left = x + 'px'; card.style.top = y + 'px';
+}
+$('svg').addEventListener('pointerover', (e) => { if (e.pointerType === 'touch') return; showCard(e.target.closest('.ldot, .node')); });
+$('svg').addEventListener('pointerleave', () => showCard(null));
+$('scroll').addEventListener('scroll', () => showCard(null));
 $('svg').addEventListener('click', (e) => {
   const dot = e.target.closest('.ldot');
   if (dot) { selected = dot.dataset.id; pickBiz(dot.dataset.sheet, true); return; }
