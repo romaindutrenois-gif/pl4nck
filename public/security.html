@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Security · Veqctor</title>
+<meta name="description" content="What stays with you, what leaves your browser and where it goes: how Veqctor handles code, data and access.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<style>
+.glance{width:100%;border-collapse:collapse;font-size:15px;margin:8px 0 0}
+.glance th,.glance td{text-align:left;vertical-align:top;padding:12px 14px;border-bottom:1px solid var(--rule)}
+.glance thead th{font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;border-bottom:1px solid var(--ink)}
+.glance tbody th{font-weight:600;width:28%}
+.glance td.none{color:var(--ink);font-weight:600}
+.tablewrap{overflow-x:auto}
+.never{list-style:none;padding:0;display:grid;gap:10px;margin:0}
+.never li{display:grid;grid-template-columns:20px 1fr;gap:10px;margin:0;max-width:none}
+.never li::before{content:"";width:12px;height:2px;background:var(--ink);margin-top:12px}
+.updated{color:var(--muted);font-size:14px;margin:-6px 0 18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar">
+    <a class="brand" href="/"><span class="name">ve<span class="q">q</span>ctor</span></a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="/launch">Launch Veqctor</a>
+      <span class="dd"><a href="/library">Library</a><span class="menu"><a href="/library">Model library</a><a href="/map">Model map</a></span></span>
+      <span class="dd"><button type="button" class="ddbtn" aria-expanded="false">Landscape</button><span class="menu"><a href="/technology">Technology mapping</a><a href="/resources">Resources</a></span></span>
+      <a href="/about">About</a>
+    </nav>
+    <span class="proto">Research prototype</span>
+  </div>
+
+  <main class="page">
+    <h1>Security</h1>
+    <p class="updated">Last updated 29 October 2026</p>
+    <p class="lead">Veqctor is built so that a bank never has to hand over code, data or positions. This page says exactly what stays with you, what leaves your browser, and where it goes.</p>
+
+    <h2>At a glance</h2>
+    <div class="tablewrap"><table class="glance">
+      <thead><tr><th scope="col">Part of Veqctor</th><th scope="col">What leaves your browser</th><th scope="col">Where it goes</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Model map and roadmap, including your institution's statuses</th><td class="none">Nothing</td><td>Statuses are saved in your browser's local storage, on your device only.</td></tr>
+        <tr><th scope="row">Model library (validated kits)</th><td class="none">Nothing about you</td><td>You download a zip of Python code, reference values and documentation. It runs on your own machines and makes no network calls.</td></tr>
+        <tr><th scope="row">Technology mapping and Resources</th><td class="none">Nothing</td><td>Static pages.</td></tr>
+        <tr><th scope="row">Launch Veqctor (AI advisor)</th><td>Your intake answers and your messages</td><td>Sent to Anthropic's Claude API to generate the answers. With your consent, stored for 12 months to improve the tool (<a href="/privacy">privacy notice</a>).</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>What we never ask for</h2>
+    <ul class="never">
+      <li><span><b>Code, data or positions.</b> Nothing in Veqctor needs them. The kits come to you; your models never come to us.</span></li>
+      <li><span><b>Names.</b> Not yours, not your employer's, not your clients'.</span></li>
+      <li><span><b>Quantum hardware access keys.</b> When Veqctor links to cloud quantum hardware, you will use your own account; we will never hold your keys.</span></li>
+      <li><span><b>Passwords.</b> There are no user accounts today.</span></li>
+    </ul>
+
+    <h2>The AI advisor</h2>
+    <p>Launch Veqctor is the only part of the site that sends what you type to a server. The advisor is instructed never to ask for proprietary code, data, positions or client names, and to steer the conversation back to a generic level if you start sharing them. Please do not paste confidential information.</p>
+    <p>Answers are generated through Anthropic's commercial API, under which API data is not used to train models by default and is kept only for a limited period. Conversations are stored only if you consent, for 12 months, and you can have yours deleted at any time with the session reference shown on the advisor page. To limit abuse, daily message caps use a one-way hash of your IP address, kept about 25 hours; the address itself is never stored.</p>
+
+    <h2>Hosting and transport</h2>
+    <ul>
+      <li>The site and its server functions are hosted by Vercel. Every connection is encrypted (HTTPS).</li>
+      <li>Pages are served with security headers: they cannot be framed by another site, content types are enforced, and referrer information is limited.</li>
+      <li>No cookies, no trackers, no analytics.</li>
+      <li>Advisor sessions are stored in an Upstash database. Access is restricted to the publisher; credentials live in the hosting configuration, never in the code.</li>
+      <li>Two third-party resources are loaded by your browser, as with any website using them: fonts from Google Fonts, and the open-source three.js library (for the 3D views) from the jsDelivr network.</li>
+    </ul>
+
+    <h2>Validation kits</h2>
+    <p>Each kit is plain, readable Python that depends only on numpy and scipy (pytest for the tests). QuantLib reference values are computed once by us and shipped as JSON files, so QuantLib does not need to be installed. The kits contain no telemetry and no network calls. Review them as you would any third-party code before using them in your environment.</p>
+
+    <h2>What a prototype does not have yet</h2>
+    <div class="callout amber">
+      <p>Veqctor is a research prototype. It has no security certification (such as ISO 27001 or SOC 2), no single sign-on or user accounts, no contractual hosting region and no independent penetration test. We intend to put these in place with the first institutions that need them.</p>
+    </div>
+
+    <h2>Report a vulnerability</h2>
+    <p>If you find a security issue, write to <a href="mailto:romaind@phalanx-capital.eu?subject=Veqctor%20security">romaind@phalanx-capital.eu</a>. We will acknowledge your report and keep you informed of the fix.</p>
+
+    <h2>Publisher</h2>
+    <p>Veqctor is published by Phalanx Capital, 60 rue François Ier, 75008 Paris, France.</p>
+    <footer class="foot">
+      <span>Veqctor is published by Phalanx Capital, 60 rue François Ier, 75008 Paris.</span>
+      <a href="/about">About</a>
+      <a href="/security">Security</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/about#contact">Contact</a>
+    </footer>
+  </main>
+</div>
+<script src="/nav.js" defer></script>
+</body>
+</html>
