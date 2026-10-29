@@ -8,7 +8,7 @@
 },
 {
 "id":"mc",
-"name":"Monte Carlo methods"
+"name":"Numerical methods"
 },
 {
 "id":"eq",
@@ -32,6 +32,28 @@
 },
 {
 "id":"xva",
+"name":"Counterparty risk"
+}
+],
+"businesses":[
+{
+"id":"rates",
+"name":"Rates"
+},
+{
+"id":"eqfx",
+"name":"Equity and FX"
+},
+{
+"id":"credit",
+"name":"Credit"
+},
+{
+"id":"mrisk",
+"name":"Market risk"
+},
+{
+"id":"ccr",
 "name":"Counterparty risk"
 }
 ],
@@ -110,7 +132,8 @@
 "Day counts: Actual360, Actual364, Actual36525, Actual365Fixed, Actual366, ActualActual, Business252, OneDayCounter, SimpleDayCounter, Thirty360, Thirty365",
 "Business-day conventions: Following, ModifiedFollowing, Preceding, ModifiedPreceding, Unadjusted, HalfMonthModifiedFollowing, Nearest",
 "Schedule"
-]
+],
+"biz":[]
 },
 {
 "id":"curve",
@@ -194,7 +217,8 @@
 "PiecewiseNaturalCubicZero",
 "PiecewiseNaturalLogCubicDiscount",
 "PiecewiseParabolicCubicZero"
-]
+],
+"biz":[]
 },
 {
 "id":"volsurf",
@@ -209,6 +233,11 @@
 "BlackVarianceSurface",
 "PiecewiseBlackVarianceSurface",
 "BlackVarianceCurve"
+],
+"biz":[
+"eqfx",
+"rates",
+"mrisk"
 ]
 },
 {
@@ -224,7 +253,8 @@
 "ql":[
 "MonteCarloModel",
 "PathGenerator"
-]
+],
+"biz":[]
 },
 {
 "id":"vr",
@@ -235,7 +265,8 @@
 "coverage":"done",
 "library":"black_scholes",
 "note":"Antithetics and control variates: the same accuracy with far fewer paths.",
-"group":"Monte Carlo"
+"group":"Monte Carlo",
+"biz":[]
 },
 {
 "id":"qmc",
@@ -249,7 +280,8 @@
 "ql":[
 "LowDiscrepancy",
 "SobolRsg"
-]
+],
+"biz":[]
 },
 {
 "id":"aad",
@@ -259,7 +291,8 @@
 "lane":"mc",
 "coverage":"todo",
 "note":"All first-order sensitivities for a small multiple of one pricing.",
-"group":"Sensitivities and hardware"
+"group":"Sensitivities and hardware",
+"biz":[]
 },
 {
 "id":"gpu",
@@ -269,7 +302,8 @@
 "lane":"mc",
 "coverage":"todo",
 "note":"The classical speed benchmark any quantum pricer must beat.",
-"group":"Sensitivities and hardware"
+"group":"Sensitivities and hardware",
+"biz":[]
 },
 {
 "id":"bs",
@@ -295,6 +329,9 @@
 "Black (futures)",
 "Garman-Kohlhagen (FX)",
 "Multi-asset (process array)"
+],
+"biz":[
+"eqfx"
 ]
 },
 {
@@ -309,6 +346,9 @@
 "group":"Equity and FX",
 "ql":[
 "GridModelLocalVolSurface"
+],
+"biz":[
+"eqfx"
 ]
 },
 {
@@ -324,6 +364,9 @@
 "ql":[
 "HestonModel",
 "HestonProcess"
+],
+"biz":[
+"eqfx"
 ]
 },
 {
@@ -339,6 +382,9 @@
 "ql":[
 "BatesModel",
 "BatesProcess"
+],
+"biz":[
+"eqfx"
 ]
 },
 {
@@ -353,6 +399,9 @@
 "group":"Equity and FX",
 "ql":[
 "HestonSLVProcess"
+],
+"biz":[
+"eqfx"
 ]
 },
 {
@@ -367,6 +416,9 @@
 "group":"Equity and FX",
 "ql":[
 "Merton76Process"
+],
+"biz":[
+"eqfx"
 ]
 },
 {
@@ -388,6 +440,9 @@
 "Vasicek",
 "CIR",
 "Extended CIR (fitted to the curve)"
+],
+"biz":[
+"rates"
 ]
 },
 {
@@ -405,6 +460,9 @@
 "bachelierBlackFormula",
 "blackFormulaImpliedStdDev",
 "bachelierBlackFormulaImpliedVol"
+],
+"biz":[
+"rates"
 ]
 },
 {
@@ -421,6 +479,9 @@
 "HullWhite",
 "HullWhiteProcess",
 "HullWhiteForwardProcess"
+],
+"biz":[
+"rates"
 ]
 },
 {
@@ -437,6 +498,9 @@
 "sabrVolatility",
 "shiftedSabrVolatility",
 "sabrFlochKennedyVolatility"
+],
+"biz":[
+"rates"
 ]
 },
 {
@@ -453,6 +517,9 @@
 "G2",
 "G2Process",
 "G2ForwardProcess"
+],
+"biz":[
+"rates"
 ]
 },
 {
@@ -470,6 +537,9 @@
 "AbcdVol",
 "ExponentialForwardCorrelation",
 "PiecewiseConstantCorrelation"
+],
+"biz":[
+"rates"
 ]
 },
 {
@@ -484,6 +554,9 @@
 "group":"Credit curves",
 "ql":[
 "PiecewiseFlatHazardRate"
+],
+"biz":[
+"credit"
 ]
 },
 {
@@ -495,7 +568,10 @@
 "coverage":"todo",
 "library":"gaussian_copula",
 "note":"One-factor portfolio loss model.",
-"group":"Credit"
+"group":"Credit",
+"biz":[
+"credit"
+]
 },
 {
 "id":"cpm",
@@ -505,7 +581,10 @@
 "lane":"credit",
 "coverage":"todo",
 "note":"Loss distribution and economic capital.",
-"group":"Credit risk"
+"group":"Credit risk",
+"biz":[
+"credit"
+]
 },
 {
 "id":"hvar",
@@ -516,7 +595,10 @@
 "coverage":"todo",
 "library":"var_historical",
 "note":"Full revaluation on historical scenarios.",
-"group":"Market risk"
+"group":"Market risk",
+"biz":[
+"mrisk"
+]
 },
 {
 "id":"garch",
@@ -531,6 +613,9 @@
 "ql":[
 "GJRGARCHModel",
 "GJRGARCHProcess"
+],
+"biz":[
+"mrisk"
 ]
 },
 {
@@ -542,7 +627,10 @@
 "coverage":"todo",
 "library":"var_mc",
 "note":"Simulated risk factors, full or proxy revaluation.",
-"group":"Market risk"
+"group":"Market risk",
+"biz":[
+"mrisk"
+]
 },
 {
 "id":"mv",
@@ -552,7 +640,10 @@
 "lane":"port",
 "coverage":"todo",
 "note":"Convex portfolio optimisation, solved well classically.",
-"group":"Portfolio"
+"group":"Portfolio",
+"biz":[
+"mrisk"
+]
 },
 {
 "id":"card",
@@ -562,7 +653,10 @@
 "lane":"port",
 "coverage":"todo",
 "note":"Cardinality and lot sizes: a mixed-integer problem.",
-"group":"Portfolio"
+"group":"Portfolio",
+"biz":[
+"mrisk"
+]
 },
 {
 "id":"gen",
@@ -572,7 +666,10 @@
 "lane":"port",
 "coverage":"todo",
 "note":"Copulas, then VAE, GAN or diffusion models.",
-"group":"Portfolio"
+"group":"Portfolio",
+"biz":[
+"mrisk"
+]
 },
 {
 "id":"pfe",
@@ -582,7 +679,10 @@
 "lane":"xva",
 "coverage":"wip",
 "note":"Expected and potential future exposure profiles.",
-"group":"Counterparty risk"
+"group":"Counterparty risk",
+"biz":[
+"ccr"
+]
 },
 {
 "id":"qae_price",
@@ -593,7 +693,11 @@
 "quantum":true,
 "library":"qae_european",
 "note":"Quadratic Monte Carlo speed-up; needs fault-tolerant hardware.",
-"group":"Quantum algorithms"
+"group":"Quantum algorithms",
+"biz":[
+"eqfx",
+"rates"
+]
 },
 {
 "id":"qae_credit",
@@ -603,7 +707,11 @@
 "lane":"credit",
 "quantum":true,
 "note":"Economic capital by amplitude estimation.",
-"group":"Quantum algorithms"
+"group":"Quantum algorithms",
+"biz":[
+"credit",
+"ccr"
+]
 },
 {
 "id":"qae_var",
@@ -613,7 +721,11 @@
 "lane":"risk",
 "quantum":true,
 "note":"Tail risk measures by amplitude estimation.",
-"group":"Quantum algorithms"
+"group":"Quantum algorithms",
+"biz":[
+"mrisk",
+"ccr"
+]
 },
 {
 "id":"qaoa",
@@ -624,7 +736,10 @@
 "quantum":true,
 "library":"qaoa_portfolio",
 "note":"Discrete portfolio selection as a QUBO.",
-"group":"Quantum algorithms"
+"group":"Quantum algorithms",
+"biz":[
+"mrisk"
+]
 },
 {
 "id":"born",
@@ -635,7 +750,10 @@
 "quantum":true,
 "library":"born_machine",
 "note":"Quantum generative model for return distributions.",
-"group":"Quantum algorithms"
+"group":"Quantum algorithms",
+"biz":[
+"mrisk"
+]
 },
 {
 "id":"ibor_rfr",
@@ -726,7 +844,12 @@
 "Term rates: AUDLibor, Bbsw, Bibor, Bkbm, CADLibor, CHFLibor, Cdor, DKKLibor, EURLibor, Euribor, GBPLibor, JPYLibor, Jibar, Mosprime, NZDLibor, Nibor, Pribor, Robor, SEKLibor, Shibor, THBFIX, TRLibor, Tibor, USDLibor, Wibor, Zibor"
 ],
 "coverage":"todo",
-"group":"Indexes"
+"group":"Indexes",
+"biz":[
+"rates",
+"ccr"
+],
+"rlane":"infra"
 },
 {
 "id":"swapidx",
@@ -738,7 +861,11 @@
 ],
 "note":"Constant-maturity swap rates and CMS spreads.",
 "coverage":"todo",
-"group":"Indexes"
+"group":"Indexes",
+"biz":[
+"rates"
+],
+"rlane":"infra"
 },
 {
 "id":"inflidx",
@@ -750,7 +877,11 @@
 ],
 "note":"CPI and year-on-year inflation indexes (HICP, UK RPI, US CPI…).",
 "coverage":"todo",
-"group":"Indexes"
+"group":"Indexes",
+"biz":[
+"rates"
+],
+"rlane":"infra"
 },
 {
 "id":"bmaidx",
@@ -761,7 +892,11 @@
 ],
 "note":"US municipal swap index.",
 "coverage":"todo",
-"group":"Indexes"
+"group":"Indexes",
+"biz":[
+"rates"
+],
+"rlane":"infra"
 },
 {
 "id":"flat",
@@ -772,7 +907,11 @@
 ],
 "note":"Single continuously compounded rate: the test and teaching curve.",
 "coverage":"todo",
-"group":"Simple curves"
+"group":"Simple curves",
+"biz":[
+"rates"
+],
+"rlane":"infra"
 },
 {
 "id":"interp",
@@ -828,7 +967,11 @@
 "ZeroCurve"
 ],
 "coverage":"todo",
-"group":"Simple curves"
+"group":"Simple curves",
+"biz":[
+"rates"
+],
+"rlane":"infra"
 },
 {
 "id":"multicurve",
@@ -839,7 +982,12 @@
 ],
 "note":"Joint bootstrap of OIS discounting and IBOR forwarding curves.",
 "coverage":"todo",
-"group":"Bootstrapped curves"
+"group":"Bootstrapped curves",
+"biz":[
+"rates",
+"ccr"
+],
+"rlane":"infra"
 },
 {
 "id":"fitted",
@@ -864,7 +1012,11 @@
 "Spread fitting"
 ],
 "coverage":"todo",
-"group":"Bootstrapped curves"
+"group":"Bootstrapped curves",
+"biz":[
+"rates"
+],
+"rlane":"infra"
 },
 {
 "id":"spreaded",
@@ -918,7 +1070,12 @@
 "ZeroSpreadedTermStructure"
 ],
 "coverage":"todo",
-"group":"Curve transformations"
+"group":"Curve transformations",
+"biz":[
+"rates",
+"credit"
+],
+"rlane":"infra"
 },
 {
 "id":"implied",
@@ -930,7 +1087,11 @@
 ],
 "note":"Forward-starting curves and curves combined from two others.",
 "coverage":"todo",
-"group":"Curve transformations"
+"group":"Curve transformations",
+"biz":[
+"rates"
+],
+"rlane":"infra"
 },
 {
 "id":"quantots",
@@ -941,7 +1102,11 @@
 ],
 "note":"Drift adjustment for quanto payoffs.",
 "coverage":"todo",
-"group":"Curve transformations"
+"group":"Curve transformations",
+"biz":[
+"eqfx"
+],
+"rlane":"infra"
 },
 {
 "id":"ufr",
@@ -952,7 +1117,11 @@
 ],
 "note":"Extrapolation towards a long-term rate, as in Solvency II.",
 "coverage":"todo",
-"group":"Curve transformations"
+"group":"Curve transformations",
+"biz":[
+"rates"
+],
+"rlane":"infra"
 },
 {
 "id":"flathaz",
@@ -963,7 +1132,12 @@
 ],
 "note":"Constant default intensity.",
 "coverage":"todo",
-"group":"Credit curves"
+"group":"Credit curves",
+"biz":[
+"credit",
+"ccr"
+],
+"rlane":"infra"
 },
 {
 "id":"interphaz",
@@ -976,7 +1150,12 @@
 ],
 "note":"Hazard-rate, default-density or survival-probability nodes.",
 "coverage":"todo",
-"group":"Credit curves"
+"group":"Credit curves",
+"biz":[
+"credit",
+"ccr"
+],
+"rlane":"infra"
 },
 {
 "id":"constvol",
@@ -991,7 +1170,11 @@
 ],
 "note":"One number for every strike and expiry.",
 "coverage":"todo",
-"group":"Simple"
+"group":"Simple",
+"biz":[
+"eqfx"
+],
+"rlane":"infra"
 },
 {
 "id":"fxdelta",
@@ -1002,7 +1185,11 @@
 ],
 "note":"FX volatility quoted by delta, as the market does.",
 "coverage":"todo",
-"group":"Equity and FX"
+"group":"Equity and FX",
+"biz":[
+"eqfx"
+],
+"rlane":"infra"
 },
 {
 "id":"hestonvol",
@@ -1013,7 +1200,11 @@
 ],
 "note":"The Black surface a calibrated Heston model implies.",
 "coverage":"todo",
-"group":"Equity and FX"
+"group":"Equity and FX",
+"biz":[
+"eqfx"
+],
+"rlane":"infra"
 },
 {
 "id":"ahvol",
@@ -1026,7 +1217,11 @@
 ],
 "note":"Arbitrage-free interpolation of option quotes, giving both implied and local volatility.",
 "coverage":"todo",
-"group":"Equity and FX"
+"group":"Equity and FX",
+"biz":[
+"eqfx"
+],
+"rlane":"infra"
 },
 {
 "id":"dupire",
@@ -1039,7 +1234,11 @@
 ],
 "note":"Local volatility derived from the implied surface.",
 "coverage":"todo",
-"group":"Equity and FX"
+"group":"Equity and FX",
+"biz":[
+"eqfx"
+],
+"rlane":"infra"
 },
 {
 "id":"swmatrix",
@@ -1052,7 +1251,11 @@
 ],
 "note":"At-the-money volatility by expiry and swap tenor.",
 "coverage":"todo",
-"group":"Rates"
+"group":"Rates",
+"biz":[
+"rates"
+],
+"rlane":"infra"
 },
 {
 "id":"swcube",
@@ -1064,7 +1267,11 @@
 ],
 "note":"Adds the strike dimension to the matrix.",
 "coverage":"todo",
-"group":"Rates"
+"group":"Rates",
+"biz":[
+"rates"
+],
+"rlane":"infra"
 },
 {
 "id":"sabrcube",
@@ -1076,7 +1283,11 @@
 ],
 "note":"Swaption cube with a SABR or ZABR smile per expiry and tenor.",
 "coverage":"todo",
-"group":"Rates"
+"group":"Rates",
+"biz":[
+"rates"
+],
+"rlane":"infra"
 },
 {
 "id":"caplet",
@@ -1089,7 +1300,11 @@
 ],
 "note":"Caplet volatilities stripped from cap quotes.",
 "coverage":"todo",
-"group":"Rates"
+"group":"Rates",
+"biz":[
+"rates"
+],
+"rlane":"infra"
 },
 {
 "id":"yoyvol",
@@ -1105,7 +1320,11 @@
 ],
 "note":"Year-on-year inflation cap and floor volatility.",
 "coverage":"todo",
-"group":"Inflation"
+"group":"Inflation",
+"biz":[
+"rates"
+],
+"rlane":"infra"
 },
 {
 "id":"smileint",
@@ -1119,7 +1338,11 @@
 ],
 "note":"Smile through market quotes with a chosen interpolation.",
 "coverage":"todo",
-"group":"Smile sections"
+"group":"Smile sections",
+"biz":[
+"eqfx"
+],
+"rlane":"infra"
 },
 {
 "id":"smilesabr",
@@ -1132,7 +1355,11 @@
 ],
 "note":"SABR smiles, including the no-arbitrage variant.",
 "coverage":"todo",
-"group":"Smile sections"
+"group":"Smile sections",
+"biz":[
+"rates"
+],
+"rlane":"infra"
 },
 {
 "id":"svi",
@@ -1144,7 +1371,11 @@
 ],
 "note":"Stochastic volatility inspired parameterisation.",
 "coverage":"todo",
-"group":"Smile sections"
+"group":"Smile sections",
+"biz":[
+"eqfx"
+],
+"rlane":"infra"
 },
 {
 "id":"zabr",
@@ -1162,7 +1393,11 @@
 ],
 "note":"SABR extension with control of the wings (short-maturity, local-vol and full finite-difference variants).",
 "coverage":"todo",
-"group":"Smile sections"
+"group":"Smile sections",
+"biz":[
+"rates"
+],
+"rlane":"infra"
 },
 {
 "id":"kahale",
@@ -1173,7 +1408,11 @@
 ],
 "note":"Arbitrage-free extrapolation of a smile into the wings.",
 "coverage":"todo",
-"group":"Smile sections"
+"group":"Smile sections",
+"biz":[
+"eqfx"
+],
+"rlane":"infra"
 },
 {
 "id":"ptdheston",
@@ -1185,7 +1424,11 @@
 "note":"Heston with piecewise-constant parameters for term structure.",
 "coverage":"todo",
 "lane":"eq",
-"group":"Equity and FX"
+"group":"Equity and FX",
+"biz":[
+"eqfx"
+],
+"rlane":"eq"
 },
 {
 "id":"roughheston",
@@ -1197,7 +1440,11 @@
 "note":"Fractional variance: steep short-dated skew with few parameters.",
 "coverage":"todo",
 "lane":"eq",
-"group":"Equity and FX"
+"group":"Equity and FX",
+"biz":[
+"eqfx"
+],
+"rlane":"eq"
 },
 {
 "id":"vg",
@@ -1209,7 +1456,11 @@
 "note":"Pure-jump Lévy model.",
 "coverage":"todo",
 "lane":"eq",
-"group":"Equity and FX"
+"group":"Equity and FX",
+"biz":[
+"eqfx"
+],
+"rlane":"eq"
 },
 {
 "id":"cev",
@@ -1221,7 +1472,11 @@
 "note":"Constant elasticity of variance: skew from a power of spot.",
 "coverage":"todo",
 "lane":"eq",
-"group":"Equity and FX"
+"group":"Equity and FX",
+"biz":[
+"eqfx"
+],
+"rlane":"eq"
 },
 {
 "id":"hybrid",
@@ -1234,7 +1489,12 @@
 "note":"Stochastic volatility or Black-Scholes with Hull-White rates.",
 "coverage":"todo",
 "lane":"eq",
-"group":"Hybrids"
+"group":"Hybrids",
+"biz":[
+"eqfx",
+"rates"
+],
+"rlane":"eq"
 },
 {
 "id":"bk",
@@ -1246,7 +1506,11 @@
 "note":"Lognormal short rate on a tree.",
 "coverage":"todo",
 "lane":"rates",
-"group":"Rates"
+"group":"Rates",
+"biz":[
+"rates"
+],
+"rlane":"rates"
 },
 {
 "id":"gsr",
@@ -1261,7 +1525,11 @@
 "note":"Workhorse for Bermudan swaptions and exotics with time-dependent volatility.",
 "coverage":"todo",
 "lane":"rates",
-"group":"Rates"
+"group":"Rates",
+"biz":[
+"rates"
+],
+"rlane":"rates"
 },
 {
 "id":"ou",
@@ -1274,7 +1542,11 @@
 "note":"Mean reversion for commodity spot prices.",
 "coverage":"todo",
 "lane":"port",
-"group":"Commodities and energy"
+"group":"Commodities and energy",
+"biz":[
+"eqfx"
+],
+"rlane":"eq"
 },
 {
 "id":"kluge",
@@ -1287,7 +1559,11 @@
 "note":"Mean reversion with spikes, for power prices.",
 "coverage":"todo",
 "lane":"port",
-"group":"Commodities and energy"
+"group":"Commodities and energy",
+"biz":[
+"eqfx"
+],
+"rlane":"eq"
 },
 {
 "id":"trees",
@@ -1299,7 +1575,12 @@
 ],
 "note":"Binomial trees (CRR, Jarrow-Rudd, Leisen-Reimer, Tian, Trigeorgis, Joshi, equal probabilities) and short-rate trees.",
 "coverage":"todo",
-"group":"Lattices and PDEs"
+"group":"Lattices and PDEs",
+"biz":[
+"eqfx",
+"rates"
+],
+"rlane":"mc"
 },
 {
 "id":"fd",
@@ -1310,7 +1591,12 @@
 ],
 "note":"PDE solvers in one to n dimensions (Douglas, Craig-Sneyd, Hundsdorfer, modified Craig-Sneyd schemes).",
 "coverage":"todo",
-"group":"Lattices and PDEs"
+"group":"Lattices and PDEs",
+"biz":[
+"eqfx",
+"rates"
+],
+"rlane":"mc"
 },
 {
 "id":"lsm",
@@ -1322,7 +1608,12 @@
 ],
 "note":"Regression Monte Carlo for early exercise: the classical benchmark for callable products.",
 "coverage":"todo",
-"group":"Monte Carlo"
+"group":"Monte Carlo",
+"biz":[
+"eqfx",
+"rates"
+],
+"rlane":"mc"
 },
 {
 "id":"fourier",
@@ -1335,7 +1626,11 @@
 ],
 "note":"Prices from the characteristic function.",
 "coverage":"todo",
-"group":"Transforms and integration"
+"group":"Transforms and integration",
+"biz":[
+"eqfx"
+],
+"rlane":"mc"
 },
 {
 "id":"approx",
@@ -1350,7 +1645,11 @@
 ],
 "note":"Closed-form or fixed-point approximations of the early-exercise premium.",
 "coverage":"todo",
-"group":"Transforms and integration"
+"group":"Transforms and integration",
+"biz":[
+"eqfx"
+],
+"rlane":"mc"
 },
 {
 "id":"calib",
@@ -1369,7 +1668,12 @@
 ],
 "note":"Fitting model parameters to market quotes.",
 "coverage":"todo",
-"group":"Calibration"
+"group":"Calibration",
+"biz":[
+"eqfx",
+"rates"
+],
+"rlane":"mc"
 },
 {
 "id":"cva",
@@ -1379,7 +1683,11 @@
 "note":"Credit, funding and capital valuation adjustments on exposure profiles.",
 "coverage":"todo",
 "lane":"xva",
-"group":"Counterparty risk"
+"group":"Counterparty risk",
+"biz":[
+"ccr"
+],
+"rlane":"xva"
 },
 {
 "id":"i_vanilla",

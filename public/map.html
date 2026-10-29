@@ -79,6 +79,7 @@
 .less{border:0;background:none;color:var(--accent);font:inherit;font-size:12px;cursor:pointer;padding:2px 4px}
 
 /* 2D roadmap */
+.bizpick{margin:0 0 10px;flex-wrap:wrap}
 .view2d{border:1px solid var(--rule);border-radius:var(--r-md);background:var(--sheet);position:relative}
 .scroll{overflow:auto;border-radius:var(--r-md)}
 .zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:6px;z-index:2}
@@ -175,6 +176,7 @@ svg text{font-family:var(--sans)}
     </section>
 
     <section id="v2d" hidden>
+      <div class="seg bizpick" role="group" aria-label="Business line" id="bizpick"></div>
       <p class="hint" id="hint2d"></p>
       <div class="layout">
         <div class="view2d">
@@ -229,34 +231,71 @@ function statusLabel(n) {
 }
 $('source').textContent = `Classes and links from QuantLib ${data.quantlib} (C++ and Python sources), folded to one item per concept; Veqctor items added for risk, methods and quantum. Reviewed ${data.reviewed}.`;
 
-// ---------- Roadmap layout (curated layer): columns by depth along "builds on", rows by lane ----------
-const preds = {}; coreEdges.forEach((e) => (preds[e.to] = preds[e.to] || []).push(e.from));
-const depth = {};
-function d(id) {
-  if (depth[id] != null) return depth[id];
-  const p = (preds[id] || []).filter((x) => !byId[x].quantum);
-  depth[id] = p.length ? 1 + Math.max(...p.map(d)) : 0;
-  return depth[id];
+// ---------- Roadmap layout: columns by depth along "builds on", rows by lane ----------
+// "All" = the curated layer (core = true). A business line adds every model, curve, volatility,
+// index and method tagged for it (biz), plus the shared foundations (biz = []).
+const BIZ_KEY = 'veqctor-roadmap-business';
+let biz = 'all';
+try { const b = localStorage.getItem(BIZ_KEY); if (b && (b === 'all' || data.businesses.some((x) => x.id === b))) biz = b; } catch {}
+const VLANE = { id: 'vol', name: 'Volatility' };
+const roadEdgesAll = (() => {
+  const seen = new Set(), out = [];
+  [...coreEdges, ...edges.filter((e) => e.type !== 'prices')].forEach((e) => { const k = e.from + '>' + e.to; if (!seen.has(k)) { seen.add(k); out.push(e); } });
+  return out;
+})();
+let rNodes = [], rEdges = [], rSet = new Set(), rLanes = [], preds = {}, depth = {}, maxDepth = 0, laneRows = {}, totalRows = 0, pos = {}, onQuantumPath = new Set();
+const laneOf = (n) => biz === 'all' ? n.lane : n.cloud === 'vol' ? 'vol' : (n.rlane || n.lane);
+function layoutRoadmap() {
+  rNodes = biz === 'all' ? coreNodes : data.nodes.filter((n) => n.biz && (!n.biz.length || n.biz.includes(biz)));
+  rSet = new Set(rNodes.map((n) => n.id));
+  rEdges = biz === 'all' ? coreEdges : roadEdgesAll.filter((e) => rSet.has(e.from) && rSet.has(e.to));
+  preds = {}; rEdges.forEach((e) => (preds[e.to] = preds[e.to] || []).push(e.from));
+  depth = {};
+  const d = (id, path = new Set()) => {
+    if (depth[id] != null) return depth[id];
+    if (path.has(id)) return 0;
+    path.add(id);
+    const p = (preds[id] || []).filter((x) => !byId[x].quantum);
+    const v = p.length ? 1 + Math.max(...p.map((x) => d(x, path))) : 0;
+    path.delete(id);
+    return (depth[id] = v);
+  };
+  rNodes.forEach((n) => { if (!n.quantum) d(n.id); });
+  maxDepth = Math.max(0, ...Object.values(depth));
+  rNodes.forEach((n) => { if (n.quantum) depth[n.id] = maxDepth + 1; });
+  const slots = {};
+  rNodes.forEach((n) => { const l = laneOf(n); ((slots[l] = slots[l] || {})[depth[n.id]] = slots[l][depth[n.id]] || []).push(n.id); });
+  const lanes = biz === 'all' ? data.lanes : [data.lanes[0], VLANE, ...data.lanes.slice(1)];
+  rLanes = lanes.filter((l) => biz === 'all' || slots[l.id]);
+  laneRows = {}; let row = 0;
+  rLanes.forEach((l) => {
+    const h = Math.max(1, ...Object.values(slots[l.id] || {}).map((a) => a.length));
+    laneRows[l.id] = { start: row, height: h }; row += h;
+  });
+  totalRows = row;
+  pos = {};
+  rNodes.forEach((n) => {
+    const l = laneOf(n), list = slots[l][depth[n.id]];
+    pos[n.id] = { col: depth[n.id], row: laneRows[l].start + list.indexOf(n.id) + (laneRows[l].height - list.length) / 2 };
+  });
+  const anc = (id, acc = new Set()) => { (preds[id] || []).forEach((p) => { if (!acc.has(p)) { acc.add(p); anc(p, acc); } }); return acc; };
+  onQuantumPath = new Set(rNodes.filter((n) => n.quantum).flatMap((n) => [n.id, ...anc(n.id)]));
 }
-coreNodes.forEach((n) => { if (!n.quantum) d(n.id); });
-const maxDepth = Math.max(...Object.values(depth));
-coreNodes.forEach((n) => { if (n.quantum) depth[n.id] = maxDepth + 1; });
-const slots = {};
-coreNodes.forEach((n) => { ((slots[n.lane] = slots[n.lane] || {})[depth[n.id]] = slots[n.lane][depth[n.id]] || []).push(n.id); });
-const laneRows = {}; let row = 0;
-data.lanes.forEach((l) => {
-  const h = Math.max(1, ...Object.values(slots[l.id] || {}).map((a) => a.length));
-  laneRows[l.id] = { start: row, height: h }; row += h;
-});
-const totalRows = row;
-const pos = {};
-coreNodes.forEach((n) => {
-  const list = slots[n.lane][depth[n.id]];
-  pos[n.id] = { col: depth[n.id], row: laneRows[n.lane].start + list.indexOf(n.id) + (laneRows[n.lane].height - list.length) / 2 };
+layoutRoadmap();
+function renderBizPick() {
+  const opts = [['all', 'All (curated)'], ...data.businesses.map((b) => [b.id, b.name])];
+  $('bizpick').innerHTML = opts.map(([k, t]) => `<button type="button" data-biz="${k}" aria-pressed="${biz === k}">${esc(t)}</button>`).join('');
+}
+$('bizpick').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-biz]'); if (!b || b.dataset.biz === biz) return;
+  biz = b.dataset.biz; try { localStorage.setItem(BIZ_KEY, biz); } catch {}
+  layoutRoadmap(); scale = null;
+  if (selected && !rSet.has(selected)) selected = null;
+  renderBizPick(); setHint(); renderAll();
 });
 
 // ---------- Legend and summary ----------
-function scopeNodes() { return view === 'roadmap' || view === 'paths' ? coreNodes : data.nodes; }
+function scopeNodes() { return view === 'roadmap' || view === 'paths' ? rNodes : data.nodes; }
 function renderLegend() {
   const items = mode === 'veqctor'
     ? [['done', 'Kit available'], ['wip', 'Next'], ['todo', 'Later'], ['quantum', 'Quantum']]
@@ -276,7 +315,7 @@ function panelHtml() {
       <p>${data.nodes.length} items in ${data.clouds.length} families. Each QuantLib class is folded into one item per concept: the variants are listed inside.</p>
       <p class="rel">Large groups are folded: click one to open it. ${mode === 'bank' ? 'Select an item to set its status for your institution; the bubbles count your coverage. Statuses stay in this browser; nothing is sent.' : 'Select an item to see what it builds on, what it prices and where it leads.'}</p>`;
     return `<h2>${view === 'paths' ? 'Paths to quantum' : 'How to read it'}</h2>
-      <p>${view === 'paths' ? 'Only the models and methods that lead to a quantum algorithm are highlighted. Each one is a no-regret step: it pays off whether or not quantum delivers.' : 'The curated roadmap: left to right, from foundations to more advanced models, then the quantum algorithms that build on them. Solid lines: builds on. Dashed blue lines: quantum counterpart. The Families view shows everything.'}</p>
+      <p>${view === 'paths' ? 'Only the models and methods that lead to a quantum algorithm are highlighted. Each one is a no-regret step: it pays off whether or not quantum delivers.' : 'Left to right, from foundations to more advanced models, then the quantum algorithms that build on them. Solid lines: builds on. Dashed blue lines: quantum counterpart. Pick a business line above to see more of its models, curves and volatilities; the Families view shows everything.'}</p>
       <p class="rel">${mode === 'bank' ? 'Select a model to set its status for your institution. Statuses stay in this browser; nothing is sent.' : 'Select a model to see what it builds on and where it leads.'}</p>`;
   }
   const n = byId[selected], s = status(n);
@@ -318,7 +357,7 @@ $('fpanel').addEventListener('click', onPanelClick);
 function select(id, reveal) {
   selected = id;
   const n = id && byId[id];
-  if (n && (view === 'roadmap' || view === 'paths') && !n.core) { setView('families'); }
+  if (n && (view === 'roadmap' || view === 'paths') && !rSet.has(n.id)) { setView('families'); }
   if (n && view === 'families') {
     openClouds.add(n.cloud);
     const key = n.cloud + '|' + (n.group || '');
@@ -464,8 +503,6 @@ const COLW = 172, ROWH = 54, LANEW = 140, PADT = 40, NODEW = 150, NODEH = 38;
 let scale = null; // null = fit to width
 const nx = (id) => LANEW + pos[id].col * COLW + 12;
 const ny = (id) => PADT + pos[id].row * ROWH + (ROWH - NODEH) / 2;
-const ancestors = (id, acc = new Set()) => { (preds[id] || []).forEach((p) => { if (!acc.has(p)) { acc.add(p); ancestors(p, acc); } }); return acc; };
-const onQuantumPath = new Set(coreNodes.filter((n) => n.quantum).flatMap((n) => [n.id, ...ancestors(n.id)]));
 function wrapText(t) {
   const a = wrapAll(t, 19); if (a.length <= 2) return { lines: a, fs: 12.5 };
   return { lines: wrapAll(t, 23).slice(0, 2), fs: 11.2 };
@@ -478,7 +515,7 @@ function render2d() {
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.setAttribute('width', W * scale); svg.setAttribute('height', H * scale);
   let out = `<rect x="0" y="0" width="${W}" height="${H}" fill="${sheet}"/>`;
-  data.lanes.forEach((l, i) => {
+  rLanes.forEach((l, i) => {
     const r = laneRows[l.id], y = PADT + r.start * ROWH;
     if (i) out += `<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="${rule}"/>`;
     const ll = wrapAll(l.name, 15).slice(0, 2), ly = y + r.height * ROWH / 2 + (ll.length === 1 ? 5 : -3);
@@ -487,8 +524,8 @@ function render2d() {
   const qx = LANEW + (maxDepth + 1) * COLW;
   out += `<rect x="${qx}" y="0" width="${COLW + 20}" height="${H}" fill="${css('--s-quantum')}" opacity="0.07"/>`;
   out += `<text x="${LANEW + 12}" y="24" font-size="12.5" fill="${muted}">Foundations</text><text x="${qx - 12}" y="24" font-size="12.5" fill="${muted}" text-anchor="end">More advanced</text><text x="${qx + 12}" y="24" font-size="12.5" font-weight="600" fill="${css('--s-quantum')}">Quantum</text>`;
-  const sel = selected && byId[selected].core ? selected : null;
-  for (const e of coreEdges) {
+  const sel = selected && rSet.has(selected) ? selected : null;
+  for (const e of rEdges) {
     const x1 = nx(e.from) + NODEW, y1 = ny(e.from) + NODEH / 2, x2 = nx(e.to), y2 = ny(e.to) + NODEH / 2;
     const back = x2 <= x1; const mx = back ? Math.max(x1, x2) + 40 : (x1 + x2) / 2;
     const dPath = back ? `M${x1},${y1} C${mx},${y1} ${x2 - 40},${y2} ${x2},${y2}` : `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
@@ -496,7 +533,7 @@ function render2d() {
     const dim = view === 'paths' && !(onQuantumPath.has(e.from) && onQuantumPath.has(e.to)) || sel && e.from !== sel && e.to !== sel && view !== 'paths';
     out += `<path class="edge${dim ? ' dim' : ''}" d="${dPath}" fill="none" stroke="${q ? css('--s-quantum') : muted}" stroke-width="${q ? 1.8 : 1.2}" ${q ? 'stroke-dasharray="5 4"' : ''} opacity="${q ? 0.9 : 0.55}"/>`;
   }
-  for (const n of coreNodes) {
+  for (const n of rNodes) {
     const s = status(n), c = color(s), x = nx(n.id), y = ny(n.id);
     const hollow = n.quantum && mode === 'bank' && bank[n.id] !== 'done';
     const fill = s === 'todo' ? paper : hollow ? paper : c;
@@ -783,6 +820,10 @@ $('pick3d').addEventListener('click', (e) => {
 });
 
 // ---------- Views and modes ----------
+function setHint() {
+  const scope = biz === 'all' ? 'The curated roadmap' : `${data.businesses.find((b) => b.id === biz).name} roadmap: ${rNodes.length} items, with the shared foundations`;
+  $('hint2d').textContent = view === 'paths' ? `${scope}. Highlighted: every model and method on a path to a quantum algorithm.` : `${scope}. Select an item for details; use + and − to zoom. Engines and products open from an item.${innerWidth < 700 ? ' Swipe sideways to reach the quantum column.' : ''}`;
+}
 function setView(v) {
   view = v;
   document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
@@ -790,8 +831,8 @@ function setView(v) {
   $('foot').hidden = v === '3d';
   if (three) (v === '3d' ? three.start() : three.stop());
   if (three && v === '3d') three.filter(true);
-  $('hint2d').textContent = v === 'paths' ? 'Highlighted: every model and method on a path to a quantum algorithm.' : 'The curated roadmap. Select a model for details; use + and − to zoom.';
-  if ((v === 'roadmap' || v === 'paths') && selected && !byId[selected].core) selected = null;
+  setHint();
+  if ((v === 'roadmap' || v === 'paths') && selected && !rSet.has(selected)) selected = null;
   renderAll();
 }
 function renderAll() {
@@ -810,6 +851,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change', renderAll)
 let lastNarrow = null;
 new ResizeObserver(() => { const n = $('vfam').clientWidth < 640; if (view === 'families' && n !== lastNarrow) { lastNarrow = n; renderBubbles(); } }).observe(document.body);
 
+renderBizPick();
 renderAll();
 init3d();
 </script>

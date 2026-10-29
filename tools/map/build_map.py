@@ -329,6 +329,53 @@ for e, i in [('e_DiscountingSwapEngine', 'i_ois'), ('e_DiscountingSwapEngine', '
              ('e_DiscountingBondEngine', 'i_bondfwd')]:
     edge(e, i, 'prices')
 
+# ---------- 6b. business lines for the roadmap filter
+# biz: the business lines a node belongs to (empty = shared foundation, shown in every business view)
+# rlane: the roadmap row it sits in. Engines and instruments stay out of the roadmap (open them from a node).
+BUSINESSES = [('rates', 'Rates'), ('eqfx', 'Equity and FX'), ('credit', 'Credit'),
+              ('mrisk', 'Market risk'), ('ccr', 'Counterparty risk')]
+LANE_BIZ = {'infra': [], 'mc': [], 'eq': ['eqfx'], 'rates': ['rates'], 'credit': ['credit'],
+            'risk': ['mrisk'], 'port': ['mrisk'], 'xva': ['ccr']}
+BIZ = {
+    # quantum layer
+    'qae_price': ['eqfx', 'rates'], 'qae_credit': ['credit', 'ccr'], 'qae_var': ['mrisk', 'ccr'],
+    'qaoa': ['mrisk'], 'born': ['mrisk'],
+    # shared foundation that only some businesses need
+    'volsurf': ['eqfx', 'rates', 'mrisk'],
+    # indexes
+    'ibor_rfr': ['rates', 'ccr'], 'swapidx': ['rates'], 'inflidx': ['rates'], 'bmaidx': ['rates'],
+    # curves
+    'flat': ['rates'], 'interp': ['rates'], 'multicurve': ['rates', 'ccr'], 'fitted': ['rates'],
+    'spreaded': ['rates', 'credit'], 'implied': ['rates'], 'quantots': ['eqfx'], 'ufr': ['rates'],
+    'flathaz': ['credit', 'ccr'], 'interphaz': ['credit', 'ccr'],
+    # volatility
+    'constvol': ['eqfx'], 'fxdelta': ['eqfx'], 'hestonvol': ['eqfx'], 'ahvol': ['eqfx'], 'dupire': ['eqfx'],
+    'swmatrix': ['rates'], 'swcube': ['rates'], 'sabrcube': ['rates'], 'caplet': ['rates'], 'yoyvol': ['rates'],
+    'smileint': ['eqfx'], 'smilesabr': ['rates'], 'svi': ['eqfx'], 'zabr': ['rates'], 'kahale': ['eqfx'],
+    # models outside the curated layer
+    'ptdheston': ['eqfx'], 'roughheston': ['eqfx'], 'vg': ['eqfx'], 'cev': ['eqfx'], 'hybrid': ['eqfx', 'rates'],
+    'bk': ['rates'], 'gsr': ['rates'], 'ou': ['eqfx'], 'kluge': ['eqfx'],
+    # numerical methods
+    'trees': ['eqfx', 'rates'], 'fd': ['eqfx', 'rates'], 'lsm': ['eqfx', 'rates'], 'fourier': ['eqfx'],
+    'approx': ['eqfx'], 'calib': ['eqfx', 'rates'],
+    'cva': ['ccr'],
+}
+CLOUD_LANE = {'conv': 'infra', 'curves': 'infra', 'vol': 'infra', 'methods': 'mc'}
+BIZ_LANE = {'rates': 'rates', 'eqfx': 'eq', 'credit': 'credit', 'mrisk': 'risk', 'ccr': 'xva'}
+for n in nodes.values():
+    if n['cloud'] in ('engines', 'instruments'):
+        continue
+    if n['id'] in BIZ:
+        n['biz'] = BIZ[n['id']]
+    elif n.get('core'):
+        n['biz'] = LANE_BIZ[n['lane']]
+    else:
+        raise AssertionError('no business line for ' + n['id'])
+    if not n.get('core'):
+        n['rlane'] = CLOUD_LANE.get(n['cloud']) or BIZ_LANE[n['biz'][0]]
+for b in [b for b, _ in BUSINESSES]:
+    assert any(b in n.get('biz', []) for n in nodes.values()), b
+
 # ---------- 7. checks and output
 for a, b, t in edges:
     assert a in nodes and b in nodes, (a, b)
@@ -342,6 +389,7 @@ out = {
     'reviewed': core['reviewed'],
     'quantlib': inv['version'],
     'lanes': core['lanes'],
+    'businesses': [{'id': i, 'name': n} for i, n in BUSINESSES],
     'statuses': core['statuses'],
     'clouds': [{'id': i, 'name': n, 'note': d} for i, n, d in CLOUDS],
     'nodes': list(nodes.values()),

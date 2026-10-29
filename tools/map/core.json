@@ -2,7 +2,7 @@
   "reviewed": "2026-10-27",
   "lanes": [
     {"id": "infra", "name": "Infrastructure"},
-    {"id": "mc", "name": "Monte Carlo methods"},
+    {"id": "mc", "name": "Numerical methods"},
     {"id": "eq", "name": "Equity and FX"},
     {"id": "rates", "name": "Rates"},
     {"id": "credit", "name": "Credit"},
