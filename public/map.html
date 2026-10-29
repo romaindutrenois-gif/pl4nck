@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>3D model map · Veqctor</title>
+<title>Model map · Veqctor</title>
 <meta name="description" content="A map of pricing and risk models, engines, curves, volatility and instruments, from QuantLib to the quantum algorithms that build on them: what is implemented, in progress, not yet explored, and quantum.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -80,6 +80,11 @@
 
 /* 2D roadmap */
 .bizpick{margin:0 0 10px;flex-wrap:wrap}
+.rtools{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:flex-start}
+.qtoggle{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--rule);background:var(--sheet);border-radius:var(--r-sm);padding:7px 12px;font:inherit;font-size:14px;color:var(--muted);cursor:pointer}
+.qtoggle i{width:12px;height:12px;border-radius:50%;border:2px solid var(--s-quantum)}
+.qtoggle[aria-pressed=true]{color:var(--ink);border-color:var(--s-quantum)}
+.qtoggle[aria-pressed=true] i{background:var(--s-quantum)}
 .sheet{cursor:pointer}
 .sheet:hover polygon,.sheet:focus-visible polygon{stroke:var(--accent);stroke-width:2}
 .ldot{cursor:pointer}
@@ -161,7 +166,7 @@ svg text{font-family:var(--sans)}
     <a class="brand" href="/"><span class="name">ve<span class="q">q</span>ctor</span></a>
     <nav class="tabs" aria-label="Sections">
       <a href="/launch">Launch Veqctor</a>
-      <span class="dd"><a href="/library" aria-current="page">Library</a><span class="menu"><a href="/library">Model library</a><a href="/map" aria-current="page">3D model map</a></span></span>
+      <span class="dd"><a href="/library" aria-current="page">Library</a><span class="menu"><a href="/library">Model library</a><a href="/map" aria-current="page">Model map</a></span></span>
       <span class="dd"><button type="button" class="ddbtn" aria-expanded="false">Landscape</button><span class="menu"><a href="/technology">Technology mapping</a><a href="/resources">Resources</a></span></span>
       <a href="/about">About</a>
     </nav>
@@ -171,18 +176,18 @@ svg text{font-family:var(--sans)}
   <main class="page">
     <nav class="subtabs" aria-label="Library sections">
       <a href="/library">Model library</a>
-      <a href="/map" aria-current="page">3D model map</a>
+      <a href="/map" aria-current="page">Model map</a>
     </nav>
-    <h1>3D model map</h1>
+    <h1>Model map</h1>
     <p class="lead">Everything a pricing library is made of, from conventions and curves to models, engines and instruments, and the quantum algorithms that build on them. See what is implemented, what is in progress and what is left, then mark your own institution's coverage.</p>
 
     <div class="toolbar">
       <div class="seg" role="group" aria-label="View">
-        <button type="button" data-view="3d" aria-pressed="true">3D overview</button>
-        <button type="button" data-view="families" aria-pressed="false">Families</button>
+        <button type="button" data-view="3d" aria-pressed="true">Overview</button>
+        <button type="button" data-view="layers" aria-pressed="false">Business lines</button>
         <button type="button" data-view="roadmap" aria-pressed="false">Roadmap</button>
-        <button type="button" data-view="paths" aria-pressed="false">Paths to quantum</button>
         <button type="button" data-view="engines" aria-pressed="false">Engines</button>
+        <button type="button" data-view="families" aria-pressed="false">Explore all</button>
       </div>
       <div class="seg" role="group" aria-label="Whose status">
         <button type="button" data-mode="veqctor" aria-pressed="true">Veqctor library</button>
@@ -197,7 +202,7 @@ svg text{font-family:var(--sans)}
         <canvas id="gl" aria-label="Three-dimensional map: one cloud per family (conventions, curves, volatility, models, methods, engines, instruments, risk), with the quantum algorithms floating above."></canvas>
         <div class="labels" id="labels" aria-hidden="true"></div>
         <p class="note3d">Drag to rotate, scroll or pinch to zoom, click a point to open it. Each cloud is a family; the quantum cloud floats above the models it builds on.</p>
-        <button class="btn small cta2d" type="button" id="to2d">Explore the families</button>
+        <button class="btn small cta2d" type="button" id="to2d">See it by business line</button>
       </div>
     </section>
 
@@ -212,7 +217,7 @@ svg text{font-family:var(--sans)}
     </section>
 
     <section id="v2d" hidden>
-      <div class="seg bizpick" role="group" aria-label="Business line" id="bizpick"></div>
+      <div class="rtools" id="rtools"><div class="seg bizpick" role="group" aria-label="Business line" id="bizpick"></div><button type="button" class="qtoggle" id="qpaths" aria-pressed="false"><i></i>Highlight paths to quantum</button></div>
       <p class="hint" id="hint2d"></p>
       <div class="layout">
         <div class="view2d">
@@ -282,9 +287,11 @@ $('source').textContent = `Classes and links from QuantLib ${data.quantlib} (C++
 // "All" = the curated layer (core = true). A business line adds every model, curve, volatility,
 // index and method tagged for it (biz), plus the shared foundations (biz = []).
 const BIZ_KEY = 'veqctor-roadmap-business';
-let biz = 'layers';
-try { const b = localStorage.getItem(BIZ_KEY); if (b && (b === 'all' || b === 'layers' || data.businesses.some((x) => x.id === b))) biz = b; } catch {}
-const layersOn = () => biz === 'layers' && view === 'roadmap';
+let biz = 'all', qpaths = false;
+try { const b = localStorage.getItem(BIZ_KEY); if (b && (b === 'all' || data.businesses.some((x) => x.id === b))) biz = b; } catch {}
+const layersOn = () => view === 'layers';
+const twoD = () => view === 'roadmap' || view === 'layers';
+const pathsOn = () => view === 'roadmap' && qpaths;
 const VLANE = { id: 'vol', name: 'Volatility' };
 const roadEdgesAll = (() => {
   const seen = new Set(), out = [];
@@ -292,11 +299,11 @@ const roadEdgesAll = (() => {
   return out;
 })();
 let rNodes = [], rEdges = [], rSet = new Set(), rLanes = [], preds = {}, depth = {}, maxDepth = 0, laneRows = {}, totalRows = 0, pos = {}, onQuantumPath = new Set();
-const laneOf = (n) => biz === 'all' || biz === 'layers' ? n.lane : n.cloud === 'vol' ? 'vol' : (n.rlane || n.lane);
+const laneOf = (n) => biz === 'all' ? n.lane : n.cloud === 'vol' ? 'vol' : (n.rlane || n.lane);
 function layoutRoadmap() {
-  rNodes = biz === 'all' || biz === 'layers' ? coreNodes : data.nodes.filter((n) => n.biz && (!n.biz.length || n.biz.includes(biz)));
+  rNodes = biz === 'all' ? coreNodes : data.nodes.filter((n) => n.biz && (!n.biz.length || n.biz.includes(biz)));
   rSet = new Set(rNodes.map((n) => n.id));
-  rEdges = biz === 'all' || biz === 'layers' ? coreEdges : roadEdgesAll.filter((e) => rSet.has(e.from) && rSet.has(e.to));
+  rEdges = biz === 'all' ? coreEdges : roadEdgesAll.filter((e) => rSet.has(e.from) && rSet.has(e.to));
   preds = {}; rEdges.forEach((e) => (preds[e.to] = preds[e.to] || []).push(e.from));
   depth = {};
   const d = (id, path = new Set()) => {
@@ -313,8 +320,8 @@ function layoutRoadmap() {
   rNodes.forEach((n) => { if (n.quantum) depth[n.id] = maxDepth + 1; });
   const slots = {};
   rNodes.forEach((n) => { const l = laneOf(n); ((slots[l] = slots[l] || {})[depth[n.id]] = slots[l][depth[n.id]] || []).push(n.id); });
-  const lanes = biz === 'all' || biz === 'layers' ? data.lanes : [data.lanes[0], VLANE, ...data.lanes.slice(1)];
-  rLanes = lanes.filter((l) => biz === 'all' || biz === 'layers' || slots[l.id]);
+  const lanes = biz === 'all' ? data.lanes : [data.lanes[0], VLANE, ...data.lanes.slice(1)];
+  rLanes = lanes.filter((l) => biz === 'all' || slots[l.id]);
   laneRows = {}; let row = 0;
   rLanes.forEach((l) => {
     const h = Math.max(1, ...Object.values(slots[l.id] || {}).map((a) => a.length));
@@ -331,14 +338,22 @@ function layoutRoadmap() {
 }
 layoutRoadmap();
 function renderBizPick() {
-  const opts = [...(view === 'paths' ? [] : [['layers', 'Overview']]), ['all', 'All (curated)'], ...data.businesses.map((b) => [b.id, b.name])];
-  $('bizpick').innerHTML = opts.map(([k, t]) => `<button type="button" data-biz="${k}" aria-pressed="${biz === k || (k === 'all' && biz === 'layers' && view === 'paths')}">${esc(t)}</button>`).join('');
+  const opts = [['all', 'All (curated)'], ...data.businesses.map((b) => [b.id, b.name])];
+  $('bizpick').innerHTML = opts.map(([k, t]) => `<button type="button" data-biz="${k}" aria-pressed="${biz === k}">${esc(t)}</button>`).join('');
+  $('qpaths').setAttribute('aria-pressed', String(qpaths));
 }
 function pickBiz(b, keep) {
   biz = b; try { localStorage.setItem(BIZ_KEY, biz); } catch {}
   layoutRoadmap(); scale = null;
   if (!keep && selected && !rSet.has(selected)) selected = null;
   renderBizPick(); setHint(); renderAll();
+}
+$('qpaths').addEventListener('click', () => { qpaths = !qpaths; renderBizPick(); setHint(); renderAll(); });
+function openRoadmap(b, sel) {
+  biz = b; try { localStorage.setItem(BIZ_KEY, biz); } catch {}
+  layoutRoadmap(); scale = null;
+  if (sel) selected = sel;
+  setView('roadmap');
 }
 $('bizpick').addEventListener('click', (e) => {
   const b = e.target.closest('[data-biz]'); if (!b || b.dataset.biz === biz) return;
@@ -437,7 +452,7 @@ function renderLayers() {
 }
 
 // ---------- Legend and summary ----------
-function scopeNodes() { return view === 'engines' ? engScope() : layersOn() ? layerNodes : view === 'roadmap' || view === 'paths' ? rNodes : data.nodes; }
+function scopeNodes() { return view === 'engines' ? engScope() : layersOn() ? layerNodes : view === 'roadmap' ? rNodes : data.nodes; }
 function renderLegend() {
   const items = mode === 'veqctor'
     ? [['done', 'Kit available'], ['wip', 'Next'], ['todo', 'Later'], ['quantum', 'Quantum']]
@@ -447,7 +462,7 @@ function renderLegend() {
   const count = (s) => classical.filter((n) => status(n) === s).length;
   $('summary').innerHTML = `<span><b>${count('done')}</b> ${mode === 'veqctor' ? 'with a kit' : 'implemented'}</span><span><b>${count('wip')}</b> ${mode === 'veqctor' ? 'next' : 'in progress'}</span><span><b>${count('todo')}</b> ${mode === 'veqctor' ? 'later' : 'not yet explored'}</span><span><b>${all.length - classical.length}</b> quantum</span>`;
   $('reset').hidden = mode !== 'bank';
-  $('export').hidden = !(view === 'roadmap' || view === 'paths');
+  $('export').hidden = !twoD();
 }
 
 // ---------- Panel (shared by the families view and the roadmap) ----------
@@ -458,8 +473,8 @@ function panelHtml() {
       <p class="rel">Large groups are folded: click one to open it. ${mode === 'bank' ? 'Select an item to set its status for your institution; the bubbles count your coverage. Statuses stay in this browser; nothing is sent.' : 'Select an item to see what it builds on, what it prices and where it leads.'}</p>`;
     if (view === 'engines') return `<h2>How to read it</h2><p>Each row is a product, each column a model. A cell lists the QuantLib engines that price that product under that model, one chip per engine, coloured by numerical method.</p><p class="rel">Read a row to see which models can price a product, a column to see what a model can price. Shaded cells have two methods or more: a closed form and a Monte Carlo engine for the same pair is a ready-made validation test. Empty rows and gaps are combinations QuantLib does not cover. Select a chip for the engine's details.</p>`;
     if (layersOn()) return `<h2>How to read it</h2><p>The same map, cut into business lines and stacked. Every item keeps its place on every sheet: left to right from foundations to more advanced models, quantum algorithms at the right end (blue).</p><p class="rel">The threads show what is shared. A conventions library, a curve bootstrap or a Monte Carlo engine serves every line at once: these are the no-regret investments. Open a sheet to work on it in detail.</p>`;
-    return `<h2>${view === 'paths' ? 'Paths to quantum' : 'How to read it'}</h2>
-      <p>${view === 'paths' ? 'Only the models and methods that lead to a quantum algorithm are highlighted. Each one is a no-regret step: it pays off whether or not quantum delivers.' : 'Left to right, from foundations to more advanced models, then the quantum algorithms that build on them. Solid lines: builds on. Dashed blue lines: quantum counterpart. Pick a business line above to see more of its models, curves and volatilities; the Families view shows everything.'}</p>
+    return `<h2>${pathsOn() ? 'Paths to quantum' : 'How to read it'}</h2>
+      <p>${pathsOn() ? 'Only the models and methods that lead to a quantum algorithm are highlighted. Each one is a no-regret step: it pays off whether or not quantum delivers.' : 'Left to right, from foundations to more advanced models, then the quantum algorithms that build on them. Solid lines: builds on. Dashed blue lines: quantum counterpart. Pick a business line above to see more of its models, curves and volatilities; Explore all shows everything.'}</p>
       <p class="rel">${mode === 'bank' ? 'Select a model to set its status for your institution. Statuses stay in this browser; nothing is sent.' : 'Select a model to see what it builds on and where it leads.'}</p>`;
   }
   const n = byId[selected], s = status(n);
@@ -501,7 +516,7 @@ $('fpanel').addEventListener('click', onPanelClick);
 function select(id, reveal) {
   selected = id;
   const n = id && byId[id];
-  if (n && (view === 'roadmap' || view === 'paths') && !rSet.has(n.id)) { setView('families'); }
+  if (n && twoD() && !rSet.has(n.id)) { setView('families'); }
   if (n && view === 'families') {
     openClouds.add(n.cloud);
     const key = n.cloud + '|' + (n.group || '');
@@ -675,7 +690,7 @@ function render2d() {
     const back = x2 <= x1; const mx = back ? Math.max(x1, x2) + 40 : (x1 + x2) / 2;
     const dPath = back ? `M${x1},${y1} C${mx},${y1} ${x2 - 40},${y2} ${x2},${y2}` : `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
     const q = e.type === 'quantum';
-    const dim = view === 'paths' && !(onQuantumPath.has(e.from) && onQuantumPath.has(e.to)) || sel && e.from !== sel && e.to !== sel && view !== 'paths';
+    const dim = pathsOn() && !(onQuantumPath.has(e.from) && onQuantumPath.has(e.to)) || sel && e.from !== sel && e.to !== sel && !pathsOn();
     out += `<path class="edge${dim ? ' dim' : ''}" d="${dPath}" fill="none" stroke="${q ? css('--s-quantum') : muted}" stroke-width="${q ? 1.8 : 1.2}" ${q ? 'stroke-dasharray="5 4"' : ''} opacity="${q ? 0.9 : 0.55}"/>`;
   }
   for (const n of rNodes) {
@@ -683,7 +698,7 @@ function render2d() {
     const hollow = n.quantum && mode === 'bank' && bank[n.id] !== 'done';
     const fill = s === 'todo' ? paper : hollow ? paper : c;
     const tc = s === 'todo' || hollow ? ink : '#fff';
-    const dim = view === 'paths' && !onQuantumPath.has(n.id);
+    const dim = pathsOn() && !onQuantumPath.has(n.id);
     const { lines, fs } = wrapText(n.name);
     const ty = y + NODEH / 2 + (lines.length === 1 ? 4.5 : -2.5);
     out += `<g class="node${dim ? ' dim' : ''}" data-id="${n.id}" tabindex="0" role="button" aria-label="${esc(n.name)}: ${esc(statusLabel(n))}">
@@ -736,15 +751,15 @@ $('svg').addEventListener('pointerleave', () => showCard(null));
 $('scroll').addEventListener('scroll', () => showCard(null));
 $('svg').addEventListener('click', (e) => {
   const dot = e.target.closest('.ldot');
-  if (dot) { selected = dot.dataset.id; pickBiz(dot.dataset.sheet, true); return; }
+  if (dot) { showCard(null); openRoadmap(dot.dataset.sheet, dot.dataset.id); return; }
   const sh = e.target.closest('.sheet');
-  if (sh) { pickBiz(sh.dataset.sheet); return; }
+  if (sh) { showCard(null); openRoadmap(sh.dataset.sheet); return; }
   const g = e.target.closest('.node'); if (!g) return;
   selected = selected === g.dataset.id ? null : g.dataset.id; render2d(); renderPanel();
 });
 $('svg').addEventListener('keydown', (e) => {
   if (e.key !== 'Enter' && e.key !== ' ') return;
-  const sh = e.target.closest('.sheet'); if (sh) { e.preventDefault(); pickBiz(sh.dataset.sheet); return; }
+  const sh = e.target.closest('.sheet'); if (sh) { e.preventDefault(); openRoadmap(sh.dataset.sheet); return; }
   const g = e.target.closest('.node'); if (!g) return; e.preventDefault();
   selected = g.dataset.id; render2d(); renderPanel();
   document.querySelector(`.node[data-id="${selected}"]`)?.focus();
@@ -776,13 +791,13 @@ async function init3d() {
     THREE = await import('three');
     ({ OrbitControls } = await import('three/addons/controls/OrbitControls.js'));
   } catch {
-    $('stage').insertAdjacentHTML('beforeend', '<div class="fallback">The 3D view could not load. <br>Use the Families view above.</div>');
+    $('stage').insertAdjacentHTML('beforeend', '<div class="fallback">The 3D view could not load. <br>Use the Business lines or Explore all views above.</div>');
     return;
   }
   const canvas = $('gl'), stage = $('stage');
   let renderer;
   try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); }
-  catch { stage.insertAdjacentHTML('beforeend', '<div class="fallback">Your browser cannot show 3D here. <br>Use the Families view above.</div>'); return; }
+  catch { stage.insertAdjacentHTML('beforeend', '<div class="fallback">Your browser cannot show 3D here. <br>Use the Business lines or Explore all views above.</div>'); return; }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 800);
@@ -994,6 +1009,7 @@ async function init3d() {
   });
   new ResizeObserver(size).observe(stage); size(); paint(); filter(); goal = null; loop();
   three = { paint, filter, start() { if (!running) { running = true; loop(); } }, stop() { running = false; } };
+  if (view !== '3d') three.stop();
 }
 
 // ---------- 3D family picker (shares its state with the Families view) ----------
@@ -1087,18 +1103,21 @@ $('epanel').addEventListener('click', onPanelClick);
 // ---------- Views and modes ----------
 function setHint() {
   if (layersOn()) { $('hint2d').textContent = 'One sheet per business line. Shared foundations (conventions, curves, Monte Carlo…) run as threads through every sheet; dashed threads are items shared by two or three lines. Click a sheet or a point to open that roadmap.'; return; }
-  const scope = biz === 'all' || biz === 'layers' ? 'The curated roadmap' : `${data.businesses.find((b) => b.id === biz).name} roadmap: ${rNodes.length} items, with the shared foundations`;
-  $('hint2d').textContent = view === 'paths' ? `${scope}. Highlighted: every model and method on a path to a quantum algorithm.` : `${scope}. Select an item for details; use + and − to zoom. Engines and products open from an item.${innerWidth < 700 ? ' Swipe sideways to reach the quantum column.' : ''}`;
+  const scope = biz === 'all' ? 'The curated roadmap' : `${data.businesses.find((b) => b.id === biz).name} roadmap: ${rNodes.length} items, with the shared foundations`;
+  $('hint2d').textContent = pathsOn() ? `${scope}. Highlighted: every model and method on a path to a quantum algorithm.` : `${scope}. Select an item for details; use + and − to zoom. Engines and products open from an item.${innerWidth < 700 ? ' Swipe sideways to reach the quantum column.' : ''}`;
 }
 function setView(v) {
   view = v;
   document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
-  $('v3d').hidden = v !== '3d'; $('vfam').hidden = v !== 'families'; $('v2d').hidden = !(v === 'roadmap' || v === 'paths'); $('veng').hidden = v !== 'engines';
+  $('v3d').hidden = v !== '3d'; $('vfam').hidden = v !== 'families'; $('v2d').hidden = !twoD(); $('veng').hidden = v !== 'engines';
+  $('rtools').hidden = v !== 'roadmap';
+  try { history.replaceState(null, '', v === '3d' ? location.pathname : '#' + v); } catch {}
   $('foot').hidden = v === '3d';
   if (three) (v === '3d' ? three.start() : three.stop());
   if (three && v === '3d') three.filter(true);
   setHint(); renderBizPick();
-  if ((v === 'roadmap' || v === 'paths') && selected && !rSet.has(selected)) selected = null;
+  if (v === 'roadmap' && selected && !rSet.has(selected)) selected = null;
+  if (v === 'layers') selected = null;
   if (v === 'engines' && selected && !byId[selected].engine) selected = null;
   renderAll();
 }
@@ -1114,13 +1133,14 @@ document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('clic
 document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => {
   mode = b.dataset.mode; document.querySelectorAll('[data-mode]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); renderAll();
 }));
-$('to2d').addEventListener('click', () => setView('families'));
+$('to2d').addEventListener('click', () => setView('layers'));
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', renderAll);
 let lastNarrow = null;
 new ResizeObserver(() => { const n = $('vfam').clientWidth < 640; if (view === 'families' && n !== lastNarrow) { lastNarrow = n; renderBubbles(); } }).observe(document.body);
 
 renderBizPick();
-renderAll();
+const startView = location.hash.slice(1);
+if (['layers', 'roadmap', 'engines', 'families'].includes(startView)) setView(startView); else renderAll();
 init3d();
 </script>
 <script src="/nav.js" defer></script>
