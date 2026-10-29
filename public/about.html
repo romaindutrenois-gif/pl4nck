@@ -13,7 +13,8 @@
 <style>
 .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .card.link{color:inherit;text-decoration:none;display:block}
-.card .go{font-size:14.5px;font-weight:600;margin:10px 0 0}
+.grid3 .card{display:flex;flex-direction:column}
+.card .go{font-size:14.5px;font-weight:600;margin:auto 0 0;padding-top:10px}
 .card.link:hover{border-color:var(--ink)}
 .btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule)}
 .grid2 .card p{font-size:14.5px}
@@ -58,7 +59,7 @@
 
     <h2>What it does</h2>
     <div class="grid3">
-      <div class="card"><span class="num">Roadmap</span><h3>Assess, build and advance your R&amp;D roadmap</h3><p class="go"><a href="/launch">Launch Veqctor</a> · <a href="/map">Model map</a></p></div>
+      <div class="card"><span class="num">Roadmap</span><h3>Assess, build and advance your R&amp;D roadmap</h3><p>Nothing to upload: no code or data leaves your bank.</p><p class="go"><a href="/launch">Launch Veqctor</a> · <a href="/map">Model map</a></p></div>
       <div class="card"><span class="num">Models</span><h3>Accelerate model development and validation</h3><p>Choose a model, download its kit: Python prototype, benchmarks and documentation.</p><p class="go"><a href="/library">Model library</a></p></div>
       <div class="card"><span class="num">Quantum</span><h3>Explore quantum technology, hardware and circuits</h3><p>Circuit kits coming soon.</p><p class="go"><a href="/technology">Technology mapping</a> · <a href="/resources">Resources</a></p></div>
     </div>
