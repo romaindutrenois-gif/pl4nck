@@ -181,7 +181,7 @@ svg text{font-family:var(--sans)}
       <a href="/map" aria-current="page">Model map</a>
     </nav>
     <h1>Model map</h1>
-    <p class="lead">Everything a pricing library is made of, from conventions and curves to models, engines and instruments, and the quantum algorithms that build on them. See what is implemented, what is in progress and what is left, then mark your own institution's coverage.</p>
+    <p class="lead">Every component of a pricing library, from conventions to engines, and the quantum algorithms that build on them. Mark your own coverage as you go.</p>
 
     <div class="toolbar">
       <div class="seg" role="group" aria-label="View">
@@ -204,13 +204,13 @@ svg text{font-family:var(--sans)}
       <div class="stage3d" id="stage">
         <canvas id="gl" aria-label="Three-dimensional map: one cloud per family (conventions, curves, volatility, models, methods, engines, instruments, risk), with the quantum algorithms floating above."></canvas>
         <div class="labels" id="labels" aria-hidden="true"></div>
-        <p class="note3d">Drag to rotate, scroll or pinch to zoom, click a point to open it. Each cloud is a family; the quantum cloud floats above the models it builds on.</p>
+        <p class="note3d">Drag to rotate, pinch or scroll to zoom, click a point to open it.</p>
         <button class="btn small cta2d" type="button" id="to2d">See it by business line</button>
       </div>
     </section>
 
     <section id="vfam" hidden>
-      <p class="hint">Each bubble is a family; the bands show how many links connect two families. Click a bubble to show or hide it below, then select any item to see its links.</p>
+      <p class="hint">Click a family to show or hide it, then a component to see its links.</p>
       <div class="bubbles"><svg id="bubbles" role="group" aria-label="Families and the links between them"></svg></div>
       <div class="famtools"><span id="famcount"></span><button type="button" id="famall">Show all</button><button type="button" id="famnone">Hide all</button></div>
       <div class="famlayout">
@@ -296,7 +296,7 @@ function statusLabel(n) {
   const s = prog(n);
   return mode !== 'bank' ? { done: 'Veqctor kit available', wip: 'Next in the library', todo: 'No Veqctor kit yet' }[s] : data.statuses[s];
 }
-$('source').textContent = `Classes and links from QuantLib ${data.quantlib} (C++ and Python sources), folded to one item per concept; Veqctor items added for risk, methods and quantum. Reviewed ${data.reviewed}.`;
+$('source').textContent = `Built from QuantLib ${data.quantlib} (C++ and Python sources), one component per concept, plus Veqctor components for risk, methods and quantum. Reviewed ${data.reviewed}.`;
 
 // ---------- Roadmap layout: columns by depth along "builds on", rows by lane ----------
 // "All" = the curated layer (core = true). A business line adds every model, curve, volatility,
@@ -425,7 +425,7 @@ function renderLayers() {
   for (let i = L.length - 1; i >= 0; i--) {
     const b = L[i], c = [P(i, 0, 0), P(i, 1, 0), P(i, 1, 1), P(i, 0, 1)];
     const ns = layerNodes.filter((n) => inLayer(n, b.id));
-    out += `<g class="sheet" data-sheet="${b.id}" tabindex="0" role="button" aria-label="Open the ${esc(b.name)} roadmap (${ns.length} items)">`;
+    out += `<g class="sheet" data-sheet="${b.id}" tabindex="0" role="button" aria-label="Open the ${esc(b.name)} roadmap (${ns.length} components)">`;
     out += `<polygon points="${c.map((p) => p.join(',')).join(' ')}" fill="${paper}" fill-opacity="0.82" stroke="${rule}" stroke-width="1.2"/>`;
     for (const e of layerEdges) {
       if (!inLayer(byId[e.from], b.id) || !inLayer(byId[e.to], b.id)) continue;
@@ -438,7 +438,7 @@ function renderLayers() {
       out += `<circle class="ldot" data-id="${n.id}" data-sheet="${b.id}" cx="${x}" cy="${y}" r="${n.quantum ? 5.5 : 4.2}" fill="${fill}" stroke="${n.quantum ? qc : s === 'todo' ? css('--s-todo') : color(s)}" stroke-width="1.2"></circle>`;
     }
     const [lx, ly] = P(i, 0, 1);
-    out += `<text x="${lx - 12}" y="${ly - 6}" font-size="14" font-weight="600" fill="${ink}" text-anchor="end">${esc(b.name)}</text><text x="${lx - 12}" y="${ly + 11}" font-size="12" fill="${muted}" text-anchor="end">${ns.length} items</text>`;
+    out += `<text x="${lx - 12}" y="${ly - 6}" font-size="14" font-weight="600" fill="${ink}" text-anchor="end">${esc(b.name)}</text><text x="${lx - 12}" y="${ly + 11}" font-size="12" fill="${muted}" text-anchor="end">${ns.length} components</text>`;
     out += `</g>`;
   }
   // shared items: a thread through every sheet they belong to; foundations labelled above the stack
@@ -477,7 +477,7 @@ function renderLegend() {
   $('legend').innerHTML = items.map(([s, t]) => `<span><i style="background:${color(s)}"></i>${esc(t)}</span>`).join('');
   const all = scopeNodes(), classical = all.filter((n) => !n.quantum);
   const count = (s) => classical.filter((n) => prog(n) === s).length;
-  $('summary').innerHTML = mode === 'family' ? `<span><b>${classical.length}</b> items</span><span><b>${count('done')}</b> with a Veqctor kit</span>` : `<span><b>${count('done')}</b> ${mode === 'veqctor' ? 'with a kit' : 'implemented'}</span><span><b>${count('wip')}</b> ${mode === 'veqctor' ? 'next' : 'in progress'}</span><span><b>${count('todo')}</b> ${mode === 'veqctor' ? 'later' : 'not yet explored'}</span>`;
+  $('summary').innerHTML = mode === 'family' ? `<span><b>${classical.length}</b> components</span><span><b>${count('done')}</b> with a Veqctor kit</span>` : `<span><b>${count('done')}</b> ${mode === 'veqctor' ? 'with a kit' : 'implemented'}</span><span><b>${count('wip')}</b> ${mode === 'veqctor' ? 'next' : 'in progress'}</span><span><b>${count('todo')}</b> ${mode === 'veqctor' ? 'later' : 'not yet explored'}</span>`;
   $('summary').innerHTML += `<span><b>${all.length - classical.length}</b> quantum</span>`;
   $('reset').hidden = mode !== 'bank';
   $('export').hidden = !twoD();
@@ -487,13 +487,13 @@ function renderLegend() {
 function panelHtml() {
   if (!selected) {
     if (view === 'families') return `<h2>How to read it</h2>
-      <p>${data.nodes.length} items in ${data.clouds.length} families. Each QuantLib class is folded into one item per concept: the variants are listed inside.</p>
-      <p class="rel">Large groups are folded: click one to open it. ${mode === 'bank' ? 'Select an item to set its status for your institution; the bubbles count your coverage. Statuses stay in this browser; nothing is sent.' : 'Select an item to see what it builds on, what it prices and where it leads.'}</p>`;
-    if (view === 'engines') return `<h2>How to read it</h2><p>Each row is a product, each column a model. A cell lists the QuantLib engines that price that product under that model, one chip per engine, coloured by numerical method.</p><p class="rel">Read a row to see which models can price a product, a column to see what a model can price. Shaded cells have two methods or more: a closed form and a Monte Carlo engine for the same pair is a ready-made validation test. Empty rows and gaps are combinations QuantLib does not cover. Select a chip for the engine's details.</p>`;
-    if (layersOn()) return `<h2>How to read it</h2><p>The same map, cut into business lines and stacked. Every item keeps its place on every sheet: left to right from foundations to more advanced models, quantum algorithms at the right end (blue).</p><p class="rel">The threads show what is shared. A conventions library, a curve bootstrap or a Monte Carlo engine serves every line at once: these are the no-regret investments. Open a sheet to work on it in detail.</p>`;
+      <p>${data.nodes.length} components in ${data.clouds.length} families; QuantLib variants are folded inside each one. Click a large group to open it.</p>
+      <p class="rel">${mode === 'bank' ? 'Select a component to set your status. It stays in this browser.' : 'Select a component to see what it builds on, prices and leads to.'}</p>`;
+    if (view === 'engines') return `<h2>How to read it</h2><p>Rows are products, columns are models. One chip per QuantLib engine, coloured by method.</p><p class="rel">Shaded cells have two methods: one engine can validate the other. Blue chips are Monte Carlo, where amplitude estimation could take over. Gaps are combinations QuantLib does not cover.</p>`;
+    if (layersOn()) return `<h2>How to read it</h2><p>One sheet per business line. A component keeps the same place on every sheet: foundations on the left, quantum on the right.</p><p class="rel">Threads are shared components. Conventions, curves and Monte Carlo serve every line: no-regret investments.</p>`;
     return `<h2>${pathsOn() ? 'Paths to quantum' : 'How to read it'}</h2>
-      <p>${pathsOn() ? 'Only the models and methods that lead to a quantum algorithm are highlighted. Each one is a no-regret step: it pays off whether or not quantum delivers.' : 'Left to right, from foundations to more advanced models, then the quantum algorithms that build on them. Solid lines: builds on. Dashed blue lines: quantum counterpart. Pick a business line above to see more of its models, curves and volatilities; Explore all shows everything.'}</p>
-      <p class="rel">${mode === 'bank' ? 'Select a model to set its status for your institution. Statuses stay in this browser; nothing is sent.' : 'Select a model to see what it builds on and where it leads.'}</p>`;
+      <p>${pathsOn() ? 'Highlighted: the components leading to a quantum algorithm. Each is worth doing even if quantum never delivers.' : 'Foundations on the left, quantum on the right. Solid line: builds on. Dashed blue: quantum counterpart.'}</p>
+      <p class="rel">${mode === 'bank' ? 'Select a component to set your status. It stays in this browser.' : 'Select a component to see its links.'}</p>`;
   }
   const n = byId[selected], s = status(n);
   const rel = (list) => list.map((id) => `<button type="button" class="go" data-go="${id}">${esc(byId[id].name)}</button>`).join(', ');
@@ -1103,7 +1103,7 @@ function renderEngines() {
   html += `</tbody></table>`;
   $('emxwrap').innerHTML = html;
   const mc = engs.filter((e) => engMethod(e) === 'mc').length;
-  $('enghint').textContent = `${engs.length} QuantLib engines for ${rows.length} products and ${cols.length} models. ${pairs} product-model pairs are covered; ${multi} of them ${multi === 1 ? 'has' : 'have'} two methods or more (shaded), so one engine can check another.${empty ? ` ${empty} product${empty > 1 ? 's have' : ' has'} no dedicated engine.` : ''}${mc ? ` ${mc} Monte Carlo engine${mc > 1 ? 's' : ''} (blue): where quantum amplitude estimation could take over.` : ''}`;
+  $('enghint').textContent = `${engs.length} engines · ${pairs} product–model pairs · ${multi} cross-checkable${mc ? ` · ${mc} Monte Carlo` : ''}`;
   $('emxkey').innerHTML = METHODS.map(([k, t, a]) => `<span><span class="ep m-${k}">${a}</span> ${esc(t)}</span>`).join('') + `<span><span class="ep m-closed kit">CF</span> Kit available</span><span><i class="sw" style="background:color-mix(in srgb,var(--s-done) 10%,transparent)"></i>Two methods or more</span>`;
 }
 $('engpick').addEventListener('click', (e) => {
@@ -1121,11 +1121,12 @@ $('epanel').addEventListener('click', onPanelClick);
 
 // ---------- Views and modes ----------
 function setHint() {
-  if (layersOn()) { $('hint2d').textContent = 'One sheet per business line. Shared foundations (conventions, curves, Monte Carlo…) run as threads through every sheet; dashed threads are items shared by two or three lines. Click a sheet or a point to open that roadmap.'; return; }
-  const scope = biz === 'all' ? 'The curated roadmap' : `${data.businesses.find((b) => b.id === biz).name} roadmap: ${rNodes.length} items, with the shared foundations`;
-  $('hint2d').textContent = pathsOn() ? `${scope}. Highlighted: every model and method on a path to a quantum algorithm.` : `${scope}. Select an item for details; use + and − to zoom. Engines and products open from an item.${innerWidth < 700 ? ' Swipe sideways to reach the quantum column.' : ''}`;
+  if (layersOn()) { $('hint2d').textContent = 'Click a sheet to open its roadmap.'; return; }
+  const scope = biz === 'all' ? 'Curated roadmap' : `${data.businesses.find((b) => b.id === biz).name}: ${rNodes.length} components`;
+  $('hint2d').textContent = `${scope}. Click a component for details.${innerWidth < 700 ? ' Swipe for the quantum column.' : ''}`;
 }
 function setView(v) {
+  if (v !== view) scale = null; // each view fits itself to the width
   view = v;
   document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
   $('v3d').hidden = v !== '3d'; $('vfam').hidden = v !== 'families'; $('v2d').hidden = !twoD(); $('veng').hidden = v !== 'engines';

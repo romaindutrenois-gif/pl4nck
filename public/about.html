@@ -54,18 +54,18 @@
 
   <main class="page">
     <h1>About Veqctor</h1>
-    <p class="lead">Veqctor helps quants in banks and asset managers prepare their models for what comes next: an honest view of where quantum computing stands, a no-regret roadmap, and validated model kits they can use today. It was built by a practising quant with a background in model validation, structured products and regulatory frameworks.</p>
+    <p class="lead">Veqctor helps quants in banks and asset managers prepare their models for what comes next: an honest view of quantum computing, a no-regret roadmap and validated model kits. Built by a practising quant in model validation, structured products and regulation.</p>
 
     <h2>What it does</h2>
     <div class="grid3">
-      <div class="card"><span class="num">Roadmap</span><h3>Assess, build and advance your R&amp;D roadmap</h3><p>Four short questions, then an honest verdict: where quantum computing stands for your use case, when it could matter, which hardware fits, and a no-regret roadmap from your current model. The model map covers every model, engine, curve and instrument in QuantLib, so your team can mark where it stands.</p><p class="go"><a href="/launch">Launch Veqctor</a> · <a href="/map">Model map</a></p></div>
+      <div class="card"><span class="num">Roadmap</span><h3>Assess, build and advance your R&amp;D roadmap</h3><p>Four questions, then an honest verdict on quantum for your use case and a no-regret roadmap from your current model. The model map covers every QuantLib model, engine, curve and instrument: mark where your team stands.</p><p class="go"><a href="/launch">Launch Veqctor</a> · <a href="/map">Model map</a></p></div>
       <div class="card"><span class="num">Models</span><h3>Accelerate model development and validation</h3><p>Pick a model and download its validation kit: Python prototype, tests with pre-registered criteria, independent QuantLib reference values, a conventions module, and model documentation in Word and LaTeX.</p><p class="go"><a href="/library">Model library</a></p></div>
-      <div class="card"><span class="num">Quantum</span><h3>Explore quantum technology, hardware and circuits</h3><p>Quantum computing for finance by use case, algorithm family, hardware and player, with honest horizons, reviewed every month; courses, key papers, software and hardware access. Quantum circuit kits are in preparation.</p><p class="go"><a href="/technology">Technology mapping</a> · <a href="/resources">Resources</a></p></div>
+      <div class="card"><span class="num">Quantum</span><h3>Explore quantum technology, hardware and circuits</h3><p>Quantum for finance by use case, algorithm, hardware and player, with honest horizons, reviewed monthly; plus courses, papers, software and hardware access. Circuit kits in preparation.</p><p class="go"><a href="/technology">Technology mapping</a> · <a href="/resources">Resources</a></p></div>
     </div>
 
     <h2>The no-regret principle</h2>
-    <p>For most finance workloads, a real quantum advantage needs error-corrected machines that are not expected before the 2030s. Waiting is still not neutral. The prerequisites are the same either way: clean data, classical benchmarks, variance reduction, reproducible runs and validated documentation. Any quantum algorithm will be measured against them, and they pay off on their own.</p>
-    <p>So every roadmap Veqctor builds starts with steps worth doing even if quantum computing never delivers. Quantum comes last, with a dated go/no-go based on resource estimates rather than announcements. The model library delivers those first steps.</p>
+    <p>For most finance workloads, quantum advantage needs error-corrected machines not expected before the 2030s. Waiting is still not neutral: clean data, classical benchmarks, variance reduction, reproducible runs and validated documentation are needed either way, and they pay off on their own.</p>
+    <p>So every Veqctor roadmap starts with steps worth doing even if quantum never delivers. Quantum comes last, with a dated go/no-go based on resource estimates, not announcements.</p>
     <ol class="ladder" aria-label="Example: Monte Carlo pricing roadmap">
       <li><b>Today</b>Your current model, priced and documented</li>
       <li><b>Benchmarks</b>Closed forms and reference values, errors reported</li>
@@ -77,12 +77,12 @@
 
     <h2>How the validated kits are built</h2>
     <div class="grid2">
-      <div class="card"><h3>Independent references</h3><p>Reference values are computed once with QuantLib, cross-checked against independent closed forms, and stored as data in the kit. The prototype never imports QuantLib, and a test checks it: comparing them is a real check. You do not need QuantLib to run anything.</p></div>
+      <div class="card"><h3>Independent references</h3><p>Computed once with QuantLib, cross-checked against closed forms and shipped as data. The prototype never imports QuantLib, so the comparison is a real check, and you do not need QuantLib to run anything.</p></div>
       <div class="card"><h3>Pre-registered criteria</h3><p>Every test has its acceptance criterion fixed before the code is written: error bounds, standard errors, convergence rates, no-arbitrage shapes, limits. Criteria are never loosened to make a test pass.</p></div>
       <div class="card"><h3>Tested as you would run it</h3><p>Each kit is installed and tested in a clean environment before release, and every test shipped to users runs again automatically at each change of the library, on two Python versions.</p></div>
       <div class="card"><h3>Documentation you can file</h3><p>Model documentation aligned with SR 11-7 and the ECB guide, pre-filled with theory, assumptions, limits and test results, in Word (native equations) and LaTeX. Shaded sections are left for your institution.</p></div>
     </div>
-    <div class="callout"><p><b>The conventions nobody tests.</b> Day counts, holiday calendars and schedules ship with every kit, checked against QuantLib on thousands of cases, including every holiday from 2000 to 2050. Building them surfaced an error in QuantLib's own French calendar, which fixes Ascension and Whit Monday on set dates although both move with Easter.</p></div>
+    <div class="callout"><p><b>The conventions nobody tests.</b> Day counts, holiday calendars and schedules ship with every kit, checked against QuantLib on thousands of cases, every holiday from 2000 to 2050. Building them surfaced an error in QuantLib's French calendar: Ascension and Whit Monday fixed on set dates.</p></div>
 
     <h2>What it does not do</h2>
     <ul class="dont">
@@ -98,13 +98,13 @@
     <p>Model validators, quant R&amp;D, front-office quants and structurers, risk managers, innovation teams, and managers planning skills and budget. No quantum background is needed.</p>
 
     <h2>How it works</h2>
-    <p>The verdict, roadmap and custom variants are generated by an AI model (Claude, by Anthropic) guided by a curated reference base: the <a href="/technology">technology mapping</a>, reference roadmaps and the model cards. AI answers can be wrong: treat them as a well-informed first draft. Validated kits are different: they are written and tested once, and downloading one involves no AI.</p>
+    <p>The verdict, roadmap and custom variants are generated by an AI model (Claude, by Anthropic) guided by our reference base: technology mapping, roadmaps and model cards. Treat them as a well-informed first draft. Validated kits involve no AI: they are written and tested once.</p>
     <div class="callout amber">
       <p>Veqctor is free. With your consent, your answers and the conversation are stored for 12 months to improve it; downloading a validated kit stores nothing about you. Do not share confidential information. See the <a href="/privacy">privacy notice</a>.</p>
     </div>
 
     <h2 id="contact">Contact</h2>
-    <p>Feedback on the tool, an error in a kit or in the technology mapping, or a model you would like in the library: write to <a href="mailto:romaind@phalanx-capital.eu?subject=Veqctor">romaind@phalanx-capital.eu</a>. Quants who want to compare notes are welcome too.</p>
+    <p>Feedback, an error in a kit or in the mapping, or a model you would like in the library: write to <a href="mailto:romaind@phalanx-capital.eu?subject=Veqctor">romaind@phalanx-capital.eu</a>.</p>
     <p>Veqctor is published by Phalanx Capital, 60 rue François Ier, 75008 Paris. How we handle code, data and access is described on the <a href="/security">security page</a>.</p>
 
     <div class="cta">
