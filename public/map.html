@@ -80,6 +80,9 @@
 
 /* 2D roadmap */
 .bizpick{margin:0 0 10px;flex-wrap:wrap}
+.sheet{cursor:pointer}
+.sheet:hover polygon,.sheet:focus-visible polygon{stroke:var(--accent);stroke-width:2}
+.ldot{cursor:pointer}
 .view2d{border:1px solid var(--rule);border-radius:var(--r-md);background:var(--sheet);position:relative}
 .scroll{overflow:auto;border-radius:var(--r-md)}
 .zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:6px;z-index:2}
@@ -235,8 +238,9 @@ $('source').textContent = `Classes and links from QuantLib ${data.quantlib} (C++
 // "All" = the curated layer (core = true). A business line adds every model, curve, volatility,
 // index and method tagged for it (biz), plus the shared foundations (biz = []).
 const BIZ_KEY = 'veqctor-roadmap-business';
-let biz = 'all';
-try { const b = localStorage.getItem(BIZ_KEY); if (b && (b === 'all' || data.businesses.some((x) => x.id === b))) biz = b; } catch {}
+let biz = 'layers';
+try { const b = localStorage.getItem(BIZ_KEY); if (b && (b === 'all' || b === 'layers' || data.businesses.some((x) => x.id === b))) biz = b; } catch {}
+const layersOn = () => biz === 'layers' && view === 'roadmap';
 const VLANE = { id: 'vol', name: 'Volatility' };
 const roadEdgesAll = (() => {
   const seen = new Set(), out = [];
@@ -244,11 +248,11 @@ const roadEdgesAll = (() => {
   return out;
 })();
 let rNodes = [], rEdges = [], rSet = new Set(), rLanes = [], preds = {}, depth = {}, maxDepth = 0, laneRows = {}, totalRows = 0, pos = {}, onQuantumPath = new Set();
-const laneOf = (n) => biz === 'all' ? n.lane : n.cloud === 'vol' ? 'vol' : (n.rlane || n.lane);
+const laneOf = (n) => biz === 'all' || biz === 'layers' ? n.lane : n.cloud === 'vol' ? 'vol' : (n.rlane || n.lane);
 function layoutRoadmap() {
-  rNodes = biz === 'all' ? coreNodes : data.nodes.filter((n) => n.biz && (!n.biz.length || n.biz.includes(biz)));
+  rNodes = biz === 'all' || biz === 'layers' ? coreNodes : data.nodes.filter((n) => n.biz && (!n.biz.length || n.biz.includes(biz)));
   rSet = new Set(rNodes.map((n) => n.id));
-  rEdges = biz === 'all' ? coreEdges : roadEdgesAll.filter((e) => rSet.has(e.from) && rSet.has(e.to));
+  rEdges = biz === 'all' || biz === 'layers' ? coreEdges : roadEdgesAll.filter((e) => rSet.has(e.from) && rSet.has(e.to));
   preds = {}; rEdges.forEach((e) => (preds[e.to] = preds[e.to] || []).push(e.from));
   depth = {};
   const d = (id, path = new Set()) => {
@@ -265,8 +269,8 @@ function layoutRoadmap() {
   rNodes.forEach((n) => { if (n.quantum) depth[n.id] = maxDepth + 1; });
   const slots = {};
   rNodes.forEach((n) => { const l = laneOf(n); ((slots[l] = slots[l] || {})[depth[n.id]] = slots[l][depth[n.id]] || []).push(n.id); });
-  const lanes = biz === 'all' ? data.lanes : [data.lanes[0], VLANE, ...data.lanes.slice(1)];
-  rLanes = lanes.filter((l) => biz === 'all' || slots[l.id]);
+  const lanes = biz === 'all' || biz === 'layers' ? data.lanes : [data.lanes[0], VLANE, ...data.lanes.slice(1)];
+  rLanes = lanes.filter((l) => biz === 'all' || biz === 'layers' || slots[l.id]);
   laneRows = {}; let row = 0;
   rLanes.forEach((l) => {
     const h = Math.max(1, ...Object.values(slots[l.id] || {}).map((a) => a.length));
@@ -283,19 +287,113 @@ function layoutRoadmap() {
 }
 layoutRoadmap();
 function renderBizPick() {
-  const opts = [['all', 'All (curated)'], ...data.businesses.map((b) => [b.id, b.name])];
-  $('bizpick').innerHTML = opts.map(([k, t]) => `<button type="button" data-biz="${k}" aria-pressed="${biz === k}">${esc(t)}</button>`).join('');
+  const opts = [...(view === 'paths' ? [] : [['layers', 'Overview']]), ['all', 'All (curated)'], ...data.businesses.map((b) => [b.id, b.name])];
+  $('bizpick').innerHTML = opts.map(([k, t]) => `<button type="button" data-biz="${k}" aria-pressed="${biz === k || (k === 'all' && biz === 'layers' && view === 'paths')}">${esc(t)}</button>`).join('');
+}
+function pickBiz(b, keep) {
+  biz = b; try { localStorage.setItem(BIZ_KEY, biz); } catch {}
+  layoutRoadmap(); scale = null;
+  if (!keep && selected && !rSet.has(selected)) selected = null;
+  renderBizPick(); setHint(); renderAll();
 }
 $('bizpick').addEventListener('click', (e) => {
   const b = e.target.closest('[data-biz]'); if (!b || b.dataset.biz === biz) return;
-  biz = b.dataset.biz; try { localStorage.setItem(BIZ_KEY, biz); } catch {}
-  layoutRoadmap(); scale = null;
-  if (selected && !rSet.has(selected)) selected = null;
-  renderBizPick(); setHint(); renderAll();
+  pickBiz(b.dataset.biz);
 });
 
+// ---------- Overview: one sheet per business line, seen at three quarters ----------
+// Every item keeps the same place on every sheet, so a shared item (Monte Carlo, curves,
+// conventions) lines up vertically through the sheets it belongs to.
+const layerNodes = data.nodes.filter((n) => n.biz);
+const layerPos = (() => {
+  const ids = new Set(layerNodes.map((n) => n.id));
+  const es = roadEdgesAll.filter((e) => ids.has(e.from) && ids.has(e.to));
+  const pr = {}; es.forEach((e) => (pr[e.to] = pr[e.to] || []).push(e.from));
+  const dep = {};
+  const d = (id, path = new Set()) => {
+    if (dep[id] != null) return dep[id];
+    if (path.has(id)) return 0;
+    path.add(id);
+    const p = (pr[id] || []).filter((x) => !byId[x].quantum);
+    const v = p.length ? 1 + Math.max(...p.map((x) => d(x, path))) : 0;
+    path.delete(id); return (dep[id] = v);
+  };
+  layerNodes.forEach((n) => { if (!n.quantum) d(n.id); });
+  const md = Math.max(...Object.values(dep));
+  layerNodes.forEach((n) => { if (n.quantum) dep[n.id] = md + 1; });
+  const lane = (n) => n.cloud === 'vol' ? 'vol' : (n.rlane || n.lane);
+  const order = ['infra', 'vol', ...data.lanes.slice(1).map((l) => l.id)];
+  const cells = {};
+  layerNodes.forEach((n) => { const k = lane(n) + '|' + dep[n.id]; (cells[k] = cells[k] || []).push(n.id); });
+  const laneH = {}; order.forEach((l) => { laneH[l] = Math.max(1, ...Object.entries(cells).filter(([k]) => k.startsWith(l + '|')).map(([, a]) => a.length)); });
+  let row = 0; const start = {}; order.forEach((l) => { start[l] = row; row += laneH[l]; });
+  const out = {};
+  layerNodes.forEach((n) => {
+    const l = lane(n), list = cells[l + '|' + dep[n.id]];
+    out[n.id] = { u: (dep[n.id] + 0.5) / (md + 2), v: (start[l] + list.indexOf(n.id) + 0.5 + (laneH[l] - list.length) / 2) / row };
+  });
+  return out;
+})();
+const layerEdges = roadEdgesAll.filter((e) => layerPos[e.from] && layerPos[e.to]);
+const inLayer = (n, b) => !n.biz.length || n.biz.includes(b);
+function renderLayers() {
+  const L = data.businesses, SW = 700, SK = 170, SH = 128, GAP = 132, LW = 150, PADT = 92;
+  const W = LW + SW + SK + 30, H = PADT + (L.length - 1) * GAP + SH + 30;
+  const ink = css('--ink'), muted = css('--muted'), rule = css('--rule'), sheet = css('--sheet'), paper = css('--paper'), qc = css('--s-quantum');
+  const svg = $('svg');
+  if (scale == null) scale = Math.min(1, ($('scroll').clientWidth - 2) / W);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('width', W * scale); svg.setAttribute('height', H * scale);
+  const P = (i, u, v) => [LW + u * SW + (1 - v) * SK, PADT + i * GAP + v * SH];
+  let out = `<rect x="0" y="0" width="${W}" height="${H}" fill="${sheet}"/>`;
+  const shared = layerNodes.filter((n) => !n.biz.length || n.biz.length > 1);
+  // sheets from the bottom up, so the upper sheets sit on top
+  for (let i = L.length - 1; i >= 0; i--) {
+    const b = L[i], c = [P(i, 0, 0), P(i, 1, 0), P(i, 1, 1), P(i, 0, 1)];
+    const ns = layerNodes.filter((n) => inLayer(n, b.id));
+    out += `<g class="sheet" data-sheet="${b.id}" tabindex="0" role="button" aria-label="Open the ${esc(b.name)} roadmap (${ns.length} items)">`;
+    out += `<polygon points="${c.map((p) => p.join(',')).join(' ')}" fill="${paper}" fill-opacity="0.82" stroke="${rule}" stroke-width="1.2"/>`;
+    for (const e of layerEdges) {
+      if (!inLayer(byId[e.from], b.id) || !inLayer(byId[e.to], b.id)) continue;
+      const [x1, y1] = P(i, layerPos[e.from].u, layerPos[e.from].v), [x2, y2] = P(i, layerPos[e.to].u, layerPos[e.to].v);
+      out += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${e.type === 'quantum' ? qc : muted}" stroke-width="0.8" opacity="${e.type === 'quantum' ? 0.6 : 0.3}" ${e.type === 'quantum' ? 'stroke-dasharray="3 3"' : ''}/>`;
+    }
+    for (const n of ns) {
+      const [x, y] = P(i, layerPos[n.id].u, layerPos[n.id].v), s = status(n);
+      const fill = n.quantum ? qc : s === 'todo' ? paper : color(s);
+      out += `<circle class="ldot" data-id="${n.id}" data-sheet="${b.id}" cx="${x}" cy="${y}" r="${n.quantum ? 5.5 : 4.2}" fill="${fill}" stroke="${n.quantum ? qc : s === 'todo' ? css('--s-todo') : color(s)}" stroke-width="1.2"><title>${esc(n.name)}</title></circle>`;
+    }
+    const [lx, ly] = P(i, 0, 1);
+    out += `<text x="${lx - 12}" y="${ly - 6}" font-size="14" font-weight="600" fill="${ink}" text-anchor="end">${esc(b.name)}</text><text x="${lx - 12}" y="${ly + 11}" font-size="12" fill="${muted}" text-anchor="end">${ns.length} items</text>`;
+    out += `</g>`;
+  }
+  // shared items: a thread through every sheet they belong to; foundations labelled above the stack
+  const labels = [];
+  for (const n of shared) {
+    const idx = L.map((b, i) => inLayer(n, b.id) ? i : -1).filter((i) => i >= 0);
+    if (idx.length < 2) continue;
+    const [x, yTop] = P(idx[0], layerPos[n.id].u, layerPos[n.id].v), [, yBot] = P(idx[idx.length - 1], layerPos[n.id].u, layerPos[n.id].v);
+    const found = !n.biz.length;
+    out += `<line x1="${x}" y1="${yTop}" x2="${x}" y2="${yBot}" stroke="${found ? ink : muted}" stroke-width="${found ? 1.3 : 0.9}" opacity="${found ? 0.55 : 0.4}" stroke-dasharray="${found ? '0' : '2 3'}" pointer-events="none"/>`;
+    if (found) labels.push({ x, yTop, name: n.name });
+  }
+  // stagger labels that would overlap, with a leader line down to the thread
+  labels.sort((a, b) => a.x - b.x);
+  const placed = [];
+  for (const l of labels) {
+    const w = l.name.length * 6.2 + 10;
+    let lvl = 0;
+    while (placed.some((p) => p.lvl === lvl && Math.abs(p.x - l.x) < (p.w + w) / 2)) lvl++;
+    placed.push({ x: l.x, w, lvl });
+    const ty = PADT - 14 - lvl * 16;
+    out += `<line x1="${l.x}" y1="${ty + 4}" x2="${l.x}" y2="${l.yTop}" stroke="${ink}" stroke-width="0.8" opacity="0.35" pointer-events="none"/>`;
+    out += `<text x="${l.x}" y="${ty}" font-size="11.5" font-weight="600" fill="${ink}" text-anchor="middle" pointer-events="none">${esc(l.name)}</text>`;
+  }
+  svg.innerHTML = out;
+}
+
 // ---------- Legend and summary ----------
-function scopeNodes() { return view === 'roadmap' || view === 'paths' ? rNodes : data.nodes; }
+function scopeNodes() { return layersOn() ? layerNodes : view === 'roadmap' || view === 'paths' ? rNodes : data.nodes; }
 function renderLegend() {
   const items = mode === 'veqctor'
     ? [['done', 'Kit available'], ['wip', 'Next'], ['todo', 'Later'], ['quantum', 'Quantum']]
@@ -314,6 +412,7 @@ function panelHtml() {
     if (view === 'families') return `<h2>How to read it</h2>
       <p>${data.nodes.length} items in ${data.clouds.length} families. Each QuantLib class is folded into one item per concept: the variants are listed inside.</p>
       <p class="rel">Large groups are folded: click one to open it. ${mode === 'bank' ? 'Select an item to set its status for your institution; the bubbles count your coverage. Statuses stay in this browser; nothing is sent.' : 'Select an item to see what it builds on, what it prices and where it leads.'}</p>`;
+    if (layersOn()) return `<h2>How to read it</h2><p>The same map, cut into business lines and stacked. Every item keeps its place on every sheet: left to right from foundations to more advanced models, quantum algorithms at the right end (blue).</p><p class="rel">The threads show what is shared. A conventions library, a curve bootstrap or a Monte Carlo engine serves every line at once: these are the no-regret investments. Open a sheet to work on it in detail.</p>`;
     return `<h2>${view === 'paths' ? 'Paths to quantum' : 'How to read it'}</h2>
       <p>${view === 'paths' ? 'Only the models and methods that lead to a quantum algorithm are highlighted. Each one is a no-regret step: it pays off whether or not quantum delivers.' : 'Left to right, from foundations to more advanced models, then the quantum algorithms that build on them. Solid lines: builds on. Dashed blue lines: quantum counterpart. Pick a business line above to see more of its models, curves and volatilities; the Families view shows everything.'}</p>
       <p class="rel">${mode === 'bank' ? 'Select a model to set its status for your institution. Statuses stay in this browser; nothing is sent.' : 'Select a model to see what it builds on and where it leads.'}</p>`;
@@ -508,6 +607,7 @@ function wrapText(t) {
   return { lines: wrapAll(t, 23).slice(0, 2), fs: 11.2 };
 }
 function render2d() {
+  if (layersOn()) return renderLayers();
   const W = LANEW + (maxDepth + 2) * COLW + 20, H = PADT + totalRows * ROWH + 20;
   const ink = css('--ink'), muted = css('--muted'), rule = css('--rule'), paper = css('--paper'), sheet = css('--sheet');
   const svg = $('svg');
@@ -549,11 +649,16 @@ function render2d() {
   svg.innerHTML = out;
 }
 $('svg').addEventListener('click', (e) => {
+  const dot = e.target.closest('.ldot');
+  if (dot) { selected = dot.dataset.id; pickBiz(dot.dataset.sheet, true); return; }
+  const sh = e.target.closest('.sheet');
+  if (sh) { pickBiz(sh.dataset.sheet); return; }
   const g = e.target.closest('.node'); if (!g) return;
   selected = selected === g.dataset.id ? null : g.dataset.id; render2d(); renderPanel();
 });
 $('svg').addEventListener('keydown', (e) => {
   if (e.key !== 'Enter' && e.key !== ' ') return;
+  const sh = e.target.closest('.sheet'); if (sh) { e.preventDefault(); pickBiz(sh.dataset.sheet); return; }
   const g = e.target.closest('.node'); if (!g) return; e.preventDefault();
   selected = g.dataset.id; render2d(); renderPanel();
   document.querySelector(`.node[data-id="${selected}"]`)?.focus();
@@ -821,7 +926,8 @@ $('pick3d').addEventListener('click', (e) => {
 
 // ---------- Views and modes ----------
 function setHint() {
-  const scope = biz === 'all' ? 'The curated roadmap' : `${data.businesses.find((b) => b.id === biz).name} roadmap: ${rNodes.length} items, with the shared foundations`;
+  if (layersOn()) { $('hint2d').textContent = 'One sheet per business line. Shared foundations (conventions, curves, Monte Carlo…) run as threads through every sheet; dashed threads are items shared by two or three lines. Click a sheet or a point to open that roadmap.'; return; }
+  const scope = biz === 'all' || biz === 'layers' ? 'The curated roadmap' : `${data.businesses.find((b) => b.id === biz).name} roadmap: ${rNodes.length} items, with the shared foundations`;
   $('hint2d').textContent = view === 'paths' ? `${scope}. Highlighted: every model and method on a path to a quantum algorithm.` : `${scope}. Select an item for details; use + and − to zoom. Engines and products open from an item.${innerWidth < 700 ? ' Swipe sideways to reach the quantum column.' : ''}`;
 }
 function setView(v) {
@@ -831,7 +937,7 @@ function setView(v) {
   $('foot').hidden = v === '3d';
   if (three) (v === '3d' ? three.start() : three.stop());
   if (three && v === '3d') three.filter(true);
-  setHint();
+  setHint(); renderBizPick();
   if ((v === 'roadmap' || v === 'paths') && selected && !rSet.has(selected)) selected = null;
   renderAll();
 }
