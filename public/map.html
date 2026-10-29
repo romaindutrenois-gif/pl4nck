@@ -11,8 +11,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site.css">
 <style>
-:root{--s-done:#2f9e6b;--s-wip:#d68a1d;--s-todo:#8a96ab;--s-quantum:#4f6ef7}
-@media (prefers-color-scheme:dark){:root{--s-done:#5cc796;--s-wip:#f0ad4e;--s-todo:#7f8ba1;--s-quantum:#8ea2ff}}
+:root{--s-done:#2f9e6b;--s-wip:#d68a1d;--s-todo:#8a96ab;--s-quantum:#4f6ef7;
+  --s-f-conv:#64748b;--s-f-curves:#3f9a5c;--s-f-vol:#d1603d;--s-f-models:#7c5cc4;--s-f-methods:#b98510;--s-f-engines:#3f97a8;--s-f-instruments:#c4507e;--s-f-risk:#8f6b4a}
+@media (prefers-color-scheme:dark){:root{--s-done:#5cc796;--s-wip:#f0ad4e;--s-todo:#7f8ba1;--s-quantum:#8ea2ff;
+  --s-f-conv:#94a3b8;--s-f-curves:#6cc48a;--s-f-vol:#f08a66;--s-f-models:#a78bfa;--s-f-methods:#e3b341;--s-f-engines:#6cc3d2;--s-f-instruments:#ec7aa7;--s-f-risk:#c09a72}}
 
 .toolbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 14px}
 .seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--rule);border-radius:var(--r-sm);overflow:hidden;background:var(--sheet)}
@@ -50,7 +52,7 @@
 #pick3d .ck{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--rule);background:var(--paper);border-radius:999px;padding:4px 10px;font:inherit;font-size:13px;cursor:pointer;color:var(--muted)}
 #pick3d .ck i{width:10px;height:10px;border-radius:3px;box-shadow:inset 0 0 0 1.5px var(--muted)}
 #pick3d .ck[aria-pressed=true]{color:var(--ink);border-color:var(--ink)}
-#pick3d .ck[aria-pressed=true] i{background:var(--ink);box-shadow:none}
+#pick3d .ck[aria-pressed=true] i{background:var(--fc,var(--ink));box-shadow:none}
 #pick3d .ck.q[aria-pressed=true] i{background:var(--s-quantum)}
 .famlayout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
 .boxes{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-items:start}
@@ -189,8 +191,9 @@ svg text{font-family:var(--sans)}
         <button type="button" data-view="engines" aria-pressed="false">Engines</button>
         <button type="button" data-view="families" aria-pressed="false">Explore all</button>
       </div>
-      <div class="seg" role="group" aria-label="Whose status">
-        <button type="button" data-mode="veqctor" aria-pressed="true">Veqctor library</button>
+      <div class="seg" role="group" aria-label="Colour by">
+        <button type="button" data-mode="family" aria-pressed="true">By family</button>
+        <button type="button" data-mode="veqctor" aria-pressed="false">Veqctor kits</button>
         <button type="button" data-mode="bank" aria-pressed="false">My institution</button>
       </div>
       <div class="legend" id="legend"></div>
@@ -262,7 +265,7 @@ const edges = data.edges.map(([from, to, type]) => ({ from, to, type: type || 'b
 const coreNodes = data.nodes.filter((n) => n.core);
 const coreEdges = data.core_edges.map(([from, to, type]) => ({ from, to, type: type ? 'quantum' : 'builds' }));
 const nbr = {}; edges.forEach((e) => { (nbr[e.from] = nbr[e.from] || new Set()).add(e.to); (nbr[e.to] = nbr[e.to] || new Set()).add(e.from); });
-let mode = 'veqctor', view = '3d', selected = null;
+let mode = 'family', view = '3d', selected = null;
 
 let bank = {};
 try { bank = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { bank = {}; }
@@ -270,16 +273,20 @@ const saveBank = () => { try { localStorage.setItem(STORE, JSON.stringify(bank))
 
 // Status shown for a node in the current mode. Quantum nodes stay blue; in "My institution"
 // mode they are drawn hollow until marked as explored.
+// "By family" (the default) colours each item by its family; progress counts then use the
+// Veqctor coverage.
 function status(n) {
   if (n.quantum) return 'quantum';
-  return mode === 'veqctor' ? n.coverage : (bank[n.id] || 'todo');
+  return mode === 'family' ? 'f-' + n.cloud : mode === 'veqctor' ? n.coverage : (bank[n.id] || 'todo');
 }
-const isDone = (n) => n.quantum ? mode === 'bank' && bank[n.id] === 'done' : status(n) === 'done';
+const prog = (n) => mode === 'bank' ? (bank[n.id] || 'todo') : n.coverage;
+const labStatus = (n) => n.quantum ? 'quantum' : prog(n);
+const isDone = (n) => n.quantum ? mode === 'bank' && bank[n.id] === 'done' : prog(n) === 'done';
 const color = (s) => css('--s-' + s);
 function statusLabel(n) {
   if (n.quantum) return mode === 'bank' ? (bank[n.id] === 'done' ? 'Quantum, explored' : 'Quantum, not yet explored') : 'Quantum';
-  const s = status(n);
-  return mode === 'veqctor' ? { done: 'Kit available', wip: 'Next in the library', todo: 'Later' }[s] : data.statuses[s];
+  const s = prog(n);
+  return mode !== 'bank' ? { done: 'Veqctor kit available', wip: 'Next in the library', todo: 'No Veqctor kit yet' }[s] : data.statuses[s];
 }
 $('source').textContent = `Classes and links from QuantLib ${data.quantlib} (C++ and Python sources), folded to one item per concept; Veqctor items added for risk, methods and quantum. Reviewed ${data.reviewed}.`;
 
@@ -454,13 +461,16 @@ function renderLayers() {
 // ---------- Legend and summary ----------
 function scopeNodes() { return view === 'engines' ? engScope() : layersOn() ? layerNodes : view === 'roadmap' ? rNodes : data.nodes; }
 function renderLegend() {
-  const items = mode === 'veqctor'
+  const items = mode === 'family'
+    ? [...data.clouds.filter((c) => c.id !== 'quantum' && scopeNodes().some((n) => n.cloud === c.id)).map((c) => ['f-' + c.id, c.name]), ['quantum', 'Quantum']]
+    : mode === 'veqctor'
     ? [['done', 'Kit available'], ['wip', 'Next'], ['todo', 'Later'], ['quantum', 'Quantum']]
     : [['done', data.statuses.done], ['wip', data.statuses.wip], ['todo', data.statuses.todo], ['quantum', 'Quantum']];
   $('legend').innerHTML = items.map(([s, t]) => `<span><i style="background:${color(s)}"></i>${esc(t)}</span>`).join('');
   const all = scopeNodes(), classical = all.filter((n) => !n.quantum);
-  const count = (s) => classical.filter((n) => status(n) === s).length;
-  $('summary').innerHTML = `<span><b>${count('done')}</b> ${mode === 'veqctor' ? 'with a kit' : 'implemented'}</span><span><b>${count('wip')}</b> ${mode === 'veqctor' ? 'next' : 'in progress'}</span><span><b>${count('todo')}</b> ${mode === 'veqctor' ? 'later' : 'not yet explored'}</span><span><b>${all.length - classical.length}</b> quantum</span>`;
+  const count = (s) => classical.filter((n) => prog(n) === s).length;
+  $('summary').innerHTML = mode === 'family' ? `<span><b>${classical.length}</b> items</span><span><b>${count('done')}</b> with a Veqctor kit</span>` : `<span><b>${count('done')}</b> ${mode === 'veqctor' ? 'with a kit' : 'implemented'}</span><span><b>${count('wip')}</b> ${mode === 'veqctor' ? 'next' : 'in progress'}</span><span><b>${count('todo')}</b> ${mode === 'veqctor' ? 'later' : 'not yet explored'}</span>`;
+  $('summary').innerHTML += `<span><b>${all.length - classical.length}</b> quantum</span>`;
   $('reset').hidden = mode !== 'bank';
   $('export').hidden = !twoD();
 }
@@ -487,7 +497,7 @@ function panelHtml() {
   const ql = (n.ql || []).filter((c) => /^[A-Z]/.test(c) || /^[a-z]+[A-Z]/.test(c));
   return `<button type="button" class="close" data-close aria-label="Close">×</button><p class="kind">${esc(cloudById[n.cloud].name)}${n.group ? ' · ' + esc(n.group) : ''}</p>
     <h2>${esc(n.name)}</h2>
-    <span class="st"><i style="background:${color(s)}"></i>${esc(statusLabel(n))}</span>
+    <span class="st"><i style="background:${color(labStatus(n))}"></i>${esc(statusLabel(n))}</span>
     <p>${esc(n.note)}</p>
     ${mode === 'bank' ? `<div class="choose" role="group" aria-label="Status for my institution">${choices.map(([k, t]) => `<button type="button" data-set="${k}" aria-pressed="${(bank[n.id] || 'todo') === k}">${esc(t)}</button>`).join('')}</div>` : ''}
     ${n.variants ? `<p class="rel"><b>Variants</b>${esc(n.variants.join('; '))}</p>` : ''}
@@ -586,7 +596,7 @@ function renderBubbles() {
   for (const c of data.clouds) {
     const [x, y] = L.at[c.id], r = R[c.id];
     const list = data.nodes.filter((n) => n.cloud === c.id);
-    const done = list.filter(isDone).length, wip = list.filter((n) => !n.quantum && status(n) === 'wip').length;
+    const done = list.filter(isDone).length, wip = list.filter((n) => !n.quantum && prog(n) === 'wip').length;
     const open = openClouds.has(c.id), dim = selected && !touched.has(c.id);
     const circ = 2 * Math.PI * (r + 5);
     const arc = (frac, off, col) => frac > 0 ? `<circle cx="${x}" cy="${y}" r="${r + 5}" fill="none" stroke="${col}" stroke-width="5" stroke-dasharray="${frac * circ} ${circ}" stroke-dashoffset="${-off * circ}" transform="rotate(-90 ${x} ${y})"/>` : '';
@@ -615,15 +625,15 @@ $('famnone').addEventListener('click', () => { openClouds.clear(); renderFamilie
 
 function renderBoxes() {
   const linked = selected ? nbr[selected] || new Set() : new Set();
-  const chip = (n) => `<button type="button" class="chip s-${status(n)}${n.id === selected ? ' sel' : ''}${linked.has(n.id) ? ' rel' : ''}" data-id="${n.id}" title="${esc(statusLabel(n))}"><i></i>${esc(n.name)}</button>`;
+  const chip = (n) => `<button type="button" class="chip s-${status(n)}${n.id === selected ? ' sel' : ''}${linked.has(n.id) ? ' rel' : ''}" data-id="${n.id}" title="${esc(statusLabel(n))}"><i${mode === 'family' && !n.quantum ? ` style="background:${color(status(n))}"` : ''}></i>${esc(n.name)}</button>`;
   let out = '';
   for (const c of data.clouds) {
     if (!openClouds.has(c.id)) continue;
     const list = data.nodes.filter((n) => n.cloud === c.id);
-    const done = list.filter(isDone).length, wip = list.filter((n) => !n.quantum && status(n) === 'wip').length;
+    const done = list.filter(isDone).length, wip = list.filter((n) => !n.quantum && prog(n) === 'wip').length;
     const groups = groupsOf[c.id];
     out += `<section class="box${c.id === 'engines' || c.id === 'instruments' ? ' wide' : ''}"><h3>${esc(c.name)}</h3>
-      <p class="cov"><b>${done}</b> of ${list.length} ${c.id === 'quantum' ? (mode === 'bank' ? 'explored' : 'quantum') : mode === 'veqctor' ? 'with a kit' : 'implemented'}${wip ? ` · <b>${wip}</b> ${mode === 'veqctor' ? 'next' : 'in progress'}` : ''}</p>`;
+      <p class="cov"><b>${done}</b> of ${list.length} ${c.id === 'quantum' ? (mode === 'bank' ? 'explored' : 'quantum') : mode !== 'bank' ? 'with a kit' : 'implemented'}${wip ? ` · <b>${wip}</b> ${mode === 'veqctor' ? 'next' : 'in progress'}` : ''}</p>`;
     if (c.id === 'engines') {
       // engines: one fold per instrument family; opened families are listed below the folds
       const folded = groups.filter((g) => !expanded.has(g.key)), open = groups.filter((g) => expanded.has(g.key));
@@ -644,7 +654,7 @@ function renderBoxes() {
 }
 function grpChip(g, linked) {
   const ns = g.ids.map((id) => byId[id]);
-  const done = ns.filter(isDone).length, wip = ns.filter((n) => !n.quantum && status(n) === 'wip').length, k = g.ids.filter((id) => linked.has(id) || id === selected).length;
+  const done = ns.filter(isDone).length, wip = ns.filter((n) => !n.quantum && prog(n) === 'wip').length, k = g.ids.filter((id) => linked.has(id) || id === selected).length;
   const a = 100 * done / ns.length, b = a + 100 * wip / ns.length, todo = 'color-mix(in srgb,var(--s-todo) 35%,transparent)';
   const bar = `<span class="gbar" style="background:linear-gradient(90deg,var(--s-done) ${a}%,var(--s-wip) ${a}% ${b}%,${todo} ${b}%)"></span>`;
   return `<button type="button" class="grp${k ? ' rel' : ''}" data-grp="${esc(g.key)}" aria-expanded="false"><span>${esc(g.name)} <b>${ns.length}</b></span>${bar}${k ? `<span class="more">${k} linked</span>` : ''}</button>`;
@@ -696,13 +706,14 @@ function render2d() {
   for (const n of rNodes) {
     const s = status(n), c = color(s), x = nx(n.id), y = ny(n.id);
     const hollow = n.quantum && mode === 'bank' && bank[n.id] !== 'done';
+    const fam = mode === 'family' && !n.quantum;
     const fill = s === 'todo' ? paper : hollow ? paper : c;
-    const tc = s === 'todo' || hollow ? ink : '#fff';
+    const tc = s === 'todo' || hollow || fam ? ink : '#fff';
     const dim = pathsOn() && !onQuantumPath.has(n.id);
     const { lines, fs } = wrapText(n.name);
     const ty = y + NODEH / 2 + (lines.length === 1 ? 4.5 : -2.5);
     out += `<g class="node${dim ? ' dim' : ''}" data-id="${n.id}" tabindex="0" role="button" aria-label="${esc(n.name)}: ${esc(statusLabel(n))}">
-      <rect x="${x}" y="${y}" width="${NODEW}" height="${NODEH}" rx="${n.quantum ? 19 : 7}" fill="${fill}" stroke="${s === 'todo' ? css('--s-todo') : c}" ${sel === n.id ? `stroke-width="3"` : ''}/>
+      <rect x="${x}" y="${y}" width="${NODEW}" height="${NODEH}" rx="${n.quantum ? 19 : 7}" fill="${fill}"${fam ? ' fill-opacity="0.16"' : ''} stroke="${s === 'todo' ? css('--s-todo') : c}" ${sel === n.id ? `stroke-width="3"` : ''}/>
       ${lines.map((t, i) => `<text x="${x + NODEW / 2}" y="${ty + i * 14}" font-size="${fs}" font-weight="${n.quantum ? 600 : 500}" fill="${tc}" text-anchor="middle">${esc(t)}</text>`).join('')}
     </g>`;
   }
@@ -720,7 +731,7 @@ function hoverCardHtml(n) {
   const note = n.note && n.note.length > 180 ? n.note.slice(0, 177).replace(/\s+\S*$/, '') + '…' : n.note;
   return `<p class="hk">${esc(cloudById[n.cloud].name)}${n.group ? ' · ' + esc(n.group) : ''}</p>
     <p class="hn">${esc(n.name)}</p>
-    <p class="hs"><i style="background:${color(status(n))}"></i>${esc(statusLabel(n))}${where ? ' · ' + esc(where) : ''}</p>
+    <p class="hs"><i style="background:${color(labStatus(n))}"></i>${esc(statusLabel(n))}${where ? ' · ' + esc(where) : ''}</p>
     ${note ? `<p>${esc(note)}</p>` : ''}
     ${inB.length ? `<p><b>Builds on</b> ${names(inB)}</p>` : ''}
     ${outB.length ? `<p><b>Leads to</b> ${names(outB)}</p>` : ''}
@@ -890,7 +901,7 @@ async function init3d() {
     const w = stage.clientWidth, h = stage.clientHeight;
     renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
   }
-  const rank = (n) => n.id === hover ? -1 : n.quantum ? 0 : n.core && status(n) === 'done' ? 1 : n.core ? 2 : status(n) === 'done' ? 3 : 4;
+  const rank = (n) => n.id === hover ? -1 : n.quantum ? 0 : n.core && prog(n) === 'done' ? 1 : n.core ? 2 : prog(n) === 'done' ? 3 : 4;
   let hover = null;
   const v = new THREE.Vector3();
   function placeLabels() {
@@ -1014,7 +1025,7 @@ async function init3d() {
 
 // ---------- 3D family picker (shares its state with the Families view) ----------
 function renderPick3d() {
-  $('pick3d').innerHTML = `<span>Show:</span>` + data.clouds.map((c) => `<button type="button" class="ck${c.id === 'quantum' ? ' q' : ''}" data-ck="${c.id}" aria-pressed="${openClouds.has(c.id)}"><i></i>${esc(c.name)}</button>`).join('')
+  $('pick3d').innerHTML = `<span>Show:</span>` + data.clouds.map((c) => `<button type="button" class="ck${c.id === 'quantum' ? ' q' : ''}" data-ck="${c.id}" aria-pressed="${openClouds.has(c.id)}" style="--fc:var(--s-f-${c.id})"><i></i>${esc(c.name)}</button>`).join('')
     + `<button type="button" data-ck="*">All</button><button type="button" data-ck="-">None</button>`;
 }
 $('pick3d').addEventListener('click', (e) => {

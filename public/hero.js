@@ -46,7 +46,8 @@ function run() {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 1200);
   const portrait = innerWidth / innerHeight < 0.9;
-  const COL = { done: 0x5cc796, wip: 0xf0ad4e, todo: 0x7f8ba1, quantum: 0x8ea2ff };
+  // one colour per family (the map's default "By family" colouring, dark palette)
+  const COL = { conv: 0x94a3b8, curves: 0x6cc48a, vol: 0xf08a66, models: 0xa78bfa, methods: 0xe3b341, engines: 0x6cc3d2, instruments: 0xec7aa7, risk: 0xc09a72, quantum: 0x8ea2ff };
 
   // same layout as the map page
   const POS = portrait
@@ -74,7 +75,7 @@ function run() {
       delay[n.id] = 0.25 + order.indexOf(c.id) * 0.16 + rnd() * 0.5;
     });
   }
-  const status = (n) => n.quantum ? 'quantum' : n.coverage;
+  const status = (n) => n.quantum ? 'quantum' : n.cloud;
 
   // light, floor, stars
   scene.add(new THREE.AmbientLight(0xffffff, 0.75));
