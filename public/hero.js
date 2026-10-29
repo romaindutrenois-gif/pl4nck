@@ -6,7 +6,6 @@ const hero = document.getElementById('hero');
 const canvas = document.getElementById('hero3d');
 const labelsEl = document.getElementById('hlabels');
 const cap = document.getElementById('herocap');
-const cue = document.getElementById('cue');
 const introTitle = document.querySelector('.intro h1');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -18,7 +17,6 @@ function onScroll() {
   const o = Math.min(1, Math.max(0, (t - vh) / (vh * 0.25)));
   hero.style.opacity = String(o);
   hero.style.transform = `scale(${1 + p * 0.06})`;
-  cue.style.opacity = String(Math.max(0, 1 - p * 6));
   visible = o > 0 && !document.hidden;
   if (visible) start();
 }
