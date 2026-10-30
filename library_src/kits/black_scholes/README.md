@@ -1,6 +1,6 @@
 # Black-Scholes validation kit (v1.0.0)
 
-From the [Veqctor](https://quantumquant.vercel.app/library#black_scholes) model library.
+From the [Veqctor](https://veqctor.com/library#black_scholes) model library.
 A prototype, its validation tests with pre-registered criteria, independent
 QuantLib reference values and a pre-filled documentation outline. Everything
 runs locally; nothing is sent anywhere.
