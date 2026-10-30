@@ -171,7 +171,7 @@ dialog h2{font-size:26px;margin-bottom:20px}
     <a class="brand" href="/"><span class="name">ve<span class="q">q</span>ctor</span></a>
     <nav class="tabs" aria-label="Sections">
       <a href="/launch" aria-current="page">Launch Veqctor</a>
-      <span class="dd"><a href="/library">Library</a><span class="menu"><a href="/library">Model library</a><a href="/map">Model map</a></span></span>
+      <span class="dd"><a href="/map">Roadmap to QC</a><span class="menu"><a href="/map">Model map</a><a href="/library">Validation kits</a></span></span>
       <span class="dd"><button type="button" class="ddbtn" aria-expanded="false">Landscape</button><span class="menu"><a href="/technology">Technology mapping</a><a href="/resources">Resources</a></span></span>
       <a href="/about">About</a>
     </nav>
@@ -198,7 +198,7 @@ dialog h2{font-size:26px;margin-bottom:20px}
 
   <!-- Model library: direct kit generation -->
   <section id="libstart" class="narrow" hidden>
-    <p class="fine"><a href="/library">← Library</a></p>
+    <p class="fine"><a href="/library">← Validation kits</a></p>
     <h2 id="libname"></h2>
     <p class="sub" id="libsum"></p>
     <div id="librole"></div>
@@ -418,7 +418,7 @@ function kitPanel(files, done) {
   }).map((k) => {
     const v = node[k];
     if ('code' in v && v.static) {
-      return `<li><span class="fname">${esc(k)}</span><span class="fmeta">from the library · ${Math.max(1, Math.round(v.code.length / 1024))} KB</span></li>`;
+      return `<li><span class="fname">${esc(k)}</span><span class="fmeta">from the validation kits · ${Math.max(1, Math.round(v.code.length / 1024))} KB</span></li>`;
     }
     if ('code' in v) {
       const n = v.code ? v.code.split('\n').length : 0;
@@ -553,7 +553,7 @@ async function initLibrary() {
     $('libstart').hidden = true; $('chat').hidden = false; $('composer').hidden = false;
     $('sref').textContent = S.sessionId.slice(0, 8);
     const box = document.createElement('p'); box.className = 'profile';
-    box.textContent = ['Model library', card.name, S.answers.job].filter(Boolean).join(' / ');
+    box.textContent = ['Validation kits', card.name, S.answers.job].filter(Boolean).join(' / ');
     $('msgs').append(box);
     send(`Validation kit for the model: ${card.name}. Generate only: ${picked.join(', ')}.`);
   });
@@ -627,7 +627,7 @@ function followups() {
       b.addEventListener('click', () => { S.asked.add(f); send(f); });
       row.append(b);
     }
-    const back = document.createElement('a'); back.className = 'chip'; back.href = '/library'; back.target = '_blank'; back.rel = 'noopener'; back.textContent = 'Back to the library';
+    const back = document.createElement('a'); back.className = 'chip'; back.href = '/library'; back.target = '_blank'; back.rel = 'noopener'; back.textContent = 'Back to the validation kits';
     row.append(back);
     $('msgs').append(row);
     return;

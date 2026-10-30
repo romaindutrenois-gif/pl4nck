@@ -174,7 +174,7 @@ svg text{font-family:var(--sans)}
     <a class="brand" href="/"><span class="name">ve<span class="q">q</span>ctor</span></a>
     <nav class="tabs" aria-label="Sections">
       <a href="/launch">Launch Veqctor</a>
-      <span class="dd"><a href="/library" aria-current="page">Library</a><span class="menu"><a href="/library">Model library</a><a href="/map" aria-current="page">Model map</a></span></span>
+      <span class="dd"><a href="/map" aria-current="page">Roadmap to QC</a><span class="menu"><a href="/map" aria-current="page">Model map</a><a href="/library">Validation kits</a></span></span>
       <span class="dd"><button type="button" class="ddbtn" aria-expanded="false">Landscape</button><span class="menu"><a href="/technology">Technology mapping</a><a href="/resources">Resources</a></span></span>
       <a href="/about">About</a>
     </nav>
@@ -182,9 +182,9 @@ svg text{font-family:var(--sans)}
   </div>
 
   <main class="page">
-    <nav class="subtabs" aria-label="Library sections">
-      <a href="/library">Model library</a>
+    <nav class="subtabs" aria-label="Roadmap to QC sections">
       <a href="/map" aria-current="page">Model map</a>
+      <a href="/library">Validation kits</a>
     </nav>
     <h1>Model map</h1>
     <p class="lead">Every component of a pricing library, from conventions to engines, and the quantum algorithms that build on them. Mark your own coverage as you go.</p>
@@ -303,7 +303,7 @@ const color = (s) => css('--s-' + s);
 function statusLabel(n) {
   if (n.quantum) return mode === 'bank' ? (bank[n.id] === 'done' ? 'Quantum, explored' : 'Quantum, not yet explored') : 'Quantum';
   const s = prog(n);
-  return mode !== 'bank' ? { done: 'Veqctor kit available', wip: 'Next in the library', todo: 'No Veqctor kit yet' }[s] : data.statuses[s];
+  return mode !== 'bank' ? { done: 'Veqctor kit available', wip: 'Next Veqctor kit', todo: 'No Veqctor kit yet' }[s] : data.statuses[s];
 }
 
 // ---------- Roadmap layout: columns by depth along "builds on", rows by lane ----------
@@ -522,7 +522,7 @@ function panelHtml() {
     ${prices.length ? `<p class="rel"><b>Prices</b>${rel(prices)}</p>` : ''}
     ${pricedBy.length ? `<p class="rel"><b>Priced by ${pricedBy.length} engine${pricedBy.length > 1 ? 's' : ''}</b>${rel(pricedBy)}</p>` : ''}
     ${ql.length ? `<details><summary>In QuantLib: ${ql.length} class${ql.length > 1 ? 'es' : ''}</summary><p>${ql.map((c) => `<code>${esc(c)}</code>`).join(', ')}</p></details>` : (n.core ? '<p class="rel">Not in QuantLib: added by Veqctor.</p>' : '')}
-    ${n.library ? `<p><a href="/library#${esc(n.library)}">Open in the library</a></p>` : ''}`;
+    ${n.library ? `<p><a href="/library#${esc(n.library)}">Open the validation kit</a></p>` : ''}`;
 }
 function renderPanel() {
   const el = view === 'families' ? $('fpanel') : view === 'engines' ? $('epanel') : $('panel');
