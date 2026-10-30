@@ -60,30 +60,6 @@
 /* Below the band */
 .page section{margin:72px 0 0}
 .page h2{margin-top:0}
-.road{list-style:none;padding:0;margin:30px 0 22px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:auto auto auto;column-gap:0;row-gap:12px}
-.road li{position:relative;margin:0;max-width:none;padding:30px 20px 0 0;display:grid;grid-row:span 3;grid-template-rows:subgrid;gap:12px}
-.road li::before{content:"";position:absolute;left:0;top:0;width:14px;height:14px;border-radius:50%;background:var(--accent)}
-.road li::after{content:"";position:absolute;left:22px;right:10px;top:6px;border-top:2px dashed var(--rule)}
-.road li.now::after{border-top:2px solid var(--accent)}
-.road li.road1::before,.road li.road2::before{background:var(--paper);box-shadow:inset 0 0 0 2px var(--accent)}
-.road li.road2::after{border-top-color:var(--amber)}
-.road li.need::before{background:var(--paper);box-shadow:inset 0 0 0 2px var(--amber);border-radius:2px;transform:rotate(45deg)}
-.road li.need::after{display:none}
-.road .when{font-family:var(--serif);font-size:21px;line-height:1.2}
-.road .when small,.road .qb small{display:block;font-family:var(--sans);font-size:13px;color:var(--muted);margin-top:3px}
-.road .qb{font-size:15px;line-height:1.35;color:var(--muted);padding-top:12px;border-top:1px solid var(--rule)}
-.road .qb strong{display:block;font-family:var(--serif);font-weight:500;font-size:24px;color:var(--ink);margin-bottom:2px}
-.road .need .qb strong{color:var(--amber)}
-.road .fin{font-size:14.5px;line-height:1.55;padding-top:12px;border-top:1px solid var(--rule)}
-.steps{list-style:none;padding:0;margin:26px 0 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;counter-reset:s}
-.steps li{position:relative;padding:34px 22px 0 0;margin:0;max-width:none;counter-increment:s}
-.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--paper);font-size:13px;font-weight:600;display:grid;place-items:center}
-.steps li::after{content:"";position:absolute;left:30px;right:8px;top:11px;height:2px;background:var(--ink)}
-.steps li:nth-child(2)::after{background:none;border-top:2px dashed var(--amber);height:0}
-.steps li:last-child::before{background:var(--paper);color:var(--amber);box-shadow:inset 0 0 0 2px var(--amber)}
-.steps li:last-child::after{display:none}
-.steps h3{font-family:var(--serif);font-weight:500;font-size:21px;margin:0 0 6px}
-.steps p{margin:0;font-size:15px;color:var(--muted)}
 .ways{display:grid;gap:0;margin-top:18px;border-top:1px solid var(--rule)}
 .ways .way{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:24px;padding:22px 0;border-bottom:1px solid var(--rule)}
 .ways .go{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:10px!important}
@@ -94,19 +70,8 @@
 .ways p{margin:0;color:var(--muted);font-size:15.5px}
 
 @media (max-width:900px){
-  .steps{grid-template-columns:1fr}
-  .road{grid-template-columns:1fr;grid-template-rows:none}
-  .road li{padding:0 0 26px 30px;gap:8px;grid-row:auto;grid-template-rows:auto}
-  .road li::after{left:6px;right:auto;top:20px;bottom:0;border-top:0;border-left:2px dashed var(--rule)}
-  .road li.now::after{border-left:2px solid var(--accent)}
-  .road li.road2::after{border-left-color:var(--amber)}
-  .steps li{padding:0 0 22px 38px}
-  .steps li::after{left:11px;right:auto;top:30px;bottom:4px;width:2px;height:auto}
-  .steps li:nth-child(2)::after{border-top:0;border-left:2px dashed var(--amber);width:0;height:auto}
   .ways .way{grid-template-columns:1fr;gap:6px}
 }
-@media (max-width:560px){
-      }
 </style>
 </head>
 <body>
@@ -150,44 +115,6 @@
 
 <div class="wrap">
   <main class="page">
-    <section aria-labelledby="h-gap">
-      <h2 id="h-gap">The road to useful quantum finance</h2>
-      <p>The theory is sound, but quantum advantage is not for today.</p>
-      <ol class="road">
-        <li class="now">
-          <span class="when">Today to 2028<small>Demonstrated so far</small></span>
-          <span class="qb"><strong>Dozens</strong> logical qubits</span>
-          <span class="fin">Small pilots: portfolio optimisation, toy option pricing. No proven advantage.</span>
-        </li>
-        <li class="road1">
-          <span class="when">2029 to 2030<small>Vendor roadmaps</small></span>
-          <span class="qb"><strong>100 to 200</strong> logical qubits</span>
-          <span class="fin">First error-corrected runs on reduced finance problems. Research value only.</span>
-        </li>
-        <li class="road2">
-          <span class="when">2031 to 2034<small>Vendor roadmaps</small></span>
-          <span class="qb"><strong>1,000 to 2,000</strong> logical qubits</span>
-          <span class="fin">Amplitude estimation at useful sizes for VaR and credit risk. Advantage still to be shown.</span>
-        </li>
-        <li class="need">
-          <span class="when">2035 and beyond<small>Resource estimates</small></span>
-          <span class="qb"><strong>About 7,500</strong> logical qubits</span>
-          <span class="fin">Advantage on derivatives pricing: autocalls and TARFs in about a second.</span>
-        </li>
-      </ol>
-      <p class="fine">Sources: IBM and Quantinuum roadmaps; Chakrabarti et al. (2021). Details in the <a href="/technology">technology mapping</a>.</p>
-    </section>
-
-    <section aria-labelledby="h-wait">
-      <h2 id="h-wait">Spend the wait well</h2>
-      <p>A quantum pricer will be judged against your best classical one. Making that benchmark strong pays off now, whether quantum arrives in ten years or never.</p>
-      <ol class="steps">
-        <li><h3>Benchmark what you run</h3><p>Independent reference values, documented errors, tests with criteria fixed in advance. The validated kits start here.</p></li>
-        <li><h3>Make it faster and safer</h3><p>Faster pricing and Greeks, richer models compared, validation findings closed. Gains you bank today.</p></li>
-        <li><h3>Decide with numbers</h3><p>A reduced case on a simulator, a resource estimate against your classical cost, and a dated go or no-go.</p></li>
-      </ol>
-    </section>
-
     <section aria-labelledby="h-ways">
       <h2 id="h-ways">What Veqctor does</h2>
       <div class="ways">
