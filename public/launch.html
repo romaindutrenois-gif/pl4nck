@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Veqctor</title>
+<title>AI-assisted assessment · Veqctor</title>
 <meta name="description" content="An honest verdict on quantum computing for your models, and the no-regret steps that pay off meanwhile.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="/site.css">
 <style>
 /* landing */
-.hero{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:start}
+.hero{display:grid;grid-template-columns:minmax(0,720px);gap:56px;align-items:start}
 h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.6vw,62px);line-height:1.04;letter-spacing:-.02em;margin:0 0 22px}
 .lead{font-size:18px;line-height:1.6;color:var(--muted);max-width:44ch;margin:0 0 30px}
 .start{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
@@ -23,7 +23,6 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.6vw,62px);lin
 .fine{font-size:14px;color:var(--muted)}
 .consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--muted);margin:26px 0 0;max-width:52ch;line-height:1.5}
 .consent input{margin-top:3px;accent-color:var(--accent);width:16px;height:16px;flex:none}
-.sample-note{font-size:13px;color:var(--muted);margin:10px 2px 0}
 
 /* verdict card: the one memorable element */
 .verdict{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-md);padding:26px 26px 22px;position:relative}
@@ -171,7 +170,7 @@ dialog h2{font-size:26px;margin-bottom:20px}
     <a class="brand" href="/"><span class="name">ve<span class="q">q</span>ctor</span></a>
     <nav class="tabs" aria-label="Sections">
       <span class="dd"><a href="/map">Roadmap to QC</a><span class="menu"><a href="/map">Model map</a><a href="/library">Validation kits</a></span></span>
-      <a href="/launch" aria-current="page">Launch Veqctor</a>
+      <a href="/launch" aria-current="page">AI-assisted assessment</a>
       <span class="dd"><button type="button" class="ddbtn" aria-expanded="false">Landscape</button><span class="menu"><a href="/technology">Technology mapping</a><a href="/resources">Resources</a></span></span>
       <a href="/about">About</a>
     </nav>
@@ -181,18 +180,14 @@ dialog h2{font-size:26px;margin-bottom:20px}
   <!-- Landing -->
   <section id="intro" class="hero">
     <div>
-      <h1>Get quantum-ready</h1>
+      <h1>AI-assisted assessment</h1>
       <p class="lead">Assess where quantum computing stands, design your model roadmap, and generate prototype code and model validation documentation.</p>
       <div class="start">
         <button class="btn" id="start" disabled>Get my verdict</button>
         <span class="fine">Four short questions. No account.</span>
       </div>
       <label class="consent"><input type="checkbox" id="consent">
-        <span>I agree that my answers, the conversation and any feedback are stored for 12 months to improve this prototype (<a href="/privacy" target="_blank" rel="noopener">privacy notice</a>). I won't share confidential information, code or data from my employer.</span></label>
-    </div>
-    <div>
-      <div id="sample"></div>
-      <p class="sample-note">Example verdict for a validation quant pricing autocalls by Monte Carlo.</p>
+        <span>I agree that my answers, the conversation and any feedback are stored for 12 months to improve Veqctor (<a href="/privacy" target="_blank" rel="noopener">privacy notice</a>). I won't share confidential information, code or data from my employer.</span></label>
     </div>
   </section>
 
@@ -206,7 +201,7 @@ dialog h2{font-size:26px;margin-bottom:20px}
       <div class="parts" id="libparts"></div>
       <p class="fine">Always included: QuantLib reference values for the tests, and the conventions module (day counts, calendars, schedules).</p></div>
     <label class="consent"><input type="checkbox" id="libconsent">
-      <span>I agree that my choices, the conversation and any feedback are stored for 12 months to improve this prototype (<a href="/privacy" target="_blank" rel="noopener">privacy notice</a>). I won't share confidential information, code or data from my employer.</span></label>
+      <span>I agree that my choices, the conversation and any feedback are stored for 12 months to improve Veqctor (<a href="/privacy" target="_blank" rel="noopener">privacy notice</a>). I won't share confidential information, code or data from my employer.</span></label>
     <div class="nav"><span class="spacer"></span><button class="btn" id="libgo" disabled>Generate the kit</button></div>
   </section>
 
@@ -305,15 +300,6 @@ const KIT_PARTS = [
   { id: 'Documentation outline', desc: 'Model documentation sections aligned with SR 11-7, with what to write in each.', files: 'docs/model_documentation.md' },
   { id: 'Example', desc: 'Short script comparing the prototype with the benchmark.', files: 'examples/run_example.py' },
 ];
-const SAMPLE = {
-  headline: 'Quantum won’t price your autocalls this decade. Variance reduction will pay now.',
-  horizon: 'Not before the 2030s',
-  technology: 'Fault-tolerant gate-based',
-  ladder: ['MC under Black-Scholes', 'Variance reduction', 'Local / stochastic vol', 'Robust Greeks', 'Quantum readiness'],
-  current: 0,
-  next: 'Control variates and a documented convergence study',
-  sensitivity: 'A control variate with ρ = 0.99 needs about 50× fewer paths for the same error.',
-};
 
 // ---------- State ----------
 const $ = (id) => document.getElementById(id);
@@ -347,7 +333,6 @@ function verdictCard(v, interactive) {
     <div class="next"><span class="lbl">Your next no-regret step</span><span class="step">${esc(v.next)}</span>${v.sensitivity ? `<span class="why">${esc(v.sensitivity)}</span>` : ''}</div>
   </article>`;
 }
-$('sample').innerHTML = verdictCard(SAMPLE);
 
 // Renders a streamed answer: verdict block (wherever it appears) + markdown.
 function renderAnswer(text, done) {
@@ -793,6 +778,16 @@ $('fb').addEventListener('close', () => {
 });
 
 // ---------- Logging ----------
+// Demo data for the local preview (no API): a sample verdict.
+const SAMPLE = {
+  headline: 'Quantum won’t price your autocalls this decade. Variance reduction will pay now.',
+  horizon: 'Not before the 2030s',
+  technology: 'Fault-tolerant gate-based',
+  ladder: ['MC under Black-Scholes', 'Variance reduction', 'Local / stochastic vol', 'Robust Greeks', 'Quantum readiness'],
+  current: 0,
+  next: 'Control variates and a documented convergence study',
+  sensitivity: 'A control variate with ρ = 0.99 needs about 50× fewer paths for the same error.',
+};
 function log() {
   if (!S.consent || window.QR_DEMO) return;
   fetch('/api/log', { method: 'POST', headers: { 'content-type': 'application/json' }, keepalive: true,
