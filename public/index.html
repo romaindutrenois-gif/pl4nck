@@ -42,7 +42,7 @@
 .top{position:absolute;top:0;left:0;right:0;z-index:2}
 .top .wrap{padding-bottom:0}
 .top .bar{margin-bottom:0}
-.intro h1{font-family:var(--serif);font-weight:400;font-size:clamp(40px,5.4vw,72px);line-height:1.04;letter-spacing:-.02em;margin:0 0 18px;max-width:14ch}
+.intro h1{font-family:var(--serif);font-weight:400;font-size:clamp(40px,5.4vw,72px);line-height:1.04;letter-spacing:-.02em;margin:0 0 18px;max-width:21ch}
 .intro .tagline{font-family:var(--serif);font-size:clamp(19px,1.9vw,24px);line-height:1.32;margin:0 0 30px;max-width:30ch;opacity:.92}
 @keyframes nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
 .intro{position:relative;z-index:1;min-height:100vh;min-height:100svh;display:flex;align-items:center}
@@ -60,18 +60,7 @@
 /* Below the band */
 .page section{margin:72px 0 0}
 .page h2{margin-top:0}
-.ways{display:grid;gap:0;margin-top:18px;border-top:1px solid var(--rule)}
-.ways .way{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:24px;padding:22px 0;border-bottom:1px solid var(--rule)}
-.ways .go{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:10px!important}
-.ways .go a{color:var(--accent);font-weight:600;font-size:15px;text-decoration:none}
-.ways .go a::after{content:" →"}
-.ways .go a:hover{text-decoration:underline}
-.ways .w{font-family:var(--serif);font-size:26px;line-height:1.2}
-.ways p{margin:0;color:var(--muted);font-size:15.5px}
 
-@media (max-width:900px){
-  .ways .way{grid-template-columns:1fr;gap:6px}
-}
 </style>
 </head>
 <body>
@@ -101,10 +90,8 @@
   </div>
   <section class="intro" id="intro">
     <div class="wrap">
-      <h1>The quantum brain for financial markets.</h1>
-      <p class="tagline">The models you develop today are the benchmarks quantum will have to beat tomorrow.</p>
-      <p class="lead">Quantum computing will have a transformative impact on financial markets. The question is: will you be ready when the technology is?</p>
-      <p class="lead">Veqctor helps quant teams spend the wait well: honest verdicts, no-regret roadmaps and SR 11-7 aligned kits for conventional models.</p>
+      <h1>Validate your models faster. Get them ready for quantum.</h1>
+      <p class="lead">Veqctor gives quant teams validated model kits (Python prototype, tests, documentation) and a roadmap from their models to quantum computing. Nothing leaves your bank.</p>
       <div class="ctas">
         <a class="btn" href="/launch">Assess a use case</a>
         <a class="btn quiet" href="/library">Browse the library</a>
@@ -117,10 +104,10 @@
   <main class="page">
     <section aria-labelledby="h-ways">
       <h2 id="h-ways">What Veqctor does</h2>
-      <div class="ways">
-        <div class="way"><span class="w">Assess, build and advance your R&amp;D roadmap</span><div><p>Nothing to upload: no code or data leaves your bank.</p><p class="go"><a href="/launch">Assess a use case</a><a href="/map">Open the model map</a></p></div></div>
-        <div class="way"><span class="w">Accelerate model development and validation</span><div><p>Choose a model, download its kit: Python prototype, benchmarks and documentation.</p><p class="go"><a href="/library">Browse the model library</a></p></div></div>
-        <div class="way"><span class="w">Explore quantum technology, hardware and circuits</span><div><p>Circuit kits coming soon.</p><p class="go"><a href="/technology">Technology mapping</a><a href="/resources">Resources</a></p></div></div>
+      <div class="grid3">
+        <div class="card"><span class="num">Roadmap</span><h3>Assess, build and advance your R&amp;D roadmap</h3><p>Nothing to upload: no code or data leaves your bank.</p><p class="go"><a href="/launch">Launch Veqctor</a> · <a href="/map">Model map</a></p></div>
+        <div class="card"><span class="num">Models</span><h3>Accelerate model development and validation</h3><p>Choose a model, download its kit: Python prototype, benchmarks and documentation.</p><p class="go"><a href="/library">Model library</a></p></div>
+        <div class="card"><span class="num">Quantum</span><h3>Explore quantum technology, hardware and circuits</h3><p>Circuit kits coming soon.</p><p class="go"><a href="/technology">Technology mapping</a> · <a href="/resources">Resources</a></p></div>
       </div>
     </section>
 
