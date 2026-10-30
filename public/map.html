@@ -21,6 +21,12 @@
 .seg button{appearance:none;border:0;background:none;padding:7px 12px;font:inherit;font-size:14px;color:var(--muted);cursor:pointer}
 .seg button+button{border-left:1px solid var(--rule)}
 .seg button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+.drawers{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.drawer{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--rule);background:var(--sheet);border-radius:999px;padding:5px 12px;font:inherit;font-size:13.5px;color:var(--muted);cursor:pointer}
+.drawer::after{content:"";width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg) translateY(-2px);transition:transform .2s}
+.drawer[aria-expanded=true]{color:var(--ink);border-color:var(--ink)}
+.drawer[aria-expanded=true]::after{transform:rotate(-135deg) translateY(-1px)}
+#legendbox{margin:0 0 14px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;color:var(--muted)}
 .legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
 .btn.small{padding:7px 12px;font-size:14px}
@@ -196,11 +202,15 @@ svg text{font-family:var(--sans)}
         <button type="button" data-mode="veqctor" aria-pressed="false">Veqctor kits</button>
         <button type="button" data-mode="bank" aria-pressed="false">My institution</button>
       </div>
-      <div class="legend" id="legend"></div>
     </div>
+    <div class="drawers">
+      <button type="button" class="drawer" data-drawer="legendbox" aria-expanded="false" aria-controls="legendbox">Legend</button>
+      <button type="button" class="drawer" data-drawer="pick3d" aria-expanded="false" aria-controls="pick3d" id="showbtn">Show families</button>
+    </div>
+    <div class="legend" id="legendbox" hidden><div class="legend" id="legend"></div></div>
 
     <section id="v3d">
-      <div class="famtools" id="pick3d" role="group" aria-label="Families shown in 3D"></div>
+      <div class="famtools" id="pick3d" role="group" aria-label="Families shown in 3D" hidden></div>
       <div class="stage3d" id="stage">
         <canvas id="gl" aria-label="Three-dimensional map: one cloud per family (conventions, curves, volatility, models, methods, engines, instruments, risk), with the quantum algorithms floating above."></canvas>
         <div class="labels" id="labels" aria-hidden="true"></div>
@@ -1033,7 +1043,7 @@ async function init3d() {
 
 // ---------- 3D family picker (shares its state with the Families view) ----------
 function renderPick3d() {
-  $('pick3d').innerHTML = `<span>Show:</span>` + data.clouds.map((c) => `<button type="button" class="ck${c.id === 'quantum' ? ' q' : ''}" data-ck="${c.id}" aria-pressed="${openClouds.has(c.id)}" style="--fc:var(--s-f-${c.id})"><i></i>${esc(c.name)}</button>`).join('')
+  $('pick3d').innerHTML = data.clouds.map((c) => `<button type="button" class="ck${c.id === 'quantum' ? ' q' : ''}" data-ck="${c.id}" aria-pressed="${openClouds.has(c.id)}" style="--fc:var(--s-f-${c.id})"><i></i>${esc(c.name)}</button>`).join('')
     + `<button type="button" data-ck="*">All</button><button type="button" data-ck="-">None</button>`;
 }
 $('pick3d').addEventListener('click', (e) => {
@@ -1119,6 +1129,13 @@ $('emxwrap').addEventListener('click', (e) => {
 });
 $('epanel').addEventListener('click', onPanelClick);
 
+// ---------- Drawers: legend and families shown, closed by default ----------
+document.querySelectorAll('[data-drawer]').forEach((b) => b.addEventListener('click', () => {
+  const open = b.getAttribute('aria-expanded') !== 'true';
+  b.setAttribute('aria-expanded', String(open));
+  $(b.dataset.drawer).hidden = !open;
+}));
+
 // ---------- Views and modes ----------
 function setHint() {
   if (layersOn()) { $('hint2d').textContent = 'Click a sheet to open its roadmap.'; return; }
@@ -1131,6 +1148,7 @@ function setView(v) {
   document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
   $('v3d').hidden = v !== '3d'; $('vfam').hidden = v !== 'families'; $('v2d').hidden = !twoD(); $('veng').hidden = v !== 'engines';
   $('rtools').hidden = v !== 'roadmap';
+  $('showbtn').hidden = v !== '3d';
   try { history.replaceState(null, '', v === '3d' ? location.pathname : '#' + v); } catch {}
   $('foot').hidden = v === '3d';
   if (three) (v === '3d' ? three.start() : three.stop());
