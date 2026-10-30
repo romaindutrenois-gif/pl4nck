@@ -49,6 +49,14 @@
 .intro .wrap{padding-top:28vh;padding-bottom:80px;width:100%}
 .intro .lead{font-size:18px;line-height:1.6;color:var(--muted);max-width:52ch;margin:0 0 14px}
 .intro .lead:last-of-type{margin-bottom:30px}
+.vec{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;max-width:760px;margin:6px 0 22px}
+.vec>div{border-top:2px solid var(--accent);padding-top:14px}
+.vec .k{display:block;font-family:var(--serif);font-size:24px;color:var(--ink);margin-bottom:6px}
+.vec p{margin:0 0 10px;font-size:16px;line-height:1.55;color:var(--muted)}
+.vec a{font-weight:600;font-size:15px;color:var(--accent);text-decoration:none}
+.vec a::after{content:" →"}
+.vec a:hover{text-decoration:underline}
+@media (max-width:640px){.vec{grid-template-columns:1fr}}
 .ctas{display:flex;flex-wrap:wrap;gap:12px}
 .stagewrap .btn{background:var(--ink);color:#0f1e33}
 .stagewrap .btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px #3b5179}
@@ -90,11 +98,14 @@
   </div>
   <section class="intro" id="intro">
     <div class="wrap">
-      <h1>Trajectory and speed for your quant R&amp;D.</h1>
-      <p class="lead">Veqctor sets the trajectory with a roadmap tool built for models, not tickets, and gives you the speed with validation kits: Python prototype, tests and documentation. Get ready for the quantum era. Nothing leaves your bank.</p>
+      <h1>Set the trajectory. Gain the speed.</h1>
+      <div class="vec">
+        <div><span class="k">Trajectory</span><p>A roadmap tool built for models, not tickets: see where your library stands and plan each step, all the way to quantum.</p><a href="/map">Browse the roadmap</a></div>
+        <div><span class="k">Speed</span><p>Validation kits for each step: Python prototype, tests and documentation, ready for your validation team.</p><a href="/library">Validation kits</a></div>
+      </div>
+      <p class="lead">Nothing leaves your bank.</p>
       <div class="ctas">
         <a class="btn" href="/launch">Assess a use case</a>
-        <a class="btn quiet" href="/map">Browse the roadmap</a>
       </div>
     </div>
   </section>
