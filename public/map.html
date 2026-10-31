@@ -42,7 +42,8 @@
 .labels span{position:absolute;transform:translate(-50%,-160%);font-size:11px;white-space:nowrap;color:#dfe6f3;text-shadow:0 1px 3px #0b1628,0 0 2px #0b1628;transition:opacity .2s}
 .labels span.q{color:#b9c6ff;font-weight:600}
 .labels span.pln{font:600 11px/1.2 var(--sans,system-ui),sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#8ea2ff;transform:translate(calc(-100% - 12px),-50%)}
-.labels span.pln.in{transform:translate(6px,-130%);font-size:10px}
+.labels span.pln.in{transform:translate(6px,-130%);font-size:9.5px;letter-spacing:.06em}
+.labels.small span.cl{font-size:11px}
 .labels span.cl{font-family:var(--serif);font-size:16px;color:#c9d4e6;transform:translate(-50%,-50%);letter-spacing:.01em}
 .stage3d .cta2d{position:absolute;right:16px;bottom:16px;background:#e9eef6;color:#0f1e33}
 .stage3d .note3d{position:absolute;left:16px;top:14px;margin:0;font-size:12.5px;color:#9fb0ca;max-width:50ch;padding:6px 10px;border-radius:8px;background:rgba(11,22,40,.72)}
@@ -896,9 +897,9 @@ async function init3d() {
     pl.rotation.x = -Math.PI / 2; pl.position.set(PX, i * LY - 0.6, PZ); scene.add(pl);
     const ed = new THREE.LineSegments(new THREE.EdgesGeometry(pl.geometry), new THREE.LineBasicMaterial({ color: 0x7f97d8, transparent: true, opacity: 0.45 }));
     ed.rotation.copy(pl.rotation); ed.position.copy(pl.position); scene.add(ed);
-    plpos.push(new THREE.Vector3(bx[0], i * LY - 0.6, bz[1]));
+    plpos.push(new THREE.Vector3(portrait ? bx[1] : bx[0], i * LY - 0.6, bz[1]));
   }
-  if (portrait) { controls.target.set(PX + 4, 18, PZ); camera.position.set(PX - 18, 118, PZ + 205); }
+  if (portrait) { controls.target.set(PX, 8, PZ); camera.position.set(PX + 190, 100, PZ + 32); }
   else {
     controls.target.set(PX - 24, 14, PZ + 4); camera.position.set(PX - 50, 100, PZ + 140);
     const a = stage.clientWidth / stage.clientHeight;
@@ -955,9 +956,10 @@ async function init3d() {
   for (const n of N3) { const s = document.createElement('span'); s.textContent = n.name; if (n.quantum) s.className = 'q'; labels.append(s); lab[n.id] = s; }
   const clab = {};
   for (const c of C3) { const s = document.createElement('span'); s.className = 'cl'; s.textContent = c.name; labels.append(s); clab[c.id] = s; }
+  labels.classList.toggle('small', portrait);
   const plab = LAYERS.map((t) => { const s = document.createElement('span'); s.className = 'pln'; s.textContent = t; labels.append(s); return s; });
   const cpos = {};
-  for (const c of C3) { const R = radius(N3.filter((n) => n.cloud === c.id).length, false) * K; cpos[c.id] = centre[c.id].clone().add(new THREE.Vector3(0, c.id === 'quantum' ? 6 : 4.5, -R - 2.5)); }
+  for (const c of C3) { const R = radius(N3.filter((n) => n.cloud === c.id).length, false) * K; cpos[c.id] = centre[c.id].clone().add(portrait ? new THREE.Vector3(R * 0.3, 1.5, 0) : new THREE.Vector3(0, c.id === 'quantum' ? 6 : 4.5, -R - 2.5)); }
 
   function paint() {
     for (const n of N3) {
@@ -981,10 +983,11 @@ async function init3d() {
     const w = stage.clientWidth, h = stage.clientHeight;
     const taken = [];
     const zoomed = camera.position.distanceTo(controls.target) < (portrait ? 110 : 80);
-    plab.forEach((el, i) => { el.classList.toggle('in', portrait); v.copy(plpos[i]).project(camera); el.style.left = (portrait ? Math.max(4, (v.x + 1) / 2 * w) : (v.x + 1) / 2 * w) + 'px'; el.style.top = (1 - v.y) / 2 * h + 'px'; el.style.opacity = v.z > 1 ? 0 : 1; });
+    plab.forEach((el, i) => { el.classList.toggle('in', portrait); v.copy(plpos[i]).project(camera); el.style.left = (portrait ? 4 : (v.x + 1) / 2 * w) + 'px'; el.style.top = (1 - v.y) / 2 * h + 'px'; el.style.opacity = v.z > 1 ? 0 : 1;
+      if (v.z <= 1) { const x = portrait ? 4 : (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h, wd = el._w || (el._w = el.offsetWidth); taken.push(portrait ? { l: x, r: x + wd + 10, t: y - 22, b: y } : { l: x - wd - 14, r: x, t: y - 9, b: y + 9 }); } });
     for (const c of CL3) {
       v.copy(cpos[c.id]).project(camera); const el = clab[c.id];
-      if (v.z > 1 || !on3(c.id) || c.id === 'quantum' || c.id === 'infra' || zoomed || chain || portrait) { el.style.opacity = 0; continue; }
+      if (v.z > 1 || !on3(c.id) || c.id === 'quantum' || c.id === 'infra' || zoomed || chain) { el.style.opacity = 0; continue; }
       const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; el.style.left = x + 'px'; el.style.top = y + 'px';
       const wd = el._w || (el._w = el.offsetWidth), r = { l: x - wd / 2 - 4, r: x + wd / 2 + 4, t: y - 12, b: y + 12 };
       const free = !taken.some((o) => r.l < o.r && r.r > o.l && r.t < o.b && r.b > o.t);
