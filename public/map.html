@@ -12,9 +12,9 @@
 <link rel="stylesheet" href="/site.css">
 <style>
 :root{--s-done:#2f9e6b;--s-wip:#d68a1d;--s-todo:#8a96ab;--s-quantum:#4f6ef7;
-  --s-f-conv:#64748b;--s-f-curves:#3f9a5c;--s-f-vol:#d1603d;--s-f-models:#7c5cc4;--s-f-methods:#b98510;--s-f-engines:#3f97a8;--s-f-instruments:#c4507e;--s-f-risk:#8f6b4a}
+  --s-f-conv:#64748b;--s-f-curves:#3f9a5c;--s-f-vol:#d1603d;--s-f-models:#7c5cc4;--s-f-methods:#b98510;--s-f-engines:#3f97a8;--s-f-instruments:#c4507e;--s-f-risk:#8f6b4a;--s-f-infra:#8a8f99}
 @media (prefers-color-scheme:dark){:root{--s-done:#5cc796;--s-wip:#f0ad4e;--s-todo:#7f8ba1;--s-quantum:#8ea2ff;
-  --s-f-conv:#94a3b8;--s-f-curves:#6cc48a;--s-f-vol:#f08a66;--s-f-models:#a78bfa;--s-f-methods:#e3b341;--s-f-engines:#6cc3d2;--s-f-instruments:#ec7aa7;--s-f-risk:#c09a72}}
+  --s-f-conv:#94a3b8;--s-f-curves:#6cc48a;--s-f-vol:#f08a66;--s-f-models:#a78bfa;--s-f-methods:#e3b341;--s-f-engines:#6cc3d2;--s-f-instruments:#ec7aa7;--s-f-risk:#c09a72;--s-f-infra:#a3a8b2}}
 
 .toolbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 14px}
 .seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--rule);border-radius:var(--r-sm);overflow:hidden;background:var(--sheet)}
@@ -41,6 +41,8 @@
 .labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .labels span{position:absolute;transform:translate(-50%,-160%);font-size:11px;white-space:nowrap;color:#dfe6f3;text-shadow:0 1px 3px #0b1628,0 0 2px #0b1628;transition:opacity .2s}
 .labels span.q{color:#b9c6ff;font-weight:600}
+.labels span.pln{font:600 11px/1.2 var(--sans,system-ui),sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#8ea2ff;transform:translate(calc(-100% - 12px),-50%)}
+.labels span.pln.in{transform:translate(6px,-130%);font-size:10px}
 .labels span.cl{font-family:var(--serif);font-size:16px;color:#c9d4e6;transform:translate(-50%,-50%);letter-spacing:.01em}
 .stage3d .cta2d{position:absolute;right:16px;bottom:16px;background:#e9eef6;color:#0f1e33}
 .stage3d .note3d{position:absolute;left:16px;top:14px;margin:0;font-size:12.5px;color:#9fb0ca;max-width:50ch;padding:6px 10px;border-radius:8px;background:rgba(11,22,40,.72)}
@@ -212,9 +214,9 @@ svg text{font-family:var(--sans)}
     <section id="v3d">
       <div class="famtools" id="pick3d" role="group" aria-label="Families shown in 3D" hidden></div>
       <div class="stage3d" id="stage">
-        <canvas id="gl" aria-label="Three-dimensional map: one cloud per family (conventions, curves, volatility, models, methods, engines, instruments, risk), with the quantum algorithms floating above."></canvas>
+        <canvas id="gl" aria-label="Three-dimensional map in four layers: conventional models at the bottom, one cloud per family; then acceleration, quantum adaptation and quantum hardware above, linked to the models they build on."></canvas>
         <div class="labels" id="labels" aria-hidden="true"></div>
-        <p class="note3d">Drag to rotate, pinch or scroll to zoom, click a point to open it.</p>
+        <p class="note3d">Drag to rotate, scroll to zoom for names, click a point to follow its path.</p>
         <button class="btn small cta2d" type="button" id="to2d">See it by business line</button>
       </div>
     </section>
@@ -279,6 +281,26 @@ const data = await (await fetch('/map.json', { cache: 'no-cache' })).json();
 const byId = Object.fromEntries(data.nodes.map((n) => [n.id, n]));
 const cloudById = Object.fromEntries(data.clouds.map((c) => [c.id, c]));
 const edges = data.edges.map(([from, to, type]) => ({ from, to, type: type || 'builds' }));
+
+// ---------- 3D overview layers: conventional models, acceleration, quantum adaptation, quantum hardware ----------
+// Only the 3D overview uses this. Components with a path to an upper layer are drawn in full;
+// the rest of the library stays as faint dust on the bottom layer.
+const LAYERS = ['Conventional models', 'Acceleration', 'Quantum adaptation', 'Quantum hardware'];
+const UP = new Set(['heston', 'slv', 'lmm', 'lsm', 'mcengine', 'qmc', 'vr', 'mcvar', 'pfe', 'cva', 'cpm', 'card', 'gen']);
+// existing components lifted to an upper layer: [layer, component it stands above]
+const LIFT = { gpu: [1, 'mcengine'], aad: [1, 'vr'], qae_price: [2, 'heston'], qae_var: [2, 'pfe'], qae_credit: [2, 'cpm'], qaoa: [2, 'card'], born: [2, 'gen'] };
+const EXTRA = [
+  ['hg', 'Heston on GPU', 1, 'heston', 'models'], ['sg', 'SLV on GPU', 1, 'slv', 'models'], ['lg', 'LMM on GPU', 1, 'lmm', 'models'],
+  ['lsg', 'Longstaff-Schwartz on GPU', 1, 'lsm', 'methods'], ['vg', 'Monte Carlo VaR on GPU', 1, 'mcvar', 'risk'], ['eg', 'Exposure on GPU', 1, 'pfe', 'risk'], ['cg', 'Credit portfolio MC on GPU', 1, 'cpm', 'risk'],
+  ['load', 'Data loading', 2, 'mcengine', 'infra'], ['res', 'Resource estimation', 2, 'cva', 'infra', 6, 6],
+  ['qpu', 'Cloud QPU access', 3, 'mcengine', 'infra'], ['sec', 'Contract and security review', 3, 'mcengine', 'infra', -14, 6], ['orch', 'Hybrid orchestration', 3, 'mcengine', 'infra', 14, 6], ['ft', 'Fault-tolerant QPU (2030+)', 3, 'mcengine', 'infra', 6, -10],
+].map(([id, name, layer, above, cloud, dx = 0, dz = 0]) => ({ id, name, layer, above, cloud, dx, dz, extra: true, coverage: 'todo', biz: [] }));
+const LEDGES = [['heston', 'hg'], ['slv', 'sg'], ['lmm', 'lg'], ['lsm', 'lsg'], ['mcvar', 'vg'], ['pfe', 'eg'], ['cva', 'eg'], ['cpm', 'cg'], ['mcengine', 'gpu'], ['qmc', 'gpu'], ['vr', 'gpu'], ['mcengine', 'aad'],
+  ['hg', 'qae_price'], ['lsg', 'qae_price'], ['vg', 'qae_var'], ['eg', 'qae_var'], ['cg', 'qae_credit'], ['card', 'qaoa'], ['gen', 'born'], ['gpu', 'load'],
+  ['qae_price', 'qpu'], ['qae_var', 'qpu'], ['qae_credit', 'qpu'], ['qaoa', 'qpu'], ['born', 'qpu'], ['sec', 'qpu'], ['orch', 'qpu'], ['qpu', 'ft']];
+const layerOf = (n) => n.extra ? n.layer : LIFT[n.id] ? LIFT[n.id][0] : 0;
+const aboveOf = (n) => n.extra ? n.above : LIFT[n.id] ? LIFT[n.id][1] : null;
+const isDust = (n) => !n.extra && !n.quantum && !LIFT[n.id] && !UP.has(n.id);
 const coreNodes = data.nodes.filter((n) => n.core);
 const coreEdges = data.core_edges.map(([from, to, type]) => ({ from, to, type: type ? 'quantum' : 'builds' }));
 const nbr = {}; edges.forEach((e) => { (nbr[e.from] = nbr[e.from] || new Set()).add(e.to); (nbr[e.to] = nbr[e.to] || new Set()).add(e.from); });
@@ -821,6 +843,14 @@ async function init3d() {
     $('stage').insertAdjacentHTML('beforeend', '<div class="fallback">The 3D view could not load. <br>Use the Business lines or Explore all views above.</div>');
     return;
   }
+  const N3 = data.nodes.concat(EXTRA), B3 = { ...byId, ...Object.fromEntries(EXTRA.map((n) => [n.id, n])) };
+  const C3 = data.clouds.concat([{ id: 'infra', name: 'Infrastructure' }]);
+  const on3 = (c) => c === 'infra' || openClouds.has(c);
+  const E3 = edges.filter((e) => e.type !== 'quantum').concat(LEDGES.map(([from, to]) => ({ from, to, type: 'layer' })));
+  const UPA = {}, DNA = {};
+  for (const [x, y] of LEDGES) { (UPA[x] = UPA[x] || []).push(y); (DNA[y] = DNA[y] || []).push(x); }
+  const chainOf = (id) => { const s = new Set([id]); const walk = (k, g) => (g[k] || []).forEach((j) => { if (!s.has(j)) { s.add(j); walk(j, g); } }); walk(id, UPA); walk(id, DNA); return s; };
+  let chain = null, sel3 = null;
   const canvas = $('gl'), stage = $('stage');
   let renderer;
   try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); }
@@ -834,57 +864,78 @@ async function init3d() {
   controls.addEventListener('start', () => { controls.autoRotate = false; });
 
   // cluster centres from the wide bubble layout; nodes on a sunflower spiral inside each cluster
-  const portrait = stage.clientWidth / stage.clientHeight < 1, K = portrait ? 0.2 : 0.15, QY = 14, L = portrait ? POS.narrow : POS.wide;
+  // layered view: same wide layout on phones too, seen from further away
+  const portrait = stage.clientWidth / stage.clientHeight < 1, K = 0.15, QY = 14, L = POS.wide;
   const centre = {}, p3 = {};
-  for (const c of data.clouds) {
-    const [x, y] = L.at[c.id];
+  for (const c of C3) {
+    const [x, y] = L.at[c.id] || [L.W / 2, L.H / 2];
     centre[c.id] = new THREE.Vector3((x - L.W / 2) * K, c.id === 'quantum' ? QY : 0, (y - L.H / 2) * K);
-    const ids = data.nodes.filter((n) => n.cloud === c.id).map((n) => n.id);
+    const ids = N3.filter((n) => n.cloud === c.id).map((n) => n.id);
     // keep groups together: order by group, and the curated nodes first
-    ids.sort((a, b) => (byId[b].core ? 1 : 0) - (byId[a].core ? 1 : 0));
-    const R = radius(ids.length, portrait) * K * 0.92, step = R / Math.sqrt(ids.length + 0.5);
+    ids.sort((a, b) => (B3[b].core ? 1 : 0) - (B3[a].core ? 1 : 0));
+    const R = radius(ids.length, false) * K * 0.92, step = R / Math.sqrt(ids.length + 0.5);
     ids.forEach((id, i) => {
       const r = step * Math.sqrt(i + 0.5), a = i * 2.39996;
       const h = Math.sin(i * 12.9898) * 43758.5453; const jitter = (h - Math.floor(h));
-      p3[id] = centre[c.id].clone().add(new THREE.Vector3(r * Math.cos(a), 0.4 + jitter * 2.2 + (byId[id].core ? 1.2 : 0), r * Math.sin(a)));
+      p3[id] = centre[c.id].clone().add(new THREE.Vector3(r * Math.cos(a), 0.4 + jitter * 2.2 + (B3[id].core ? 1.2 : 0), r * Math.sin(a)));
     });
   }
-  controls.target.set(0, 2, portrait ? -6 : 2);
-  if (portrait) camera.position.set(0, 175, 120);
+  const LY = 13;
+  centre.quantum.y = 0; centre.infra.y = 0;
+  for (const n of N3) {
+    const l = layerOf(n); if (!l) continue;
+    const ab = p3[aboveOf(n)], h = Math.sin(n.id.length * 7.1) * 0.8;
+    p3[n.id] = new THREE.Vector3(ab.x + (n.dx || 0), l * LY + 0.6 + h, ab.z + (n.dz || 0));
+  }
+  const all = N3.map((n) => p3[n.id]);
+  const bx = [Math.min(...all.map((q) => q.x)) - 16, Math.max(...all.map((q) => q.x)) + 7], bz = [Math.min(...all.map((q) => q.z)) - 7, Math.max(...all.map((q) => q.z)) + 7];
+  const PW = bx[1] - bx[0], PD = bz[1] - bz[0], PX = (bx[0] + bx[1]) / 2, PZ = (bz[0] + bz[1]) / 2;
+  const plpos = [];
+  for (let i = 0; i < LAYERS.length; i++) {
+    const pl = new THREE.Mesh(new THREE.PlaneGeometry(PW, PD), new THREE.MeshBasicMaterial({ color: i >= 2 ? 0x4f6ef7 : 0x5b7bb5, transparent: true, opacity: i >= 2 ? 0.09 : 0.06, side: THREE.DoubleSide, depthWrite: false }));
+    pl.rotation.x = -Math.PI / 2; pl.position.set(PX, i * LY - 0.6, PZ); scene.add(pl);
+    const ed = new THREE.LineSegments(new THREE.EdgesGeometry(pl.geometry), new THREE.LineBasicMaterial({ color: 0x7f97d8, transparent: true, opacity: 0.45 }));
+    ed.rotation.copy(pl.rotation); ed.position.copy(pl.position); scene.add(ed);
+    plpos.push(new THREE.Vector3(bx[0], i * LY - 0.6, bz[1]));
+  }
+  if (portrait) { controls.target.set(PX + 4, 18, PZ); camera.position.set(PX - 18, 118, PZ + 205); }
   else {
-    camera.position.set(-6, 88, 100);
+    controls.target.set(PX - 24, 14, PZ + 4); camera.position.set(PX - 50, 100, PZ + 140);
     const a = stage.clientWidth / stage.clientHeight;
     if (a < 1.6) camera.position.sub(controls.target).multiplyScalar(Math.min(1.8, 1.6 / a)).add(controls.target);
   }
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.75));
   const dl = new THREE.DirectionalLight(0xffffff, 0.9); dl.position.set(20, 60, 40); scene.add(dl);
-  const floor = new THREE.GridHelper(200, 30, 0x2a3d5e, 0x1c2c48); floor.position.y = -0.6; scene.add(floor);
+  const floor = new THREE.GridHelper(200, 30, 0x2a3d5e, 0x1c2c48); floor.position.y = -0.6; floor.visible = false; scene.add(floor);
   // soft discs under each cloud
   const discs = {};
-  for (const c of data.clouds) {
-    const R = radius(data.nodes.filter((n) => n.cloud === c.id).length, portrait) * K * 1.05;
+  for (const c of C3) {
+    const R = radius(N3.filter((n) => n.cloud === c.id).length, false) * K * 1.05;
+    if (c.id === 'infra') { discs[c.id] = { visible: false, position: new THREE.Vector3() }; continue; }
     const disc = new THREE.Mesh(new THREE.CircleGeometry(R, 48), new THREE.MeshBasicMaterial({ color: c.id === 'quantum' ? 0x4f6ef7 : 0x5b7bb5, transparent: true, opacity: c.id === 'quantum' ? 0.14 : 0.07, side: THREE.DoubleSide, depthWrite: false }));
     disc.rotation.x = -Math.PI / 2; disc.position.copy(centre[c.id]); disc.position.y -= 0.5; scene.add(disc); discs[c.id] = disc;
   }
 
   const meshes = {};
-  const geo = new THREE.SphereGeometry(0.62, 20, 14), small = new THREE.SphereGeometry(0.42, 14, 10), qgeo = new THREE.OctahedronGeometry(1.0, 0);
-  for (const n of data.nodes) {
-    const m = new THREE.Mesh(n.quantum ? qgeo : n.core ? geo : small, new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0.15 }));
+  const geo = new THREE.SphereGeometry(0.62, 20, 14), small = new THREE.SphereGeometry(0.42, 14, 10), qgeo = new THREE.OctahedronGeometry(1.0, 0), dgeo = new THREE.SphereGeometry(0.4, 10, 8);
+  for (const n of N3) {
+    const m = new THREE.Mesh(n.quantum ? qgeo : isDust(n) ? dgeo : geo, new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0.15 }));
     m.position.copy(p3[n.id]); m.userData.id = n.id; scene.add(m); meshes[n.id] = m;
   }
   // links: one merged geometry for ordinary links, dashed lines for quantum ones; rebuilt when families are shown or hidden
   const linkMat = new THREE.LineBasicMaterial({ color: 0x7f8ba1, transparent: true, opacity: 0.16, depthWrite: false });
   const qMat = new THREE.LineDashedMaterial({ color: 0x8ea2ff, dashSize: 0.9, gapSize: 0.6, transparent: true, opacity: 0.9 });
+  const layerMat = new THREE.LineBasicMaterial({ color: 0x8ea2ff, transparent: true, opacity: 0.6, depthWrite: false });
   const linkGroup = new THREE.Group(); scene.add(linkGroup);
-  const shownNode = (id) => openClouds.has(byId[id].cloud);
+  const shownNode = (id) => on3(B3[id].cloud) && !isDust(B3[id]) && (!chain || chain.has(id));
   function buildLinks() {
     linkGroup.children.forEach((o) => o.geometry.dispose()); linkGroup.clear();
-    const pts = [];
-    for (const e of edges) {
+    const pts = [], lpts = [];
+    for (const e of E3) {
       if (!shownNode(e.from) || !shownNode(e.to)) continue;
       const a = p3[e.from], b = p3[e.to], mid = a.clone().lerp(b, 0.5);
+      if (e.type === 'layer') { lpts.push(a, b); continue; }
       if (e.type === 'quantum') {
         mid.y += 6;
         const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(new THREE.QuadraticBezierCurve3(a, mid, b).getPoints(30)), qMat);
@@ -895,22 +946,26 @@ async function init3d() {
       for (let i = 0; i < cp.length - 1; i++) pts.push(cp[i], cp[i + 1]);
     }
     if (pts.length) linkGroup.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), linkMat));
+    if (lpts.length) linkGroup.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(lpts), layerMat));
   }
 
   // HTML labels: family names always; items when there is room, most important first
   const labels = $('labels');
   const lab = {};
-  for (const n of data.nodes) { const s = document.createElement('span'); s.textContent = n.name; if (n.quantum) s.className = 'q'; labels.append(s); lab[n.id] = s; }
+  for (const n of N3) { const s = document.createElement('span'); s.textContent = n.name; if (n.quantum) s.className = 'q'; labels.append(s); lab[n.id] = s; }
   const clab = {};
-  for (const c of data.clouds) { const s = document.createElement('span'); s.className = 'cl'; s.textContent = c.name; labels.append(s); clab[c.id] = s; }
+  for (const c of C3) { const s = document.createElement('span'); s.className = 'cl'; s.textContent = c.name; labels.append(s); clab[c.id] = s; }
+  const plab = LAYERS.map((t) => { const s = document.createElement('span'); s.className = 'pln'; s.textContent = t; labels.append(s); return s; });
   const cpos = {};
-  for (const c of data.clouds) { const R = radius(data.nodes.filter((n) => n.cloud === c.id).length, portrait) * K; cpos[c.id] = centre[c.id].clone().add(new THREE.Vector3(0, c.id === 'quantum' ? 6 : 4.5, -R - 2.5)); }
+  for (const c of C3) { const R = radius(N3.filter((n) => n.cloud === c.id).length, false) * K; cpos[c.id] = centre[c.id].clone().add(new THREE.Vector3(0, c.id === 'quantum' ? 6 : 4.5, -R - 2.5)); }
 
   function paint() {
-    for (const n of data.nodes) {
+    for (const n of N3) {
       const s = status(n); const c = new THREE.Color(color(s));
       const mat = meshes[n.id].material; mat.color = c; mat.emissive = s === 'todo' ? new THREE.Color(0x000000) : c.clone().multiplyScalar(0.35);
-      mat.transparent = s === 'todo'; mat.opacity = s === 'todo' ? 0.5 : 1;
+      const dust = isDust(n), off = chain && !chain.has(n.id);
+      if (dust || off) mat.emissive = new THREE.Color(0x000000);
+      mat.transparent = s === 'todo' || dust || off; mat.opacity = off ? 0.1 : dust ? 0.5 : s === 'todo' ? 0.5 : 1;
     }
   }
   function size() {
@@ -919,23 +974,27 @@ async function init3d() {
   }
   const rank = (n) => n.id === hover ? -1 : n.quantum ? 0 : n.core && prog(n) === 'done' ? 1 : n.core ? 2 : prog(n) === 'done' ? 3 : 4;
   let hover = null;
+  // family labels: the families with components going up first, so they win label collisions
+  const CL3 = [...C3].sort((a, b) => ['models', 'methods', 'risk'].includes(b.id) - ['models', 'methods', 'risk'].includes(a.id));
   const v = new THREE.Vector3();
   function placeLabels() {
     const w = stage.clientWidth, h = stage.clientHeight;
     const taken = [];
-    for (const c of data.clouds) {
+    const zoomed = camera.position.distanceTo(controls.target) < (portrait ? 110 : 80);
+    plab.forEach((el, i) => { el.classList.toggle('in', portrait); v.copy(plpos[i]).project(camera); el.style.left = (portrait ? Math.max(4, (v.x + 1) / 2 * w) : (v.x + 1) / 2 * w) + 'px'; el.style.top = (1 - v.y) / 2 * h + 'px'; el.style.opacity = v.z > 1 ? 0 : 1; });
+    for (const c of CL3) {
       v.copy(cpos[c.id]).project(camera); const el = clab[c.id];
-      if (v.z > 1 || !openClouds.has(c.id)) { el.style.opacity = 0; continue; }
+      if (v.z > 1 || !on3(c.id) || c.id === 'quantum' || c.id === 'infra' || zoomed || chain || portrait) { el.style.opacity = 0; continue; }
       const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; el.style.left = x + 'px'; el.style.top = y + 'px';
       const wd = el._w || (el._w = el.offsetWidth), r = { l: x - wd / 2 - 4, r: x + wd / 2 + 4, t: y - 12, b: y + 12 };
       const free = !taken.some((o) => r.l < o.r && r.r > o.l && r.t < o.b && r.b > o.t);
       el.style.opacity = free ? 1 : 0; if (free) taken.push(r);
     }
     const cand = [];
-    for (const n of data.nodes) {
+    for (const n of N3) {
       v.copy(p3[n.id]).project(camera);
       const el = lab[n.id];
-      if (v.z > 1 || !meshes[n.id].visible) { el.style.opacity = 0; continue; }
+      if (v.z > 1 || !meshes[n.id].visible || (n.id !== hover && (chain ? !chain.has(n.id) : isDust(n) || !zoomed))) { el.style.opacity = 0; continue; }
       const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h;
       el.style.left = x + 'px'; el.style.top = y + 'px';
       cand.push({ n, el, x, y, z: v.z, wd: el._w || (el._w = el.offsetWidth) || n.name.length * 6 });
@@ -955,14 +1014,17 @@ async function init3d() {
   // Showing a subset regroups the visible clouds side by side (pipeline order), quantum above them,
   // then the camera glides to frame them. Showing everything restores the full layout.
   const R3 = {}, loc = {}, base = {}, cur = {}, cposOff = {};
-  for (const c of data.clouds) {
-    R3[c.id] = radius(data.nodes.filter((n) => n.cloud === c.id).length, portrait) * K;
+  for (const c of C3) {
+    R3[c.id] = radius(N3.filter((n) => n.cloud === c.id).length, false) * K;
     base[c.id] = centre[c.id].clone(); cur[c.id] = centre[c.id].clone(); cposOff[c.id] = cpos[c.id].clone().sub(centre[c.id]);
   }
-  for (const n of data.nodes) loc[n.id] = p3[n.id].clone().sub(centre[n.cloud]);
+  for (const n of N3) loc[n.id] = p3[n.id].clone().sub(centre[n.cloud]);
   let anim = null;
-  function targets(shown) {
-    if (shown.length === data.clouds.length || !shown.length) return Object.fromEntries(data.clouds.map((c) => [c.id, base[c.id].clone()]));
+  function targets() {
+    return Object.fromEntries(C3.map((c) => [c.id, base[c.id].clone()]));
+  }
+  function targetsFlat(shown) {
+    if (shown.length === C3.length || !shown.length) return Object.fromEntries(C3.map((c) => [c.id, base[c.id].clone()]));
     const out = {}, flat = shown.filter((c) => c.id !== 'quantum');
     const gap = 7; let span = flat.reduce((a, c) => a + 2 * R3[c.id], 0) + gap * Math.max(0, flat.length - 1);
     let x = -span / 2;
@@ -976,18 +1038,18 @@ async function init3d() {
     return out;
   }
   function filter(glide) {
-    for (const n of data.nodes) meshes[n.id].visible = openClouds.has(n.cloud);
-    for (const c of data.clouds) discs[c.id].visible = openClouds.has(c.id);
-    const shown = data.clouds.filter((c) => openClouds.has(c.id));
+    for (const n of N3) meshes[n.id].visible = on3(n.cloud);
+    for (const c of C3) discs[c.id].visible = on3(c.id) && c.id !== 'quantum';
+    const shown = C3.filter((c) => on3(c.id));
     const to = targets(shown);
-    for (const c of data.clouds) if (!to[c.id]) to[c.id] = cur[c.id].clone();
-    anim = { from: Object.fromEntries(data.clouds.map((c) => [c.id, cur[c.id].clone()])), to, t0: performance.now(), dur: reduce || !glide ? 0 : 700 };
+    for (const c of C3) if (!to[c.id]) to[c.id] = cur[c.id].clone();
+    anim = { from: Object.fromEntries(C3.map((c) => [c.id, cur[c.id].clone()])), to, t0: performance.now(), dur: reduce || !glide ? 0 : 700 };
     step(performance.now());
     if (!glide) return;
-    if (!shown.length || shown.length === data.clouds.length) { goal = { target: home.target.clone(), dist: home.dist }; return; }
+    goal = { target: home.target.clone(), dist: home.dist }; return;
     const flat = shown.filter((c) => c.id !== 'quantum'), t = new THREE.Vector3();
     (flat.length ? flat : shown).forEach((c) => t.add(to[c.id])); t.divideScalar((flat.length ? flat : shown).length);
-    if (flat.length && to.quantum && openClouds.has('quantum')) t.lerp(to.quantum, 0.3);
+    if (flat.length && to.quantum && on3('quantum')) t.lerp(to.quantum, 0.3);
     t.y = Math.min(t.y, 4);
     $('stage').querySelector('.note3d')?.classList.add('gone');
     let spread = 0;
@@ -997,12 +1059,12 @@ async function init3d() {
   function step(now) {
     if (!anim) return;
     const k = anim.dur ? Math.min(1, (now - anim.t0) / anim.dur) : 1, e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-    for (const c of data.clouds) {
+    for (const c of C3) {
       cur[c.id].lerpVectors(anim.from[c.id], anim.to[c.id], e);
       discs[c.id].position.set(cur[c.id].x, cur[c.id].y - 0.5, cur[c.id].z);
       cpos[c.id].copy(cur[c.id]).add(cposOff[c.id]);
     }
-    for (const n of data.nodes) { p3[n.id].copy(cur[n.cloud]).add(loc[n.id]); meshes[n.id].position.copy(p3[n.id]); }
+    for (const n of N3) { p3[n.id].copy(cur[n.cloud]).add(loc[n.id]); meshes[n.id].position.copy(p3[n.id]); }
     buildLinks();
     if (k >= 1) anim = null;
   }
@@ -1032,7 +1094,11 @@ async function init3d() {
   canvas.addEventListener('pointerdown', (e) => { down = [e.clientX, e.clientY]; });
   canvas.addEventListener('pointerup', (e) => {
     if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
-    const id = pick(e); if (id) { setView('families'); select(id, true); }
+    const id = pick(e);
+    if (!id) { if (chain) { chain = sel3 = null; paint(); buildLinks(); } return; }
+    const c = chainOf(id);
+    if (c.size > 1 && sel3 !== id) { chain = c; sel3 = id; paint(); buildLinks(); $('stage').querySelector('.note3d')?.classList.add('gone'); return; }
+    if (byId[id]) { setView('families'); select(id, true); }
   });
   new ResizeObserver(size).observe(stage); size(); paint(); filter(); goal = null; loop();
   three = { paint, filter, start() { if (!running) { running = true; loop(); } }, stop() { running = false; } };
